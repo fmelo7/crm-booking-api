@@ -4,9 +4,15 @@ const express = require('express');
 const app = express();
 
 app.use(express.json());
+app.set('dbConnected', false);
 
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+  res.status(200).json({
+    status: 'ok',
+    dbConnected: app.get('dbConnected'),
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
 const appointmentRoutes = require('./modules/appointment/appointment.routes');
