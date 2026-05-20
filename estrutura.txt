@@ -1,0 +1,14 @@
+src/
+  modules/
+    appointment/
+      appointment.model.js
+      appointment.controller.js
+      appointment.service.js
+      appointment.routes.js
+      appointment.validation.js
+
+  config/
+    db.js
+
+  app.js
+  server.js
