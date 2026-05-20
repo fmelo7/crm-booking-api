@@ -81,8 +81,14 @@ No painel do Railway:
 1. Vá para [mongodb.com/atlas](https://mongodb.com/atlas)
 2. Crie uma conta gratuita
 3. Crie um cluster gratuito
-4. Copie a string de conexão
-5. Cole em `MONGODB_URI` no Railway
+4. Crie um database e um usuário
+5. Copie a string de conexão incluindo o nome do banco e as opções, por exemplo:
+   ```text
+   mongodb+srv://<usuario>:<senha>@cluster0.bcqvd84.mongodb.net/crm-booking-api?retryWrites=true&w=majority
+   ```
+6. Cole em `MONGODB_URI` no Railway
+
+> Se a string não incluir o nome do database, o Mongoose pode abrir conexão em um database padrão inesperado. É melhor definir explicitamente o nome do banco.
 
 **Opção B: Use MongoDB do Railway**
 1. No painel do Railway, clique em **"Add Service"**

@@ -5,6 +5,10 @@ const app = express();
 
 app.use(express.json());
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
 const appointmentRoutes = require('./modules/appointment/appointment.routes');
 const professionalRoutes = require('./modules/professional/professional.routes');
 const serviceRoutes = require('./modules/service/service.routes');
