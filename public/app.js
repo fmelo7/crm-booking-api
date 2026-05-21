@@ -86,85 +86,92 @@ const resetForm = (form) => {
   form.elements.id.value = '';
 };
 
-const renderEmpty = (tbody, colSpan, label) => {
-  tbody.innerHTML = `<tr><td colspan="${colSpan}" class="empty">${label}</td></tr>`;
+const createListItem = (item, type) => {
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.dataset[`select${type}`] = item._id;
+
+  let mainContent = '';
+  let subtitle = '';
+
+  if (type === 'Customer') {
+    mainContent = escapeHtml(item.name);
+    subtitle = escapeHtml(item.phone || item.email || 'Sem contato');
+  } else if (type === 'Service') {
+    mainContent = escapeHtml(item.name);
+    subtitle = `${item.durationMinutes || 60} min • ${formatMoney(item.price)}`;
+  } else if (type === 'Professional') {
+    mainContent = escapeHtml(item.name);
+    subtitle = escapeHtml(item.category || 'Sem categoria');
+  } else if (type === 'Appointment') {
+    mainContent = `${escapeHtml(resolveName(item.customer, 'customers'))} - ${escapeHtml(resolveName(item.service, 'services'))}`;
+    subtitle = formatDate(item.startAt);
+  }
+
+  div.innerHTML = `
+    <div class="item-main">
+      <p class="item-title">${mainContent}</p>
+      <p class="item-subtitle">${subtitle}</p>
+    </div>
+    <div class="item-actions">
+      <button class="item-btn" data-edit${type}="${item._id}" title="Editar">
+        <i class="fas fa-pencil"></i>
+      </button>
+      <button class="item-btn danger" data-delete${type}="${item._id}" title="Remover">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  `;
+
+  return div;
 };
 
 const renderCustomers = () => {
-  const tbody = $('#customersTable');
-  if (!state.customers.length) return renderEmpty(tbody, 4, 'Nenhum cliente cadastrado.');
-
-  tbody.innerHTML = state.customers.map((customer) => `
-    <tr>
-      <td>${escapeHtml(customer.name)}</td>
-      <td>${escapeHtml(customer.phone || '-')}<br>${escapeHtml(customer.email || '-')}</td>
-      <td>${escapeHtml(customer.notes || '-')}</td>
-      <td>
-        <div class="actions d-flex flex-wrap gap-2">
-          <button class="ghost compact" data-edit-customer="${customer._id}" type="button">Editar</button>
-          <button class="danger compact" data-delete-customer="${customer._id}" type="button">Remover</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  const list = $('#customersList');
+  list.innerHTML = '';
+  if (!state.customers.length) {
+    list.innerHTML = '<div class="empty">Nenhum cliente cadastrado.</div>';
+    return;
+  }
+  state.customers.forEach((customer) => {
+    list.appendChild(createListItem(customer, 'Customer'));
+  });
 };
 
 const renderServices = () => {
-  const tbody = $('#servicesTable');
-  if (!state.services.length) return renderEmpty(tbody, 4, 'Nenhum serviço cadastrado.');
-
-  tbody.innerHTML = state.services.map((service) => `
-    <tr>
-      <td>${escapeHtml(service.name)}<br><span>${escapeHtml(service.description || '-')}</span></td>
-      <td>${service.durationMinutes || 60} min</td>
-      <td>${formatMoney(service.price)}</td>
-      <td>
-        <div class="actions d-flex flex-wrap gap-2">
-          <button class="ghost compact" data-edit-service="${service._id}" type="button">Editar</button>
-          <button class="danger compact" data-delete-service="${service._id}" type="button">Remover</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  const list = $('#servicesList');
+  list.innerHTML = '';
+  if (!state.services.length) {
+    list.innerHTML = '<div class="empty">Nenhum serviço cadastrado.</div>';
+    return;
+  }
+  state.services.forEach((service) => {
+    list.appendChild(createListItem(service, 'Service'));
+  });
 };
 
 const renderProfessionals = () => {
-  const tbody = $('#professionalsTable');
-  if (!state.professionals.length) return renderEmpty(tbody, 4, 'Nenhum profissional cadastrado.');
-
-  tbody.innerHTML = state.professionals.map((professional) => `
-    <tr>
-      <td>${escapeHtml(professional.name)}<br><span>${escapeHtml(professional.phone || professional.email || '-')}</span></td>
-      <td>${escapeHtml(professional.category)}</td>
-      <td>${professional.active === false ? 'Inativo' : 'Ativo'}</td>
-      <td>
-        <div class="actions d-flex flex-wrap gap-2">
-          <button class="ghost compact" data-edit-professional="${professional._id}" type="button">Editar</button>
-          <button class="danger compact" data-delete-professional="${professional._id}" type="button">Remover</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  const list = $('#professionalsList');
+  list.innerHTML = '';
+  if (!state.professionals.length) {
+    list.innerHTML = '<div class="empty">Nenhum profissional cadastrado.</div>';
+    return;
+  }
+  state.professionals.forEach((professional) => {
+    list.appendChild(createListItem(professional, 'Professional'));
+  });
 };
 
 const renderAppointments = () => {
-  const tbody = $('#appointmentsTable');
-  if (!state.appointments.length) return renderEmpty(tbody, 5, 'Nenhum agendamento cadastrado.');
-
-  tbody.innerHTML = state.appointments.map((appointment) => `
-    <tr>
-      <td>${formatDate(appointment.startAt)}<br><span>até ${formatDate(appointment.endAt)}</span></td>
-      <td>${escapeHtml(resolveName(appointment.customer, 'customers'))}</td>
-      <td>${escapeHtml(resolveName(appointment.service, 'services'))}</td>
-      <td>${escapeHtml(resolveName(appointment.professional, 'professionals'))}</td>
-      <td>
-        <div class="actions d-flex flex-wrap gap-2">
-          <button class="ghost compact" data-reschedule-appointment="${appointment._id}" type="button">Reagendar</button>
-          <button class="danger compact" data-cancel-appointment="${appointment._id}" type="button">Cancelar</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  const list = $('#appointmentsList');
+  list.innerHTML = '';
+  if (!state.appointments.length) {
+    list.innerHTML = '<div class="empty">Nenhum agendamento cadastrado.</div>';
+    return;
+  }
+  state.appointments.forEach((appointment) => {
+    list.appendChild(createListItem(appointment, 'Appointment'));
+  });
 };
 
 const render = () => {
@@ -190,7 +197,16 @@ const loadData = async () => {
   state.services = services;
   state.professionals = professionals;
   state.appointments = appointments;
-  $('#statusText').textContent = health.dbConnected ? 'MongoDB conectado' : 'MongoDB desconectado';
+
+  const indicator = $('#statusIndicator');
+  const statusText = $('#statusText');
+  if (health.dbConnected) {
+    indicator.style.background = '#107c10';
+    statusText.textContent = 'Conectado';
+  } else {
+    indicator.style.background = '#c50f1f';
+    statusText.textContent = 'Desconectado';
+  }
   render();
 };
 
@@ -212,13 +228,13 @@ const deleteEntity = async (resource, id, label) => {
   showMessage(`${label} removido.`);
 };
 
-const bindTabs = () => {
-  $$('.tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      $$('.tab').forEach((item) => item.classList.remove('is-active'));
+const bindNavigation = () => {
+  $$('.nav-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      $$('.nav-item').forEach((navItem) => navItem.classList.remove('is-active'));
       $$('.view').forEach((view) => view.classList.remove('is-active'));
-      tab.classList.add('is-active');
-      $(`#${tab.dataset.view}`).classList.add('is-active');
+      item.classList.add('is-active');
+      $(`#${item.dataset.view}`).classList.add('is-active');
     });
   });
 };
@@ -318,38 +334,55 @@ const resetAppointmentForm = () => {
 
 const bindActions = () => {
   document.addEventListener('click', async (event) => {
-    const target = event.target;
+    const target = event.target.closest('button, [data-selectCustomer], [data-selectService], [data-selectProfessional], [data-selectAppointment]');
+
+    if (!target) return;
 
     try {
-      if (target.dataset.reset) resetForm($(`#${target.dataset.reset}`));
-      if (target.id === 'resetAppointmentForm') resetAppointmentForm();
+      // Cancel buttons
+      if (target.textContent.includes('Cancelar')) {
+        const form = target.closest('form');
+        if (form.id === 'appointmentForm') resetAppointmentForm();
+        else resetForm(form);
+        return;
+      }
+
+      // Refresh button
       if (target.id === 'refreshAppointments') {
         await loadData();
         showMessage('Agenda atualizada.');
+        return;
       }
 
-      if (target.dataset.editCustomer) {
-        const customer = state.customers.find((item) => item._id === target.dataset.editCustomer);
+      // Select items from list
+      if (target.dataset.selectCustomer) {
+        const customer = state.customers.find((item) => item._id === target.dataset.selectCustomer);
         const form = $('#customerForm');
         form.elements.id.value = customer._id;
         form.elements.name.value = customer.name || '';
         form.elements.phone.value = customer.phone || '';
         form.elements.email.value = customer.email || '';
         form.elements.notes.value = customer.notes || '';
+        $$('#customersList .item').forEach((item) => item.classList.remove('is-selected'));
+        target.closest('.item').classList.add('is-selected');
+        return;
       }
 
-      if (target.dataset.editService) {
-        const service = state.services.find((item) => item._id === target.dataset.editService);
+      if (target.dataset.selectService) {
+        const service = state.services.find((item) => item._id === target.dataset.selectService);
         const form = $('#serviceForm');
         form.elements.id.value = service._id;
         form.elements.name.value = service.name || '';
         form.elements.description.value = service.description || '';
         form.elements.durationMinutes.value = service.durationMinutes || 60;
         form.elements.price.value = service.price || 0;
+        $$('#servicesList .item').forEach((item) => item.classList.remove('is-selected'));
+        target.closest('.item').classList.add('is-selected');
+        return;
       }
 
-      if (target.dataset.editProfessional) {
-        const professional = state.professionals.find((item) => item._id === target.dataset.editProfessional);
+      if (target.dataset.selectProfessional) {
+        const professional = state.professionals.find((item) => item._id === target.dataset.selectProfessional);
         const form = $('#professionalForm');
         form.elements.id.value = professional._id;
         form.elements.name.value = professional.name || '';
@@ -357,10 +390,13 @@ const bindActions = () => {
         form.elements.phone.value = professional.phone || '';
         form.elements.email.value = professional.email || '';
         form.elements.active.checked = professional.active !== false;
+        $$('#professionalsList .item').forEach((item) => item.classList.remove('is-selected'));
+        target.closest('.item').classList.add('is-selected');
+        return;
       }
 
-      if (target.dataset.rescheduleAppointment) {
-        const appointment = state.appointments.find((item) => item._id === target.dataset.rescheduleAppointment);
+      if (target.dataset.selectAppointment) {
+        const appointment = state.appointments.find((item) => item._id === target.dataset.selectAppointment);
         const form = $('#appointmentForm');
         form.elements.id.value = appointment._id;
         form.elements.customerId.value = typeof appointment.customer === 'object' ? appointment.customer._id : appointment.customer;
@@ -372,15 +408,54 @@ const bindActions = () => {
         form.elements.startAt.value = toDatetimeLocal(appointment.startAt);
         form.elements.notes.value = appointment.notes || '';
         $('#appointmentFormTitle').textContent = 'Reagendar agendamento';
+        $$('#appointmentsList .item').forEach((item) => item.classList.remove('is-selected'));
+        target.closest('.item').classList.add('is-selected');
+        return;
       }
 
+      // Edit buttons
+      if (target.dataset.editCustomer) {
+        const customer = state.customers.find((item) => item._id === target.dataset.editCustomer);
+        const form = $('#customerForm');
+        form.elements.id.value = customer._id;
+        form.elements.name.value = customer.name || '';
+        form.elements.phone.value = customer.phone || '';
+        form.elements.email.value = customer.email || '';
+        form.elements.notes.value = customer.notes || '';
+        return;
+      }
+
+      if (target.dataset.editService) {
+        const service = state.services.find((item) => item._id === target.dataset.editService);
+        const form = $('#serviceForm');
+        form.elements.id.value = service._id;
+        form.elements.name.value = service.name || '';
+        form.elements.description.value = service.description || '';
+        form.elements.durationMinutes.value = service.durationMinutes || 60;
+        form.elements.price.value = service.price || 0;
+        return;
+      }
+
+      if (target.dataset.editProfessional) {
+        const professional = state.professionals.find((item) => item._id === target.dataset.editProfessional);
+        const form = $('#professionalForm');
+        form.elements.id.value = professional._id;
+        form.elements.name.value = professional.name || '';
+        form.elements.category.value = professional.category || '';
+        form.elements.phone.value = professional.phone || '';
+        form.elements.email.value = professional.email || '';
+        form.elements.active.checked = professional.active !== false;
+        return;
+      }
+
+      // Delete buttons
       if (target.dataset.deleteCustomer) await deleteEntity('customers', target.dataset.deleteCustomer, 'cliente');
       if (target.dataset.deleteService) await deleteEntity('services', target.dataset.deleteService, 'serviço');
       if (target.dataset.deleteProfessional) await deleteEntity('professionals', target.dataset.deleteProfessional, 'profissional');
 
-      if (target.dataset.cancelAppointment) {
+      if (target.dataset.deleteAppointment) {
         if (!window.confirm('Cancelar agendamento?')) return;
-        await api(`/api/appointments/${target.dataset.cancelAppointment}/cancel`, { method: 'DELETE' });
+        await api(`/api/appointments/${target.dataset.deleteAppointment}/cancel`, { method: 'DELETE' });
         await loadData();
         showMessage('Agendamento cancelado.');
       }
@@ -391,7 +466,7 @@ const bindActions = () => {
 };
 
 const init = async () => {
-  bindTabs();
+  bindNavigation();
   bindForms();
   bindActions();
 
@@ -400,6 +475,8 @@ const init = async () => {
   } catch (error) {
     showMessage(error.message, true);
     $('#statusText').textContent = 'API indisponível';
+    const indicator = $('#statusIndicator');
+    indicator.style.background = '#c50f1f';
   }
 };
 

@@ -3,177 +3,265 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CRM Booking</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Sev365 Booking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
-    <header class="topbar d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3">
-      <div>
-        <h1>CRM Booking</h1>
-        <p id="statusText">Conectando...</p>
-      </div>
-      <nav class="tabs d-flex flex-wrap gap-2" aria-label="Navegação principal">
-        <button class="tab is-active" data-view="appointments">Agenda</button>
-        <button class="tab" data-view="customers">Clientes</button>
-        <button class="tab" data-view="services">Serviços</button>
-        <button class="tab" data-view="professionals">Profissionais</button>
-      </nav>
-    </header>
-
-    <main>
-      <div id="message" class="message" hidden></div>
-
-      <section id="appointments" class="view is-active" aria-labelledby="appointments-title">
-        <div class="section-head d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-          <div>
-            <h2 id="appointments-title">Agenda</h2>
-            <p>Crie, reagende e cancele horários.</p>
-          </div>
-          <button class="ghost" id="refreshAppointments" type="button">Atualizar</button>
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <i class="fas fa-calendar"></i>
+          <span>Sev365</span>
         </div>
+        <nav class="nav-menu">
+          <button class="nav-item is-active" data-view="appointments" title="Agenda">
+            <i class="fas fa-calendar-check"></i>
+            <span class="nav-label">Agenda</span>
+          </button>
+          <button class="nav-item" data-view="customers" title="Clientes">
+            <i class="fas fa-users"></i>
+            <span class="nav-label">Clientes</span>
+          </button>
+          <button class="nav-item" data-view="services" title="Serviços">
+            <i class="fas fa-briefcase"></i>
+            <span class="nav-label">Serviços</span>
+          </button>
+          <button class="nav-item" data-view="professionals" title="Profissionais">
+            <i class="fas fa-user-tie"></i>
+            <span class="nav-label">Profissionais</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="status-indicator" id="statusIndicator"></div>
+          <p id="statusText">Conectando...</p>
+        </div>
+      </aside>
 
-        <div class="workspace">
-          <form id="appointmentForm" class="panel">
-            <input type="hidden" name="id">
-            <div class="form-head d-flex align-items-center justify-content-between gap-2">
-              <h3 id="appointmentFormTitle">Novo agendamento</h3>
-              <button class="ghost compact" type="button" id="resetAppointmentForm">Limpar</button>
+      <!-- Main content -->
+      <main class="main-content">
+        <div id="message" class="message" hidden></div>
+
+        <!-- Appointments Section -->
+        <section id="appointments" class="view is-active">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Agenda</h1>
+              <p>Crie, reagende e cancele horários</p>
             </div>
-            <label>
-              Cliente
-              <select name="customerId" required></select>
-            </label>
-            <label>
-              Serviço
-              <select name="serviceId" required></select>
-            </label>
-            <label>
-              Profissional
-              <select name="professionalId" required></select>
-            </label>
-            <label>
-              Início
-              <input name="startAt" type="datetime-local" required>
-            </label>
-            <label>
-              Observações
-              <textarea name="notes" rows="3"></textarea>
-            </label>
-            <button type="submit">Salvar agendamento</button>
-          </form>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Cliente</th>
-                  <th>Serviço</th>
-                  <th>Profissional</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="appointmentsTable"></tbody>
-            </table>
+            <button class="btn-icon" id="refreshAppointments" title="Atualizar">
+              <i class="fas fa-rotate-right"></i>
+            </button>
           </div>
-        </div>
-      </section>
 
-      <section id="customers" class="view" aria-labelledby="customers-title">
-        <div class="section-head d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-          <div>
-            <h2 id="customers-title">Clientes</h2>
-            <p>Cadastro e manutenção de clientes.</p>
-          </div>
-        </div>
-        <div class="workspace">
-          <form id="customerForm" class="panel">
-            <input type="hidden" name="id">
-            <div class="form-head d-flex align-items-center justify-content-between gap-2">
-              <h3>Cliente</h3>
-              <button class="ghost compact" type="button" data-reset="customerForm">Limpar</button>
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Agendamentos</h3>
+              </div>
+              <div class="list-content">
+                <div id="appointmentsList" class="items-list"></div>
+              </div>
             </div>
-            <label>Nome <input name="name" required></label>
-            <label>Telefone <input name="phone"></label>
-            <label>Email <input name="email" type="email"></label>
-            <label>Notas <textarea name="notes" rows="3"></textarea></label>
-            <button type="submit">Salvar cliente</button>
-          </form>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Nome</th><th>Contato</th><th>Notas</th><th>Ações</th></tr>
-              </thead>
-              <tbody id="customersTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
-      <section id="services" class="view" aria-labelledby="services-title">
-        <div class="section-head d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-          <div>
-            <h2 id="services-title">Serviços</h2>
-            <p>Serviços oferecidos e valores.</p>
-          </div>
-        </div>
-        <div class="workspace">
-          <form id="serviceForm" class="panel">
-            <input type="hidden" name="id">
-            <div class="form-head d-flex align-items-center justify-content-between gap-2">
-              <h3>Serviço</h3>
-              <button class="ghost compact" type="button" data-reset="serviceForm">Limpar</button>
+            <div class="form-panel">
+              <form id="appointmentForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3 id="appointmentFormTitle">Novo agendamento</h3>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Cliente</span>
+                    <select name="customerId" required></select>
+                  </label>
+                  <label>
+                    <span>Serviço</span>
+                    <select name="serviceId" required></select>
+                  </label>
+                  <label>
+                    <span>Profissional</span>
+                    <select name="professionalId" required></select>
+                  </label>
+                  <label>
+                    <span>Início</span>
+                    <input name="startAt" type="datetime-local" required>
+                  </label>
+                  <label>
+                    <span>Observações</span>
+                    <textarea name="notes" rows="3"></textarea>
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary" id="resetAppointmentForm">Cancelar</button>
+                  <button type="submit" class="btn-primary">Salvar agendamento</button>
+                </div>
+              </form>
             </div>
-            <label>Nome <input name="name" required></label>
-            <label>Descrição <textarea name="description" rows="3"></textarea></label>
-            <label>Duração em minutos <input name="durationMinutes" type="number" min="1" value="60"></label>
-            <label>Preço <input name="price" type="number" min="0" step="0.01" value="0"></label>
-            <button type="submit">Salvar serviço</button>
-          </form>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Nome</th><th>Duração</th><th>Preço</th><th>Ações</th></tr>
-              </thead>
-              <tbody id="servicesTable"></tbody>
-            </table>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="professionals" class="view" aria-labelledby="professionals-title">
-        <div class="section-head d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-          <div>
-            <h2 id="professionals-title">Profissionais</h2>
-            <p>Equipe disponível para atendimentos.</p>
-          </div>
-        </div>
-        <div class="workspace">
-          <form id="professionalForm" class="panel">
-            <input type="hidden" name="id">
-            <div class="form-head d-flex align-items-center justify-content-between gap-2">
-              <h3>Profissional</h3>
-              <button class="ghost compact" type="button" data-reset="professionalForm">Limpar</button>
+        <!-- Customers Section -->
+        <section id="customers" class="view">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Clientes</h1>
+              <p>Cadastro e manutenção de clientes</p>
             </div>
-            <label>Nome <input name="name" required></label>
-            <label>Categoria <input name="category" required></label>
-            <label>Telefone <input name="phone"></label>
-            <label>Email <input name="email" type="email"></label>
-            <label class="check d-flex align-items-center gap-2"><input name="active" type="checkbox" checked> Ativo</label>
-            <button type="submit">Salvar profissional</button>
-          </form>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Nome</th><th>Categoria</th><th>Status</th><th>Ações</th></tr>
-              </thead>
-              <tbody id="professionalsTable"></tbody>
-            </table>
           </div>
-        </div>
-      </section>
-    </main>
+
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Clientes</h3>
+              </div>
+              <div class="list-content">
+                <div id="customersList" class="items-list"></div>
+              </div>
+            </div>
+
+            <div class="form-panel">
+              <form id="customerForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3>Cliente</h3>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Nome</span>
+                    <input name="name" required>
+                  </label>
+                  <label>
+                    <span>Telefone</span>
+                    <input name="phone">
+                  </label>
+                  <label>
+                    <span>Email</span>
+                    <input name="email" type="email">
+                  </label>
+                  <label>
+                    <span>Notas</span>
+                    <textarea name="notes" rows="3"></textarea>
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary">Cancelar</button>
+                  <button type="submit" class="btn-primary">Salvar cliente</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="view">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Serviços</h1>
+              <p>Serviços oferecidos e valores</p>
+            </div>
+          </div>
+
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Serviços</h3>
+              </div>
+              <div class="list-content">
+                <div id="servicesList" class="items-list"></div>
+              </div>
+            </div>
+
+            <div class="form-panel">
+              <form id="serviceForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3>Serviço</h3>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Nome</span>
+                    <input name="name" required>
+                  </label>
+                  <label>
+                    <span>Descrição</span>
+                    <textarea name="description" rows="3"></textarea>
+                  </label>
+                  <label>
+                    <span>Duração (minutos)</span>
+                    <input name="durationMinutes" type="number" min="1" value="60">
+                  </label>
+                  <label>
+                    <span>Preço (R$)</span>
+                    <input name="price" type="number" min="0" step="0.01" value="0">
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary">Cancelar</button>
+                  <button type="submit" class="btn-primary">Salvar serviço</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Professionals Section -->
+        <section id="professionals" class="view">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Profissionais</h1>
+              <p>Equipe disponível para atendimentos</p>
+            </div>
+          </div>
+
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Profissionais</h3>
+              </div>
+              <div class="list-content">
+                <div id="professionalsList" class="items-list"></div>
+              </div>
+            </div>
+
+            <div class="form-panel">
+              <form id="professionalForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3>Profissional</h3>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Nome</span>
+                    <input name="name" required>
+                  </label>
+                  <label>
+                    <span>Categoria</span>
+                    <input name="category" required>
+                  </label>
+                  <label>
+                    <span>Telefone</span>
+                    <input name="phone">
+                  </label>
+                  <label>
+                    <span>Email</span>
+                    <input name="email" type="email">
+                  </label>
+                  <label class="checkbox-label">
+                    <input name="active" type="checkbox" checked>
+                    <span>Ativo</span>
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary">Cancelar</button>
+                  <button type="submit" class="btn-primary">Salvar profissional</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
 
     <script src="/app.js"></script>
   </body>
