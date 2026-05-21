@@ -7,7 +7,22 @@ const connectDatabase = async (uri = process.env.MONGODB_URI || DEFAULT_MONGODB_
   return uri;
 };
 
+const maskDatabaseUri = (uri) => {
+  try {
+    const parsed = new URL(uri);
+
+    if (parsed.password) {
+      parsed.password = '***';
+    }
+
+    return parsed.toString();
+  } catch (err) {
+    return uri;
+  }
+};
+
 module.exports = {
   connectDatabase,
   DEFAULT_MONGODB_URI,
+  maskDatabaseUri,
 };

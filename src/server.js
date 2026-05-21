@@ -3,7 +3,7 @@
 require('dotenv').config();
 
 const app = require('./app');
-const { connectDatabase } = require('./config/database');
+const { connectDatabase, maskDatabaseUri } = require('./config/database');
 
 const PORT = process.env.PORT || 3000;
 
@@ -16,7 +16,7 @@ const startServer = () => {
 connectDatabase()
   .then((uri) => {
     app.set('dbConnected', true);
-    console.log(`MongoDB conectado em ${uri}`);
+    console.log(`MongoDB conectado em ${maskDatabaseUri(uri)}`);
   })
   .catch((err) => {
     app.set('dbConnected', false);

@@ -4,9 +4,14 @@ const express = require('express');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger');
+const { securityHeaders, cors, createRateLimiter } = require('./middlewares/security');
+const { notFound, errorHandler } = require('./middlewares/error');
 const app = express();
 
-app.use(express.json());
+app.disable('x-powered-by');
+app.use(securityHeaders);
+app.use(cors);
+app.use(express.json({ limit: '1mb' }));
 app.set('dbConnected', false);
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -25,9 +30,13 @@ const professionalRoutes = require('./modules/professional/professional.routes')
 const serviceRoutes = require('./modules/service/service.routes');
 const customerRoutes = require('./modules/customer/customer.routes');
 
+app.use('/api', createRateLimiter());
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/professionals', professionalRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/customers', customerRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app;

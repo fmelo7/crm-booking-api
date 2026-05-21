@@ -28,6 +28,8 @@ npm install
 
 Crie um arquivo `.env` ou `.env.local` na raiz do projeto.
 
+Use [.env.example](.env.example) como referência. Arquivos `.env*` reais não devem ser versionados.
+
 Exemplo:
 
 ```env
@@ -43,6 +45,9 @@ Variáveis:
 | `PORT` | Não | Porta HTTP. Padrão: `3000`. |
 | `MONGODB_URI` | Não | URI do MongoDB. Padrão: `mongodb://127.0.0.1:27017/crm-booking-api`. |
 | `SWAGGER_SERVER_URL` | Não | URL exibida como servidor base no Swagger. |
+| `CORS_ORIGINS` | Não | Lista de origens permitidas, separadas por vírgula. Exemplo: `https://app.com,http://localhost:5173`. |
+| `RATE_LIMIT_WINDOW_MS` | Não | Janela do rate limit em milissegundos. Padrão: `900000`. |
+| `RATE_LIMIT_MAX` | Não | Número máximo de requisições por IP dentro da janela. Padrão: `300`. |
 | `NODE_ENV` | Não | Ambiente da aplicação, como `production`. |
 
 ## Rodando localmente
