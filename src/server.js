@@ -2,11 +2,10 @@
 
 require('dotenv').config();
 
-const mongoose = require('mongoose');
 const app = require('./app');
+const { connectDatabase } = require('./config/database');
 
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/crm-booking-api';
 
 const startServer = () => {
   app.listen(PORT, () => {
@@ -14,10 +13,10 @@ const startServer = () => {
   });
 };
 
-mongoose.connect(MONGODB_URI)
-  .then(() => {
+connectDatabase()
+  .then((uri) => {
     app.set('dbConnected', true);
-    console.log(`MongoDB conectado em ${MONGODB_URI}`);
+    console.log(`MongoDB conectado em ${uri}`);
   })
   .catch((err) => {
     app.set('dbConnected', false);

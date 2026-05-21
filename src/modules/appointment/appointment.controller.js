@@ -28,3 +28,21 @@ exports.getById = async (req, res) => {
     res.status(err.status || 500).json({ message: err.message });
   }
 };
+
+exports.reschedule = async (req, res) => {
+  try {
+    const result = await service.rescheduleAppointment(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ message: err.message });
+  }
+};
+
+exports.cancel = async (req, res) => {
+  try {
+    await service.cancelAppointment(req.params.id);
+    res.status(204).end();
+  } catch (err) {
+    res.status(err.status || 500).json({ message: err.message });
+  }
+};
