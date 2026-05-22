@@ -5,7 +5,7 @@ const createAppointmentSchema = z.object({
   serviceId: objectId,
   customerId: objectId,
   professionalId: objectId,
-  date: z.string().datetime()
+  startAt: z.string().datetime()
 });
 
 const filterAppointmentSchema = z.object({

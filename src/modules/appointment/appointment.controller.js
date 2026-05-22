@@ -47,3 +47,19 @@ exports.cancel = async (req, res) => {
     sendError(res, err);
   }
 };
+
+exports.getAvailability = async (req, res, next) => {
+  try {
+    const { professionalId, date, durationMinutes } = req.query;
+
+    const result = await service.getAvailability({
+      professionalId,
+      date,
+      durationMinutes: durationMinutes ? Number(durationMinutes) : 60
+    });
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};

@@ -286,6 +286,9 @@ const bindForms = () => {
     }
   });
 
+  ['professionalId', 'serviceId'].forEach(name => { $('#appointmentForm').elements[name].addEventListener('change', loadAvailability); });
+  $('#appointmentForm').elements.startAt.addEventListener('change', loadAvailability);
+
   $('#appointmentForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
@@ -334,7 +337,7 @@ const resetAppointmentForm = () => {
 
 const bindActions = () => {
   document.addEventListener('click', async (event) => {
-    const target = event.target.closest('button, [data-selectCustomer], [data-selectService], [data-selectProfessional], [data-selectAppointment]');
+    const target = event.target.closest('button, [data-slot], [data-selectCustomer], [data-selectService], [data-selectProfessional], [data-selectAppointment]');
 
     if (!target) return;
 
@@ -459,10 +462,72 @@ const bindActions = () => {
         await loadData();
         showMessage('Agendamento cancelado.');
       }
+
+      if (target.dataset.slot) {
+        const form = $('#appointmentForm');
+        const selectedDate = toDatetimeLocal(target.dataset.slot);
+        form.elements.startAt.value = toDatetimeLocal(target.dataset.slot);
+        return;
+      }
     } catch (error) {
       showMessage(error.message, true);
     }
   });
+};
+
+const loadAvailability = async () => {
+  const form = $('#appointmentForm');
+
+  const professionalId = form.elements.professionalId.value;
+  const serviceId = form.elements.serviceId.value;
+  const startAt = form.elements.startAt.value;
+
+  if (!professionalId || !serviceId) return;
+
+  const service = state.services.find(s => s._id === serviceId);
+
+  if (!service) return;
+
+  const baseDate = startAt ? new Date(startAt) : new Date();
+  const date = baseDate.toLocaleDateString('en-CA');
+  console.log('Carregando disponibilidade para profissional:', professionalId, 'Data:', date, 'Duração do serviço:', service.durationMinutes); // Log para depuração
+
+  try {
+    const slots = await api(
+      `/api/appointments/availability?professionalId=${professionalId}&date=${date}&durationMinutes=${service.durationMinutes}`
+    );
+
+    renderAvailability(slots);
+
+    showMessage(`${slots.length} horários disponíveis`);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const renderAvailability = (slots) => {
+  const container = $('#availabilityContainer');
+
+  if (!slots.length) {
+    container.innerHTML = '<p>Nenhum horário disponível</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="availability-list">
+      ${slots.map(slot => {
+        console.log('Processando slot para renderização:', slot); // Log para depuração
+        const date = new Date(slot);
+        console.log('Renderizando slot:', slot, 'Data:', date); // Log para depuração
+        const label = date.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        console.log('Label para slot:', slot, 'Data:', date, 'Label:', label); // Log para depuração
+        return `<button class="slot-btn" data-slot="${slot}">${label}</button>`;
+      }).join('')}
+    </div>
+  `;
 };
 
 const init = async () => {

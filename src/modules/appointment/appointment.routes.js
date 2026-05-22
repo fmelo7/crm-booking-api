@@ -9,6 +9,7 @@ const router = express.Router();
 
 const controller = require('./appointment.controller');
 
+router.get('/availability', controller.getAvailability);
 router.get('/', validate(filterAppointmentSchema, 'query'), controller.list);
 router.get('/:id', validate(filterAppointmentSchema, 'params'), controller.getById);
 router.post('/', validate(createAppointmentSchema), controller.create);

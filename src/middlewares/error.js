@@ -13,6 +13,34 @@ const errorHandler = (err, req, res, next) => {
     return next(err);
   }
 
+  const log = {
+    timestamp: new Date().toISOString(),
+    level: 'error',
+    service: 'serv365-api',
+    environment: process.env.NODE_ENV || 'development',
+
+    message: err.message || 'Erro interno',
+
+    error: {
+      message: err.message,
+      stack: err.stack
+    },
+
+    http: {
+      method: req.method,
+      path: req.originalUrl,
+      status: err.status || 500
+    },
+
+    request: {
+      body: req.body,
+      query: req.query,
+      params: req.params
+    }
+  };
+
+  console.error(JSON.stringify(log));
+
   return sendError(res, err);
 };
 

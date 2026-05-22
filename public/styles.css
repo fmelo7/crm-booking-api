@@ -602,3 +602,24 @@ form textarea {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
+
+.availability-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.slot-btn {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.slot-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
