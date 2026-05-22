@@ -59,6 +59,17 @@
             <div class="list-panel">
               <div class="list-header">
                 <h3>Agendamentos</h3>
+                <div class="filters-row">
+                  <input id="appointmentDateFilter" type="date" aria-label="Filtrar por data">
+                  <select id="appointmentProfessionalFilter" aria-label="Filtrar por profissional"></select>
+                  <select id="appointmentCustomerFilter" aria-label="Filtrar por cliente"></select>
+                  <select id="appointmentStatusFilter" aria-label="Filtrar por status">
+                    <option value="">Todos os status</option>
+                    <option value="scheduled">Agendados</option>
+                    <option value="cancelled">Cancelados</option>
+                    <option value="completed">Concluidos</option>
+                  </select>
+                </div>
               </div>
               <div class="list-content">
                 <div id="appointmentsList" class="items-list"></div>

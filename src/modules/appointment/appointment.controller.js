@@ -14,7 +14,7 @@ exports.create = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const result = await service.getAllAppointments();
+    const result = await service.getAllAppointments(req.query);
     res.json(result);
   } catch (err) {
     sendError(res, err);
@@ -41,8 +41,17 @@ exports.reschedule = async (req, res) => {
 
 exports.cancel = async (req, res) => {
   try {
-    await service.cancelAppointment(req.params.id);
-    res.status(204).end();
+    const result = await service.cancelAppointment(req.params.id);
+    res.json(result);
+  } catch (err) {
+    sendError(res, err);
+  }
+};
+
+exports.complete = async (req, res) => {
+  try {
+    const result = await service.completeAppointment(req.params.id);
+    res.json(result);
   } catch (err) {
     sendError(res, err);
   }
@@ -50,11 +59,12 @@ exports.cancel = async (req, res) => {
 
 exports.getAvailability = async (req, res, next) => {
   try {
-    const { professionalId, date, durationMinutes } = req.query;
+    const { professionalId, date, serviceId, durationMinutes } = req.query;
 
     const result = await service.getAvailability({
       professionalId,
       date,
+      serviceId,
       durationMinutes: durationMinutes ? Number(durationMinutes) : 60
     });
 

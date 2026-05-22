@@ -295,6 +295,25 @@ body {
   color: var(--text);
 }
 
+.filters-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.filters-row input,
+.filters-row select {
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  background: #fff;
+}
+
 .list-content {
   flex: 1;
   overflow-y: auto;
@@ -575,6 +594,10 @@ form textarea {
 
   .view-container {
     gap: 16px;
+  }
+
+  .filters-row {
+    grid-template-columns: 1fr;
   }
 }
 

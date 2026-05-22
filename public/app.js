@@ -3,6 +3,12 @@ const state = {
   services: [],
   professionals: [],
   appointments: [],
+  appointmentFilters: {
+    date: '',
+    professionalId: '',
+    customerId: '',
+    status: '',
+  },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -72,6 +78,7 @@ const resolveName = (item, collection, fallback = '-') => {
 
 const fillSelect = (selector, items, placeholder) => {
   const select = $(selector);
+  const selectedValue = select.value;
   select.innerHTML = `<option value="">${placeholder}</option>`;
   items.forEach((item) => {
     const option = document.createElement('option');
@@ -79,6 +86,22 @@ const fillSelect = (selector, items, placeholder) => {
     option.textContent = item.name;
     select.appendChild(option);
   });
+  select.value = selectedValue;
+};
+
+const statusLabels = {
+  scheduled: 'Agendado',
+  cancelled: 'Cancelado',
+  completed: 'Concluido',
+};
+
+const buildAppointmentQuery = () => {
+  const params = new URLSearchParams();
+  Object.entries(state.appointmentFilters).forEach(([key, value]) => {
+    if (value) params.set(key, value);
+  });
+  const query = params.toString();
+  return query ? `?${query}` : '';
 };
 
 const resetForm = (form) => {
@@ -90,6 +113,7 @@ const createListItem = (item, type) => {
   const div = document.createElement('div');
   div.className = 'item';
   div.dataset[`select${type}`] = item._id;
+  const typeAttr = type.toLowerCase();
 
   let mainContent = '';
   let subtitle = '';
@@ -105,8 +129,12 @@ const createListItem = (item, type) => {
     subtitle = escapeHtml(item.category || 'Sem categoria');
   } else if (type === 'Appointment') {
     mainContent = `${escapeHtml(resolveName(item.customer, 'customers'))} - ${escapeHtml(resolveName(item.service, 'services'))}`;
-    subtitle = formatDate(item.startAt);
+    const professionalName = resolveName(item.professional, 'professionals');
+    const history = item.reschedules?.length ? ` • ${item.reschedules.length} reagendamento(s)` : '';
+    subtitle = `${formatDate(item.startAt)} • ${escapeHtml(professionalName)} • ${statusLabels[item.status] || item.status || 'Agendado'}${history}`;
   }
+
+  const canChangeAppointment = type !== 'Appointment' || item.status === 'scheduled';
 
   div.innerHTML = `
     <div class="item-main">
@@ -114,12 +142,15 @@ const createListItem = (item, type) => {
       <p class="item-subtitle">${subtitle}</p>
     </div>
     <div class="item-actions">
-      <button class="item-btn" data-edit${type}="${item._id}" title="Editar">
+      ${canChangeAppointment ? `<button class="item-btn" data-edit-${typeAttr}="${item._id}" title="${type === 'Appointment' ? 'Reagendar' : 'Editar'}">
         <i class="fas fa-pencil"></i>
-      </button>
-      <button class="item-btn danger" data-delete${type}="${item._id}" title="Remover">
+      </button>` : ''}
+      ${type === 'Appointment' && canChangeAppointment ? `<button class="item-btn" data-complete-appointment="${item._id}" title="Concluir">
+        <i class="fas fa-check"></i>
+      </button>` : ''}
+      ${type !== 'Appointment' || canChangeAppointment ? `<button class="item-btn danger" data-delete-${typeAttr}="${item._id}" title="${type === 'Appointment' ? 'Cancelar' : 'Remover'}">
         <i class="fas fa-trash"></i>
-      </button>
+      </button>` : ''}
     </div>
   `;
 
@@ -178,6 +209,12 @@ const render = () => {
   fillSelect('#appointmentForm [name="customerId"]', state.customers, 'Selecione um cliente');
   fillSelect('#appointmentForm [name="serviceId"]', state.services, 'Selecione um serviço');
   fillSelect('#appointmentForm [name="professionalId"]', state.professionals, 'Selecione um profissional');
+  fillSelect('#appointmentCustomerFilter', state.customers, 'Todos os clientes');
+  fillSelect('#appointmentProfessionalFilter', state.professionals, 'Todos os profissionais');
+  $('#appointmentDateFilter').value = state.appointmentFilters.date;
+  $('#appointmentCustomerFilter').value = state.appointmentFilters.customerId;
+  $('#appointmentProfessionalFilter').value = state.appointmentFilters.professionalId;
+  $('#appointmentStatusFilter').value = state.appointmentFilters.status;
   renderCustomers();
   renderServices();
   renderProfessionals();
@@ -190,7 +227,7 @@ const loadData = async () => {
     api('/api/customers'),
     api('/api/services'),
     api('/api/professionals'),
-    api('/api/appointments'),
+    api(`/api/appointments${buildAppointmentQuery()}`),
   ]);
 
   state.customers = customers;
@@ -289,6 +326,22 @@ const bindForms = () => {
   ['professionalId', 'serviceId'].forEach(name => { $('#appointmentForm').elements[name].addEventListener('change', loadAvailability); });
   $('#appointmentForm').elements.startAt.addEventListener('change', loadAvailability);
 
+  [
+    ['#appointmentDateFilter', 'date'],
+    ['#appointmentProfessionalFilter', 'professionalId'],
+    ['#appointmentCustomerFilter', 'customerId'],
+    ['#appointmentStatusFilter', 'status'],
+  ].forEach(([selector, key]) => {
+    $(selector).addEventListener('change', async (event) => {
+      state.appointmentFilters[key] = event.target.value;
+      try {
+        await loadData();
+      } catch (error) {
+        showMessage(error.message, true);
+      }
+    });
+  });
+
   $('#appointmentForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
@@ -337,7 +390,7 @@ const resetAppointmentForm = () => {
 
 const bindActions = () => {
   document.addEventListener('click', async (event) => {
-    const target = event.target.closest('button, [data-slot], [data-selectCustomer], [data-selectService], [data-selectProfessional], [data-selectAppointment]');
+    const target = event.target.closest('button, [data-slot], [data-select-customer], [data-select-service], [data-select-professional], [data-select-appointment], [data-complete-appointment]');
 
     if (!target) return;
 
@@ -463,9 +516,14 @@ const bindActions = () => {
         showMessage('Agendamento cancelado.');
       }
 
+      if (target.dataset.completeAppointment) {
+        await api(`/api/appointments/${target.dataset.completeAppointment}/complete`, { method: 'PATCH' });
+        await loadData();
+        showMessage('Agendamento concluido.');
+      }
+
       if (target.dataset.slot) {
         const form = $('#appointmentForm');
-        const selectedDate = toDatetimeLocal(target.dataset.slot);
         form.elements.startAt.value = toDatetimeLocal(target.dataset.slot);
         return;
       }
@@ -490,11 +548,10 @@ const loadAvailability = async () => {
 
   const baseDate = startAt ? new Date(startAt) : new Date();
   const date = baseDate.toLocaleDateString('en-CA');
-  console.log('Carregando disponibilidade para profissional:', professionalId, 'Data:', date, 'Duração do serviço:', service.durationMinutes); // Log para depuração
 
   try {
     const slots = await api(
-      `/api/appointments/availability?professionalId=${professionalId}&date=${date}&durationMinutes=${service.durationMinutes}`
+      `/api/appointments/availability?professionalId=${professionalId}&serviceId=${serviceId}&date=${date}`
     );
 
     renderAvailability(slots);
@@ -516,14 +573,11 @@ const renderAvailability = (slots) => {
   container.innerHTML = `
     <div class="availability-list">
       ${slots.map(slot => {
-        console.log('Processando slot para renderização:', slot); // Log para depuração
         const date = new Date(slot);
-        console.log('Renderizando slot:', slot, 'Data:', date); // Log para depuração
         const label = date.toLocaleTimeString('pt-BR', {
           hour: '2-digit',
           minute: '2-digit'
         });
-        console.log('Label para slot:', slot, 'Data:', date, 'Label:', label); // Log para depuração
         return `<button class="slot-btn" data-slot="${slot}">${label}</button>`;
       }).join('')}
     </div>

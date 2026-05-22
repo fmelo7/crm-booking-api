@@ -5,9 +5,11 @@ module.exports = (schema, source = 'body') => {
       const result = schema.safeParse(data);
 
       if (!result.success) {
+        const issues = result.error.issues || result.error.errors;
+
         return res.status(400).json({
           error: 'Validation error',
-          details: result.error.errors.map(err => ({
+          details: issues.map(err => ({
             field: err.path.join('.'),
             message: err.message
           }))

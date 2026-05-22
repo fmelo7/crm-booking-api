@@ -23,7 +23,23 @@ module.exports = {
           type: 'string',
           format: 'date-time',
           example: '2026-05-21T15:00:00.000Z',
-          description: 'Gerado automaticamente pela API a partir do startAt',
+          description: 'Gerado automaticamente pela API a partir do durationMinutes do serviço',
+        },
+        status: {
+          type: 'string',
+          enum: ['scheduled', 'cancelled', 'completed'],
+          example: 'scheduled',
+        },
+        reschedules: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              oldStartAt: { type: 'string', format: 'date-time' },
+              oldEndAt: { type: 'string', format: 'date-time' },
+              changedAt: { type: 'string', format: 'date-time' },
+            },
+          },
         },
         notes: { type: 'string', example: 'Cliente pediu encaixe' },
         createdAt: { type: 'string', format: 'date-time' },
@@ -44,6 +60,14 @@ module.exports = {
       get: {
         tags: ['Appointments'],
         summary: 'Listar agendamentos',
+        parameters: [
+          { name: 'date', in: 'query', schema: { type: 'string', example: '2026-05-21' } },
+          { name: 'from', in: 'query', schema: { type: 'string', format: 'date-time' } },
+          { name: 'to', in: 'query', schema: { type: 'string', format: 'date-time' } },
+          { name: 'professionalId', in: 'query', schema: { type: 'string' } },
+          { name: 'customerId', in: 'query', schema: { type: 'string' } },
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['scheduled', 'cancelled', 'completed'] } },
+        ],
         responses: {
           '200': {
             description: 'Lista de agendamentos',
@@ -185,7 +209,14 @@ module.exports = {
         summary: 'Cancelar agendamento',
         parameters: [{ $ref: '#/components/parameters/IdParam' }],
         responses: {
-          '204': { description: 'Agendamento cancelado' },
+          '200': {
+            description: 'Agendamento marcado como cancelado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Appointment' },
+              },
+            },
+          },
           '400': {
             description: 'ID inválido',
             content: {
@@ -196,6 +227,55 @@ module.exports = {
           },
           '404': {
             description: 'Agendamento não encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '409': {
+            description: 'Agendamento não pode ser cancelado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/appointments/{id}/complete': {
+      patch: {
+        tags: ['Appointments'],
+        summary: 'Concluir agendamento',
+        parameters: [{ $ref: '#/components/parameters/IdParam' }],
+        responses: {
+          '200': {
+            description: 'Agendamento marcado como concluido',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Appointment' },
+              },
+            },
+          },
+          '400': {
+            description: 'ID inválido',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: 'Agendamento não encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '409': {
+            description: 'Agendamento não pode ser concluido',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Error' },
