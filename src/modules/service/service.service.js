@@ -1,4 +1,5 @@
 const Service = require('./service.model');
+const { paginate } = require('../common/pagination');
 
 exports.createService = async (data) => {
   const { name } = data;
@@ -10,7 +11,11 @@ exports.createService = async (data) => {
   return Service.create(data);
 };
 
-exports.getServices = async () => Service.find();
+exports.getServices = async (filters = {}) => paginate(Service, {}, {
+  page: filters.page,
+  limit: filters.limit,
+  sort: { name: 1 },
+});
 
 exports.getServiceById = async (id) => {
   const item = await Service.findById(id);

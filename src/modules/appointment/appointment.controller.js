@@ -1,75 +1,46 @@
 // appointment.controller.js
 
 const service = require('./appointment.service');
-const { sendError } = require('../../middlewares/error');
 
 exports.create = async (req, res) => {
-  try {
-    const result = await service.createAppointment(req.body);
-    res.status(201).json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
+  const result = await service.createAppointment(req.body);
+  res.status(201).json(result);
 };
 
 exports.list = async (req, res) => {
-  try {
-    const result = await service.getAllAppointments(req.query);
-    res.json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
+  const result = await service.getAllAppointments(req.query);
+  res.json(result);
 };
 
 exports.getById = async (req, res) => {
-  try {
-    const result = await service.getAppointmentById(req.params.id);
-    res.json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
+  const result = await service.getAppointmentById(req.params.id);
+  res.json(result);
 };
 
 exports.reschedule = async (req, res) => {
-  try {
-    const result = await service.rescheduleAppointment(req.params.id, req.body);
-    res.json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
+  const result = await service.rescheduleAppointment(req.params.id, req.body);
+  res.json(result);
 };
 
 exports.cancel = async (req, res) => {
-  try {
-    const result = await service.cancelAppointment(req.params.id);
-    res.json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
+  const result = await service.cancelAppointment(req.params.id);
+  res.json(result);
 };
 
 exports.complete = async (req, res) => {
-  try {
-    const result = await service.completeAppointment(req.params.id);
-    res.json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
+  const result = await service.completeAppointment(req.params.id);
+  res.json(result);
 };
 
-exports.getAvailability = async (req, res, next) => {
-  try {
-    const { professionalId, date, serviceId, durationMinutes } = req.query;
+exports.getAvailability = async (req, res) => {
+  const { professionalId, date, serviceId, durationMinutes } = req.query;
 
-    const result = await service.getAvailability({
-      professionalId,
-      date,
-      serviceId,
-      durationMinutes: durationMinutes ? Number(durationMinutes) : 60
-    });
+  const result = await service.getAvailability({
+    professionalId,
+    date,
+    serviceId,
+    durationMinutes: durationMinutes ? Number(durationMinutes) : 60
+  });
 
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
+  res.json(result);
 };

@@ -1,4 +1,7 @@
 const Customer = require('./customer.model');
+const { paginate } = require('../common/pagination');
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 exports.createCustomer = async (data) => {
   const { name } = data;
@@ -10,7 +13,24 @@ exports.createCustomer = async (data) => {
   return Customer.create(data);
 };
 
-exports.getCustomers = async () => Customer.find();
+exports.getCustomers = async (filters = {}) => {
+  const query = {};
+
+  if (filters.search) {
+    const search = new RegExp(escapeRegExp(filters.search), 'i');
+    query.$or = [
+      { name: search },
+      { email: search },
+      { phone: search },
+    ];
+  }
+
+  return paginate(Customer, query, {
+    page: filters.page,
+    limit: filters.limit,
+    sort: { name: 1 },
+  });
+};
 
 exports.getCustomerById = async (id) => {
   const item = await Customer.findById(id);

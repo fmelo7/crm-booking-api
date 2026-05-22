@@ -124,7 +124,35 @@ Exemplo de resposta:
   "status": "ok",
   "dbConnected": true,
   "uptime": 12.34,
-  "timestamp": "2026-05-21T14:00:00.000Z"
+  "timestamp": "2026-05-21T14:00:00.000Z",
+  "requestId": "9f91f0d7-4a9a-4cb4-9e5c-ea5f3a57e6ac"
+}
+```
+
+Quando o MongoDB não está conectado, o endpoint responde `503` com `status: "degraded"`. Esse comportamento é usado como readiness check no Railway.
+
+## Observabilidade
+
+A API emite logs estruturados em JSON para inicialização, conexão com MongoDB, erros e requisições HTTP.
+
+Cada requisição recebe um `x-request-id`; se o cliente não enviar esse header, a API gera um UUID. O mesmo identificador aparece nos logs e na resposta do health check.
+
+Exemplo:
+
+```json
+{
+  "timestamp": "2026-05-21T14:00:00.000Z",
+  "level": "info",
+  "service": "serv365-api",
+  "environment": "production",
+  "message": "HTTP request completed",
+  "requestId": "9f91f0d7-4a9a-4cb4-9e5c-ea5f3a57e6ac",
+  "http": {
+    "method": "GET",
+    "path": "/api/health",
+    "status": 200,
+    "durationMs": 4.21
+  }
 }
 ```
 

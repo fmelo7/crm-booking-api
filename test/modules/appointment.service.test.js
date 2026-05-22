@@ -96,18 +96,24 @@ test('appointment service rejects appointments in the past', async () => {
 });
 
 test('appointment service filters appointments by date, professional, customer and status', async () => {
-  const populate = createStub(async () => []);
-  const sort = createStub(() => ({ populate }));
+  const appointments = [{ _id: ids.appointmentId }];
+  const populate = createStub(async () => appointments);
+  const limit = createStub(() => ({ populate }));
+  const skip = createStub(() => ({ limit }));
+  const sort = createStub(() => ({ skip }));
   const appointmentModel = {
     find: createStub(() => ({ sort })),
+    countDocuments: createStub(async () => 1),
   };
   const service = loadService({ appointmentModel });
 
-  await service.getAllAppointments({
+  const result = await service.getAllAppointments({
     date: '2026-06-01',
     professionalId: ids.professionalId,
     customerId: ids.customerId,
     status: 'cancelled',
+    page: 2,
+    limit: 10,
   });
 
   assert.deepEqual(appointmentModel.find.calls[0], [{
@@ -120,7 +126,21 @@ test('appointment service filters appointments by date, professional, customer a
     },
   }]);
   assert.deepEqual(sort.calls, [[{ startAt: 1 }]]);
+  assert.deepEqual(skip.calls, [[10]]);
+  assert.deepEqual(limit.calls, [[10]]);
   assert.deepEqual(populate.calls, [['customer service professional']]);
+  assert.deepEqual(appointmentModel.countDocuments.calls[0], appointmentModel.find.calls[0]);
+  assert.deepEqual(result, {
+    data: appointments,
+    pagination: {
+      page: 2,
+      limit: 10,
+      total: 1,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: true,
+    },
+  });
 });
 
 test('appointment service reschedules with real duration and records history', async () => {

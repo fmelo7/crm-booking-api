@@ -7,8 +7,10 @@ module.exports = (schema, source = 'body') => {
       if (!result.success) {
         const issues = result.error.issues || result.error.errors;
 
-        return res.status(400).json({
-          error: 'Validation error',
+        return next({
+          status: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Erro de validação',
           details: issues.map(err => ({
             field: err.path.join('.'),
             message: err.message

@@ -4,6 +4,7 @@ const state = {
   professionals: [],
   appointments: [],
   appointmentFilters: {
+    range: 'day',
     date: '',
     professionalId: '',
     customerId: '',
@@ -30,6 +31,22 @@ const api = async (path, options = {}) => {
   return data;
 };
 
+const listData = (response) => Array.isArray(response) ? response : response.data || [];
+
+const setLoading = (isLoading, text = 'Carregando...') => {
+  const overlay = $('#loadingOverlay');
+  if (!overlay) return;
+  overlay.querySelector('span').textContent = text;
+  overlay.hidden = !isLoading;
+  document.body.classList.toggle('is-loading', isLoading);
+};
+
+const setFormLoading = (form, isLoading) => {
+  form.querySelectorAll('button, input, select, textarea').forEach((field) => {
+    field.disabled = isLoading;
+  });
+};
+
 const showMessage = (text, isError = false) => {
   const message = $('#message');
   message.textContent = text;
@@ -40,6 +57,35 @@ const showMessage = (text, isError = false) => {
     message.hidden = true;
   }, 4200);
 };
+
+const confirmAction = ({ title = 'Confirmar ação', text, acceptLabel = 'Confirmar', danger = true }) =>
+  new Promise((resolve) => {
+    const dialog = $('#confirmDialog');
+    const cancelButton = $('#confirmCancel');
+    const acceptButton = $('#confirmAccept');
+
+    $('#confirmTitle').textContent = title;
+    $('#confirmText').textContent = text;
+    acceptButton.textContent = acceptLabel;
+    acceptButton.classList.toggle('btn-danger', danger);
+    acceptButton.classList.toggle('btn-primary', !danger);
+
+    const cleanup = (result) => {
+      cancelButton.removeEventListener('click', onCancel);
+      acceptButton.removeEventListener('click', onAccept);
+      dialog.removeEventListener('cancel', onCancel);
+      dialog.close();
+      resolve(result);
+    };
+
+    const onCancel = () => cleanup(false);
+    const onAccept = () => cleanup(true);
+
+    cancelButton.addEventListener('click', onCancel);
+    acceptButton.addEventListener('click', onAccept);
+    dialog.addEventListener('cancel', onCancel);
+    dialog.showModal();
+  });
 
 const formatDate = (value) =>
   value ? new Intl.DateTimeFormat('pt-BR', {
@@ -69,6 +115,28 @@ const toDatetimeLocal = (value) => {
 
 const fromDatetimeLocal = (value) => new Date(value).toISOString();
 
+const toDateInput = (date) => {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+};
+
+const getWeekRange = (dateValue) => {
+  const date = new Date(`${dateValue}T00:00:00`);
+  const day = date.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const start = new Date(date);
+  start.setDate(date.getDate() + mondayOffset);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+
+  return {
+    from: start.toISOString(),
+    to: end.toISOString(),
+  };
+};
+
 const resolveName = (item, collection, fallback = '-') => {
   if (!item) return fallback;
   if (typeof item === 'object') return item.name || fallback;
@@ -97,9 +165,20 @@ const statusLabels = {
 
 const buildAppointmentQuery = () => {
   const params = new URLSearchParams();
-  Object.entries(state.appointmentFilters).forEach(([key, value]) => {
+  const { range, date, ...filters } = state.appointmentFilters;
+
+  if (date && range === 'week') {
+    const { from, to } = getWeekRange(date);
+    params.set('from', from);
+    params.set('to', to);
+  } else if (date) {
+    params.set('date', date);
+  }
+
+  Object.entries(filters).forEach(([key, value]) => {
     if (value) params.set(key, value);
   });
+
   const query = params.toString();
   return query ? `?${query}` : '';
 };
@@ -211,6 +290,7 @@ const render = () => {
   fillSelect('#appointmentForm [name="professionalId"]', state.professionals, 'Selecione um profissional');
   fillSelect('#appointmentCustomerFilter', state.customers, 'Todos os clientes');
   fillSelect('#appointmentProfessionalFilter', state.professionals, 'Todos os profissionais');
+  $('#appointmentRangeFilter').value = state.appointmentFilters.range;
   $('#appointmentDateFilter').value = state.appointmentFilters.date;
   $('#appointmentCustomerFilter').value = state.appointmentFilters.customerId;
   $('#appointmentProfessionalFilter').value = state.appointmentFilters.professionalId;
@@ -222,47 +302,68 @@ const render = () => {
 };
 
 const loadData = async () => {
-  const [health, customers, services, professionals, appointments] = await Promise.all([
-    api('/api/health'),
-    api('/api/customers'),
-    api('/api/services'),
-    api('/api/professionals'),
-    api(`/api/appointments${buildAppointmentQuery()}`),
-  ]);
+  setLoading(true);
+  try {
+    const [health, customers, services, professionals, appointments] = await Promise.all([
+      api('/api/health'),
+      api('/api/customers'),
+      api('/api/services'),
+      api('/api/professionals'),
+      api(`/api/appointments${buildAppointmentQuery()}`),
+    ]);
 
-  state.customers = customers;
-  state.services = services;
-  state.professionals = professionals;
-  state.appointments = appointments;
+    state.customers = listData(customers);
+    state.services = listData(services);
+    state.professionals = listData(professionals);
+    state.appointments = listData(appointments);
 
-  const indicator = $('#statusIndicator');
-  const statusText = $('#statusText');
-  if (health.dbConnected) {
-    indicator.style.background = '#107c10';
-    statusText.textContent = 'Conectado';
-  } else {
-    indicator.style.background = '#c50f1f';
-    statusText.textContent = 'Desconectado';
+    const indicator = $('#statusIndicator');
+    const statusText = $('#statusText');
+    if (health.dbConnected) {
+      indicator.style.background = '#107c10';
+      statusText.textContent = 'Conectado';
+    } else {
+      indicator.style.background = '#c50f1f';
+      statusText.textContent = 'Desconectado';
+    }
+    render();
+  } finally {
+    setLoading(false);
   }
-  render();
 };
 
 const saveEntity = async (resource, form, buildPayload) => {
+  setFormLoading(form, true);
   const id = form.elements.id.value;
   const payload = buildPayload(form);
-  await api(`/api/${resource}${id ? `/${id}` : ''}`, {
-    method: id ? 'PUT' : 'POST',
-    body: JSON.stringify(payload),
-  });
-  resetForm(form);
-  await loadData();
+  try {
+    await api(`/api/${resource}${id ? `/${id}` : ''}`, {
+      method: id ? 'PUT' : 'POST',
+      body: JSON.stringify(payload),
+    });
+    resetForm(form);
+    await loadData();
+  } finally {
+    setFormLoading(form, false);
+  }
 };
 
 const deleteEntity = async (resource, id, label) => {
-  if (!window.confirm(`Remover ${label}?`)) return;
-  await api(`/api/${resource}/${id}`, { method: 'DELETE' });
-  await loadData();
-  showMessage(`${label} removido.`);
+  const confirmed = await confirmAction({
+    title: `Remover ${label}`,
+    text: `Tem certeza que deseja remover este ${label}?`,
+    acceptLabel: 'Remover',
+  });
+  if (!confirmed) return;
+
+  setLoading(true, `Removendo ${label}...`);
+  try {
+    await api(`/api/${resource}/${id}`, { method: 'DELETE' });
+    await loadData();
+    showMessage(`${label} removido.`);
+  } finally {
+    setLoading(false);
+  }
 };
 
 const bindNavigation = () => {
@@ -327,6 +428,7 @@ const bindForms = () => {
   $('#appointmentForm').elements.startAt.addEventListener('change', loadAvailability);
 
   [
+    ['#appointmentRangeFilter', 'range'],
     ['#appointmentDateFilter', 'date'],
     ['#appointmentProfessionalFilter', 'professionalId'],
     ['#appointmentCustomerFilter', 'customerId'],
@@ -335,6 +437,7 @@ const bindForms = () => {
     $(selector).addEventListener('change', async (event) => {
       state.appointmentFilters[key] = event.target.value;
       try {
+        setLoading(true);
         await loadData();
       } catch (error) {
         showMessage(error.message, true);
@@ -344,8 +447,9 @@ const bindForms = () => {
 
   $('#appointmentForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    setFormLoading(form, true);
     try {
-      const form = event.currentTarget;
       const id = form.elements.id.value;
       const payload = {
         startAt: fromDatetimeLocal(form.elements.startAt.value),
@@ -375,6 +479,8 @@ const bindForms = () => {
       await loadData();
     } catch (error) {
       showMessage(error.message, true);
+    } finally {
+      setFormLoading(form, false);
     }
   });
 };
@@ -405,6 +511,7 @@ const bindActions = () => {
 
       // Refresh button
       if (target.id === 'refreshAppointments') {
+        setLoading(true);
         await loadData();
         showMessage('Agenda atualizada.');
         return;
@@ -510,13 +617,29 @@ const bindActions = () => {
       if (target.dataset.deleteProfessional) await deleteEntity('professionals', target.dataset.deleteProfessional, 'profissional');
 
       if (target.dataset.deleteAppointment) {
-        if (!window.confirm('Cancelar agendamento?')) return;
+        const confirmed = await confirmAction({
+          title: 'Cancelar agendamento',
+          text: 'Tem certeza que deseja cancelar este agendamento?',
+          acceptLabel: 'Cancelar agendamento',
+        });
+        if (!confirmed) return;
+
+        setLoading(true, 'Cancelando agendamento...');
         await api(`/api/appointments/${target.dataset.deleteAppointment}/cancel`, { method: 'DELETE' });
         await loadData();
         showMessage('Agendamento cancelado.');
       }
 
       if (target.dataset.completeAppointment) {
+        const confirmed = await confirmAction({
+          title: 'Concluir agendamento',
+          text: 'Marcar este agendamento como concluido?',
+          acceptLabel: 'Concluir',
+          danger: false,
+        });
+        if (!confirmed) return;
+
+        setLoading(true, 'Concluindo agendamento...');
         await api(`/api/appointments/${target.dataset.completeAppointment}/complete`, { method: 'PATCH' });
         await loadData();
         showMessage('Agendamento concluido.');
@@ -528,6 +651,7 @@ const bindActions = () => {
         return;
       }
     } catch (error) {
+      setLoading(false);
       showMessage(error.message, true);
     }
   });
@@ -550,6 +674,8 @@ const loadAvailability = async () => {
   const date = baseDate.toLocaleDateString('en-CA');
 
   try {
+    const container = $('#availabilityContainer');
+    container.innerHTML = '<p class="loading-text">Buscando horarios...</p>';
     const slots = await api(
       `/api/appointments/availability?professionalId=${professionalId}&serviceId=${serviceId}&date=${date}`
     );
@@ -588,10 +714,12 @@ const init = async () => {
   bindNavigation();
   bindForms();
   bindActions();
+  state.appointmentFilters.date = toDateInput(new Date());
 
   try {
     await loadData();
   } catch (error) {
+    setLoading(false);
     showMessage(error.message, true);
     $('#statusText').textContent = 'API indisponível';
     const indicator = $('#statusIndicator');

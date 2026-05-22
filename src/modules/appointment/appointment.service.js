@@ -3,6 +3,7 @@ const Appointment = require('./appointment.model');
 const Customer = require('../customer/customer.model');
 const Service = require('../service/service.model');
 const Professional = require('../professional/professional.model');
+const { paginate } = require('../common/pagination');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -116,9 +117,12 @@ exports.getAllAppointments = async (filters = {}) => {
     }
   }
 
-  return Appointment.find(query)
-    .sort({ startAt: 1 })
-    .populate('customer service professional');
+  return paginate(Appointment, query, {
+    page: filters.page,
+    limit: filters.limit,
+    sort: { startAt: 1 },
+    populate: 'customer service professional',
+  });
 };
 
 exports.getAppointmentById = async (id) => {

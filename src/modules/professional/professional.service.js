@@ -1,4 +1,5 @@
 const Professional = require('./professional.model');
+const { paginate } = require('../common/pagination');
 
 exports.createProfessional = async (data) => {
   const { name, category } = data;
@@ -10,7 +11,11 @@ exports.createProfessional = async (data) => {
   return Professional.create(data);
 };
 
-exports.getProfessionals = async () => Professional.find();
+exports.getProfessionals = async (filters = {}) => paginate(Professional, {}, {
+  page: filters.page,
+  limit: filters.limit,
+  sort: { name: 1 },
+});
 
 exports.getProfessionalById = async (id) => {
   const item = await Professional.findById(id);

@@ -36,6 +36,37 @@ test('customer service rejects creation without name', async () => {
   assert.equal(model.create.calls.length, 0);
 });
 
+test('customer service lists customers with search and pagination', async () => {
+  const customers = [{ _id: 'customer-id', name: 'Maria Silva' }];
+  const limit = createStub(async () => customers);
+  const skip = createStub(() => ({ limit }));
+  const sort = createStub(() => ({ skip }));
+  const model = {
+    find: createStub(() => ({ sort })),
+    countDocuments: createStub(async () => 1),
+  };
+  const service = loadService(model);
+
+  const result = await service.getCustomers({ search: 'maria', page: 2, limit: 5 });
+
+  assert.deepEqual(model.find.calls[0][0].$or.map((item) => Object.keys(item)[0]), ['name', 'email', 'phone']);
+  assert.deepEqual(sort.calls, [[{ name: 1 }]]);
+  assert.deepEqual(skip.calls, [[5]]);
+  assert.deepEqual(limit.calls, [[5]]);
+  assert.deepEqual(model.countDocuments.calls[0], model.find.calls[0]);
+  assert.deepEqual(result, {
+    data: customers,
+    pagination: {
+      page: 2,
+      limit: 5,
+      total: 1,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: true,
+    },
+  });
+});
+
 test('customer service returns 404 when customer is not found', async () => {
   const model = {
     findById: createStub(async () => null),

@@ -67,6 +67,8 @@ module.exports = {
           { name: 'professionalId', in: 'query', schema: { type: 'string' } },
           { name: 'customerId', in: 'query', schema: { type: 'string' } },
           { name: 'status', in: 'query', schema: { type: 'string', enum: ['scheduled', 'cancelled', 'completed'] } },
+          { name: 'page', in: 'query', schema: { type: 'number', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'number', default: 20, maximum: 100 } },
         ],
         responses: {
           '200': {
@@ -74,8 +76,14 @@ module.exports = {
             content: {
               'application/json': {
                 schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Appointment' },
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Appointment' },
+                    },
+                    pagination: { $ref: '#/components/schemas/Pagination' },
+                  },
                 },
               },
             },

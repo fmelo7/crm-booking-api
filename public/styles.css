@@ -194,6 +194,8 @@ body {
   border: 1px solid #107c10;
   color: #107c10;
   font-size: 13px;
+  position: relative;
+  z-index: 20;
 }
 
 .message.is-error {
@@ -297,7 +299,7 @@ body {
 
 .filters-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 110px repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
@@ -526,6 +528,16 @@ form textarea {
   opacity: 0.8;
 }
 
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-danger:disabled,
+form input:disabled,
+form select:disabled,
+form textarea:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .btn-secondary {
   background: #f3f2f1;
   color: var(--text);
@@ -552,6 +564,87 @@ form textarea {
   text-align: center;
   color: var(--text-secondary);
   font-size: 13px;
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  align-content: center;
+  background: rgba(243, 242, 241, 0.68);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.loading-overlay[hidden] {
+  display: none;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(0, 120, 212, 0.16);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.confirm-dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  color: var(--text);
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.confirm-dialog form {
+  padding: 18px;
+}
+
+.confirm-header {
+  margin-bottom: 10px;
+}
+
+.confirm-header h3,
+.confirm-dialog p {
+  margin: 0;
+}
+
+.confirm-header h3 {
+  font-size: 16px;
+}
+
+.confirm-dialog p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
 }
 
 /* Responsive */

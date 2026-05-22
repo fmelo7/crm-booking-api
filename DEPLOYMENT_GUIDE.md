@@ -48,6 +48,12 @@ git push -u origin main
 ### 3.1 Configurar PORT variável
 Seu projeto já está pronto! O Railway usará a variável `PORT` do `.env`
 
+O projeto também inclui `railway.json` com:
+- comando de start: `npm start`
+- health check em `/api/health`
+- timeout de health check de 300 segundos
+- restart automático em falha
+
 ### 3.2 Variáveis de Ambiente no Railway
 O Railway precisará de:
 - `MONGODB_URI` - String de conexão com MongoDB
@@ -107,6 +113,21 @@ No painel do Railway:
    ```
 
 3. Verifique os logs no painel do Railway para ver se está funcionando
+
+O health check só retorna `200` quando o MongoDB está conectado. Se a aplicação subir sem conexão com banco, `/api/health` retorna `503`, o Railway considera o deploy não saudável e tenta reiniciar conforme `railway.json`.
+
+---
+
+## 🧪 GitHub Actions antes do Deploy
+
+O projeto inclui o workflow `.github/workflows/ci.yml`, que roda em `push` para `main` e em Pull Requests:
+
+```bash
+npm ci
+npm test
+```
+
+No Railway, mantenha o deploy conectado ao branch `main`. Assim o fluxo recomendado é abrir PR, esperar o GitHub Actions passar, fazer merge e deixar o Railway fazer o deploy automático.
 
 ---
 

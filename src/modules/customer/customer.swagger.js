@@ -29,14 +29,25 @@ module.exports = {
       get: {
         tags: ['Customers'],
         summary: 'Listar clientes',
+        parameters: [
+          { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Busca por nome, email ou telefone' },
+          { name: 'page', in: 'query', schema: { type: 'number', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'number', default: 20, maximum: 100 } },
+        ],
         responses: {
           '200': {
             description: 'Lista de clientes',
             content: {
               'application/json': {
                 schema: {
-                  type: 'array',
-                  items: { $ref: '#/components/schemas/Customer' },
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Customer' },
+                    },
+                    pagination: { $ref: '#/components/schemas/Pagination' },
+                  },
                 },
               },
             },

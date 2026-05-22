@@ -65,7 +65,35 @@ const swaggerSpec = {
       Error: {
         type: 'object',
         properties: {
-          message: { type: 'string' },
+          error: {
+            type: 'object',
+            properties: {
+              status: { type: 'number', example: 400 },
+              code: { type: 'string', example: 'VALIDATION_ERROR' },
+              message: { type: 'string', example: 'Erro de validação' },
+              details: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    field: { type: 'string', example: 'email' },
+                    message: { type: 'string', example: 'Invalid email' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      Pagination: {
+        type: 'object',
+        properties: {
+          page: { type: 'number', example: 1 },
+          limit: { type: 'number', example: 20 },
+          total: { type: 'number', example: 42 },
+          totalPages: { type: 'number', example: 3 },
+          hasNextPage: { type: 'boolean', example: true },
+          hasPreviousPage: { type: 'boolean', example: false },
         },
       },
       Health: {
