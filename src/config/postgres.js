@@ -4,8 +4,11 @@ const DEFAULT_POSTGRES_URI = 'postgres://postgres:postgres@127.0.0.1:5432/crm_bo
 
 let pool;
 
+const normalizeUri = (value) =>
+  value?.trim().replace(/^["']|["']$/g, '');
+
 const getPostgresUri = () =>
-  process.env.POSTGRES_URI || process.env.DATABASE_URL || DEFAULT_POSTGRES_URI;
+  normalizeUri(process.env.POSTGRES_URI || process.env.DATABASE_URL) || DEFAULT_POSTGRES_URI;
 
 const getPg = () => {
   try {
