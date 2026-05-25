@@ -5,6 +5,7 @@ require('dotenv').config();
 const { getDatabaseProvider } = require('./modules/common/databaseProvider');
 const app = require('./app');
 const { connectDatabase, maskDatabaseUri } = require('./config/database');
+const { getMaskedEnv, isEnvDebugEnabled } = require('./config/envDebug');
 const { log } = require('./middlewares/logger');
 
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,12 @@ log('info', 'Database provider resolved', {
   hasPostgresUri: Boolean(process.env.POSTGRES_URI),
   hasMongoUri: Boolean(process.env.MONGODB_URI),
 });
+
+if (isEnvDebugEnabled()) {
+  log('info', 'Environment variables loaded', {
+    env: getMaskedEnv(),
+  });
+}
 
 const connectDatabaseWithRetry = async () => {
   let lastError;
