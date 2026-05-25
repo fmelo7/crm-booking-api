@@ -656,6 +656,7 @@ form textarea:disabled {
   color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.45;
+  white-space: pre-line;
 }
 
 .confirm-actions {
@@ -741,11 +742,21 @@ form textarea:disabled {
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
+.availability-container {
+  min-height: 40px;
+}
+
+.availability-container p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .availability-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
 }
 
 .slot-btn {
@@ -759,5 +770,11 @@ form textarea:disabled {
 
 .slot-btn:hover {
   background: var(--primary);
+  color: #fff;
+}
+
+.slot-btn.is-selected {
+  background: var(--primary);
+  border-color: var(--primary);
   color: #fff;
 }

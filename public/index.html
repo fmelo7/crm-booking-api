@@ -87,7 +87,6 @@
                   <h3 id="appointmentFormTitle">Novo agendamento</h3>
                 </div>
                 <div class="form-body">
-                  <div id="availabilityContainer"></div>
                   <label>
                     <span>Cliente</span>
                     <select name="customerId" required></select>
@@ -101,9 +100,11 @@
                     <select name="professionalId" required></select>
                   </label>
                   <label>
-                    <span>Início</span>
-                    <input name="startAt" type="datetime-local" required>
+                    <span>Data</span>
+                    <input name="appointmentDate" type="date" required>
                   </label>
+                  <input name="startAt" type="hidden">
+                  <div id="availabilityContainer" class="availability-container"></div>
                   <label>
                     <span>Observações</span>
                     <textarea name="notes" rows="3"></textarea>

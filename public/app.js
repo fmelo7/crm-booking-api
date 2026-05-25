@@ -125,6 +125,9 @@ const toDateInput = (date) => {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
 };
 
+const getSelectedEntity = (collection, id) =>
+  state[collection].find((item) => item._id === id);
+
 const getWeekRange = (dateValue) => {
   const date = new Date(`${dateValue}T00:00:00`);
   const day = date.getDay();
@@ -166,6 +169,11 @@ const statusLabels = {
   scheduled: 'Agendado',
   cancelled: 'Cancelado',
   completed: 'Concluido',
+};
+
+const appointmentActionLabels = {
+  create: 'criar',
+  reschedule: 'reagendar',
 };
 
 const buildAppointmentQuery = () => {
@@ -369,6 +377,38 @@ const saveEntity = async (resource, form, buildPayload) => {
   }
 };
 
+const confirmAppointment = (form) => {
+  const id = form.elements.id.value;
+  const customer = getSelectedEntity('customers', form.elements.customerId.value);
+  const service = getSelectedEntity('services', form.elements.serviceId.value);
+  const professional = getSelectedEntity('professionals', form.elements.professionalId.value);
+  const startAt = new Date(form.elements.startAt.value);
+  const action = id ? 'reschedule' : 'create';
+  const notes = form.elements.notes.value.trim();
+
+  const details = [
+    `Cliente: ${customer?.name || '-'}`,
+    `Serviço: ${service?.name || '-'}`,
+    `Profissional: ${professional?.name || '-'}`,
+    `Data e horário: ${formatDate(startAt.toISOString())}`,
+    `Duração: ${service?.durationMinutes || 60} min`,
+  ];
+
+  if (notes) details.push(`Observações: ${notes}`);
+
+  return confirmAction({
+    title: id ? 'Confirmar reagendamento' : 'Confirmar agendamento',
+    text: details.join('\n'),
+    acceptLabel: id ? 'Reagendar' : 'Criar agendamento',
+    danger: false,
+  }).then((confirmed) => {
+    if (!confirmed) {
+      showMessage(`Revise as seleções antes de ${appointmentActionLabels[action]} o agendamento.`);
+    }
+    return confirmed;
+  });
+};
+
 const deleteEntity = async (resource, id, label) => {
   const confirmed = await confirmAction({
     title: `Remover ${label}`,
@@ -460,8 +500,12 @@ const bindForms = () => {
     }
   });
 
-  ['professionalId', 'serviceId'].forEach(name => { $('#appointmentForm').elements[name].addEventListener('change', loadAvailability); });
-  $('#appointmentForm').elements.startAt.addEventListener('change', loadAvailability);
+  ['professionalId', 'serviceId', 'appointmentDate'].forEach((name) => {
+    $('#appointmentForm').elements[name].addEventListener('change', () => {
+      $('#appointmentForm').elements.startAt.value = '';
+      loadAvailability();
+    });
+  });
 
   [
     ['#appointmentRangeFilter', 'range'],
@@ -484,9 +528,20 @@ const bindForms = () => {
   $('#appointmentForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
-    setFormLoading(form, true);
+    let isSubmitting = false;
+
     try {
       const id = form.elements.id.value;
+      if (!form.elements.startAt.value) {
+        showMessage('Selecione um horário disponível.', true);
+        return;
+      }
+
+      const confirmed = await confirmAppointment(form);
+      if (!confirmed) return;
+
+      isSubmitting = true;
+      setFormLoading(form, true);
       const payload = {
         startAt: fromDatetimeLocal(form.elements.startAt.value),
         notes: form.elements.notes.value,
@@ -516,7 +571,14 @@ const bindForms = () => {
     } catch (error) {
       showMessage(error.message, true);
     } finally {
-      setFormLoading(form, false);
+      if (isSubmitting) {
+        setFormLoading(form, false);
+        if (form.elements.id.value) {
+          form.elements.customerId.disabled = true;
+          form.elements.serviceId.disabled = true;
+          form.elements.professionalId.disabled = true;
+        }
+      }
     }
   });
 };
@@ -527,6 +589,9 @@ const resetAppointmentForm = () => {
   form.elements.customerId.disabled = false;
   form.elements.serviceId.disabled = false;
   form.elements.professionalId.disabled = false;
+  form.elements.appointmentDate.value = toDateInput(new Date());
+  form.elements.startAt.value = '';
+  $('#availabilityContainer').innerHTML = '<p>Selecione serviço, profissional e data para ver os horários disponíveis.</p>';
   $('#appointmentFormTitle').textContent = 'Novo agendamento';
 };
 
@@ -615,11 +680,13 @@ const bindActions = () => {
         form.elements.customerId.disabled = true;
         form.elements.serviceId.disabled = true;
         form.elements.professionalId.disabled = true;
+        form.elements.appointmentDate.value = toDateInput(new Date(appointment.startAt));
         form.elements.startAt.value = toDatetimeLocal(appointment.startAt);
         form.elements.notes.value = appointment.notes || '';
         $('#appointmentFormTitle').textContent = 'Reagendar agendamento';
         $$('#appointmentsList .item').forEach((item) => item.classList.remove('is-selected'));
         target.closest('.item').classList.add('is-selected');
+        await loadAvailability();
         return;
       }
 
@@ -695,6 +762,8 @@ const bindActions = () => {
       if (target.dataset.slot) {
         const form = $('#appointmentForm');
         form.elements.startAt.value = toDatetimeLocal(target.dataset.slot);
+        $$('.slot-btn').forEach((button) => button.classList.remove('is-selected'));
+        target.classList.add('is-selected');
         return;
       }
     } catch (error) {
@@ -706,40 +775,39 @@ const bindActions = () => {
 
 const loadAvailability = async () => {
   const form = $('#appointmentForm');
+  const container = $('#availabilityContainer');
 
   const professionalId = form.elements.professionalId.value;
   const serviceId = form.elements.serviceId.value;
-  const startAt = form.elements.startAt.value;
+  const date = form.elements.appointmentDate.value;
 
-  if (!professionalId || !serviceId) return;
+  if (!professionalId || !serviceId || !date) {
+    container.innerHTML = '<p>Selecione serviço, profissional e data para ver os horários disponíveis.</p>';
+    return;
+  }
 
-  const service = state.services.find(s => s._id === serviceId);
+  const service = getSelectedEntity('services', serviceId);
 
   if (!service) return;
 
-  const baseDate = startAt ? new Date(startAt) : new Date();
-  const date = baseDate.toLocaleDateString('en-CA');
-
   try {
-    const container = $('#availabilityContainer');
-    container.innerHTML = '<p class="loading-text">Buscando horarios...</p>';
+    container.innerHTML = '<p class="loading-text">Buscando horários...</p>';
     const slots = await api(
-      `/api/appointments/availability?professionalId=${professionalId}&serviceId=${serviceId}&date=${date}`
+      `/api/appointments/availability?professionalId=${encodeURIComponent(professionalId)}&serviceId=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`
     );
 
     renderAvailability(slots);
-
-    showMessage(`${slots.length} horários disponíveis`);
   } catch (err) {
-    console.error(err);
+    showMessage(err.message, true);
   }
 };
 
 const renderAvailability = (slots) => {
   const container = $('#availabilityContainer');
+  const selectedStartAt = $('#appointmentForm').elements.startAt.value;
 
   if (!slots.length) {
-    container.innerHTML = '<p>Nenhum horário disponível</p>';
+    container.innerHTML = '<p>Nenhum horário disponível para esta data.</p>';
     return;
   }
 
@@ -747,11 +815,13 @@ const renderAvailability = (slots) => {
     <div class="availability-list">
       ${slots.map(slot => {
         const date = new Date(slot);
+        const value = toDatetimeLocal(slot);
         const label = date.toLocaleTimeString('pt-BR', {
           hour: '2-digit',
           minute: '2-digit'
         });
-        return `<button class="slot-btn" data-slot="${slot}">${label}</button>`;
+        const selectedClass = value === selectedStartAt ? ' is-selected' : '';
+        return `<button type="button" class="slot-btn${selectedClass}" data-slot="${slot}">${label}</button>`;
       }).join('')}
     </div>
   `;
@@ -762,6 +832,8 @@ const init = async () => {
   bindForms();
   bindActions();
   state.appointmentFilters.date = toDateInput(new Date());
+  $('#appointmentForm').elements.appointmentDate.value = state.appointmentFilters.date;
+  $('#availabilityContainer').innerHTML = '<p>Selecione serviço, profissional e data para ver os horários disponíveis.</p>';
 
   try {
     await loadData();
