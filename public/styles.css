@@ -316,6 +316,24 @@ body {
   background: #fff;
 }
 
+.entity-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.entity-filter input {
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  background: #fff;
+}
+
 .list-content {
   flex: 1;
   overflow-y: auto;
@@ -690,6 +708,10 @@ form textarea:disabled {
   }
 
   .filters-row {
+    grid-template-columns: 1fr;
+  }
+
+  .entity-filter {
     grid-template-columns: 1fr;
   }
 }

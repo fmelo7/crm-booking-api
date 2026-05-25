@@ -10,6 +10,11 @@ const state = {
     customerId: '',
     status: '',
   },
+  entityFilters: {
+    customers: '',
+    services: '',
+    professionals: '',
+  },
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -25,7 +30,7 @@ const api = async (path, options = {}) => {
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.message || 'Erro na requisição');
+    throw new Error(data.error?.message || data.message || 'Erro na requisição');
   }
 
   return data;
@@ -183,6 +188,18 @@ const buildAppointmentQuery = () => {
   return query ? `?${query}` : '';
 };
 
+const buildEntityQuery = (resource) => {
+  const params = new URLSearchParams();
+  const search = state.entityFilters[resource];
+
+  if (search) {
+    params.set('search', search);
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : '';
+};
+
 const resetForm = (form) => {
   form.reset();
   form.elements.id.value = '';
@@ -295,6 +312,10 @@ const render = () => {
   $('#appointmentCustomerFilter').value = state.appointmentFilters.customerId;
   $('#appointmentProfessionalFilter').value = state.appointmentFilters.professionalId;
   $('#appointmentStatusFilter').value = state.appointmentFilters.status;
+  Object.entries(state.entityFilters).forEach(([resource, value]) => {
+    const input = $(`[data-filter-resource="${resource}"] [name="search"]`);
+    if (input) input.value = value;
+  });
   renderCustomers();
   renderServices();
   renderProfessionals();
@@ -306,9 +327,9 @@ const loadData = async () => {
   try {
     const [health, customers, services, professionals, appointments] = await Promise.all([
       api('/api/health'),
-      api('/api/customers'),
-      api('/api/services'),
-      api('/api/professionals'),
+      api(`/api/customers${buildEntityQuery('customers')}`),
+      api(`/api/services${buildEntityQuery('services')}`),
+      api(`/api/professionals${buildEntityQuery('professionals')}`),
       api(`/api/appointments${buildAppointmentQuery()}`),
     ]);
 
@@ -378,6 +399,21 @@ const bindNavigation = () => {
 };
 
 const bindForms = () => {
+  $$('[data-filter-resource]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const resource = form.dataset.filterResource;
+      state.entityFilters[resource] = form.elements.search.value.trim();
+
+      try {
+        await loadData();
+        showMessage('Lista filtrada.');
+      } catch (error) {
+        showMessage(error.message, true);
+      }
+    });
+  });
+
   $('#customerForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
@@ -503,9 +539,20 @@ const bindActions = () => {
     try {
       // Cancel buttons
       if (target.textContent.includes('Cancelar')) {
+        const form = target.closest('#customerForm, #serviceForm, #professionalForm, #appointmentForm');
+        if (form) {
+          if (form.id === 'appointmentForm') resetAppointmentForm();
+          else resetForm(form);
+          return;
+        }
+      }
+
+      if (target.dataset.clearFilter) {
+        state.entityFilters[target.dataset.clearFilter] = '';
         const form = target.closest('form');
-        if (form.id === 'appointmentForm') resetAppointmentForm();
-        else resetForm(form);
+        form.elements.search.value = '';
+        await loadData();
+        showMessage('Filtro limpo.');
         return;
       }
 

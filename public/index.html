@@ -131,6 +131,11 @@
             <div class="list-panel">
               <div class="list-header">
                 <h3>Clientes</h3>
+                <form class="entity-filter" data-filter-resource="customers">
+                  <input name="search" type="search" placeholder="Filtrar clientes" aria-label="Filtrar clientes">
+                  <button type="submit" class="btn-secondary">Filtrar</button>
+                  <button type="button" class="btn-secondary" data-clear-filter="customers">Limpar</button>
+                </form>
               </div>
               <div class="list-content">
                 <div id="customersList" class="items-list"></div>
@@ -183,6 +188,11 @@
             <div class="list-panel">
               <div class="list-header">
                 <h3>Serviços</h3>
+                <form class="entity-filter" data-filter-resource="services">
+                  <input name="search" type="search" placeholder="Filtrar serviços" aria-label="Filtrar serviços">
+                  <button type="submit" class="btn-secondary">Filtrar</button>
+                  <button type="button" class="btn-secondary" data-clear-filter="services">Limpar</button>
+                </form>
               </div>
               <div class="list-content">
                 <div id="servicesList" class="items-list"></div>
@@ -235,6 +245,11 @@
             <div class="list-panel">
               <div class="list-header">
                 <h3>Profissionais</h3>
+                <form class="entity-filter" data-filter-resource="professionals">
+                  <input name="search" type="search" placeholder="Filtrar profissionais" aria-label="Filtrar profissionais">
+                  <button type="submit" class="btn-secondary">Filtrar</button>
+                  <button type="button" class="btn-secondary" data-clear-filter="professionals">Limpar</button>
+                </form>
               </div>
               <div class="list-content">
                 <div id="professionalsList" class="items-list"></div>

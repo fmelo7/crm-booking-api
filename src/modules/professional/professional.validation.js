@@ -9,6 +9,7 @@ const createProfessionalSchema = z.object({
 });
 
 const listProfessionalSchema = z.object({
+  search: z.string().trim().optional(),
   page: z.coerce.number().int().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).optional()
 });

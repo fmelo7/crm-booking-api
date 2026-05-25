@@ -1,6 +1,8 @@
 const Service = require('./service.model');
 const { paginate } = require('../common/pagination');
 
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 exports.createService = async (data) => {
   const { name } = data;
 
@@ -11,11 +13,23 @@ exports.createService = async (data) => {
   return Service.create(data);
 };
 
-exports.getServices = async (filters = {}) => paginate(Service, {}, {
-  page: filters.page,
-  limit: filters.limit,
-  sort: { name: 1 },
-});
+exports.getServices = async (filters = {}) => {
+  const query = {};
+
+  if (filters.search) {
+    const search = new RegExp(escapeRegExp(filters.search), 'i');
+    query.$or = [
+      { name: search },
+      { description: search },
+    ];
+  }
+
+  return paginate(Service, query, {
+    page: filters.page,
+    limit: filters.limit,
+    sort: { name: 1 },
+  });
+};
 
 exports.getServiceById = async (id) => {
   const item = await Service.findById(id);

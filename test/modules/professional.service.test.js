@@ -36,6 +36,26 @@ test('professional service rejects creation without name or category', async () 
   assert.equal(model.create.calls.length, 0);
 });
 
+test('professional service lists professionals with search and pagination', async () => {
+  const professionals = [{ _id: 'professional-id', name: 'Ana Souza' }];
+  const limit = createStub(async () => professionals);
+  const skip = createStub(() => ({ limit }));
+  const sort = createStub(() => ({ skip }));
+  const model = {
+    find: createStub(() => ({ sort })),
+    countDocuments: createStub(async () => 1),
+  };
+  const service = loadService(model);
+
+  const result = await service.getProfessionals({ search: 'ana', page: 1, limit: 10 });
+
+  assert.deepEqual(model.find.calls[0][0].$or.map((item) => Object.keys(item)[0]), ['name', 'category', 'email', 'phone']);
+  assert.deepEqual(sort.calls, [[{ name: 1 }]]);
+  assert.deepEqual(skip.calls, [[0]]);
+  assert.deepEqual(limit.calls, [[10]]);
+  assert.equal(result.pagination.total, 1);
+});
+
 test('professional service returns 404 when professional is not found', async () => {
   const model = {
     findById: createStub(async () => null),

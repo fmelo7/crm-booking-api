@@ -1,6 +1,8 @@
 const Professional = require('./professional.model');
 const { paginate } = require('../common/pagination');
 
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 exports.createProfessional = async (data) => {
   const { name, category } = data;
 
@@ -11,11 +13,25 @@ exports.createProfessional = async (data) => {
   return Professional.create(data);
 };
 
-exports.getProfessionals = async (filters = {}) => paginate(Professional, {}, {
-  page: filters.page,
-  limit: filters.limit,
-  sort: { name: 1 },
-});
+exports.getProfessionals = async (filters = {}) => {
+  const query = {};
+
+  if (filters.search) {
+    const search = new RegExp(escapeRegExp(filters.search), 'i');
+    query.$or = [
+      { name: search },
+      { category: search },
+      { email: search },
+      { phone: search },
+    ];
+  }
+
+  return paginate(Professional, query, {
+    page: filters.page,
+    limit: filters.limit,
+    sort: { name: 1 },
+  });
+};
 
 exports.getProfessionalById = async (id) => {
   const item = await Professional.findById(id);

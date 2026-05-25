@@ -36,6 +36,26 @@ test('service module rejects creation without name', async () => {
   assert.equal(model.create.calls.length, 0);
 });
 
+test('service module lists services with search and pagination', async () => {
+  const services = [{ _id: 'service-id', name: 'Corte de cabelo' }];
+  const limit = createStub(async () => services);
+  const skip = createStub(() => ({ limit }));
+  const sort = createStub(() => ({ skip }));
+  const model = {
+    find: createStub(() => ({ sort })),
+    countDocuments: createStub(async () => 1),
+  };
+  const service = loadService(model);
+
+  const result = await service.getServices({ search: 'corte', page: 1, limit: 10 });
+
+  assert.deepEqual(model.find.calls[0][0].$or.map((item) => Object.keys(item)[0]), ['name', 'description']);
+  assert.deepEqual(sort.calls, [[{ name: 1 }]]);
+  assert.deepEqual(skip.calls, [[0]]);
+  assert.deepEqual(limit.calls, [[10]]);
+  assert.equal(result.pagination.total, 1);
+});
+
 test('service module returns 404 when service is not found', async () => {
   const model = {
     findById: createStub(async () => null),
