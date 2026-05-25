@@ -7,8 +7,17 @@ let pool;
 const normalizeUri = (value) =>
   value?.trim().replace(/^["']|["']$/g, '');
 
-const getPostgresUri = () =>
-  normalizeUri(process.env.POSTGRES_URI || process.env.DATABASE_URL) || DEFAULT_POSTGRES_URI;
+const getPostgresUri = () => {
+  log('info', 'Resolving PostgreSQL connection URI', {
+    envPostgresUri: Boolean(process.env.POSTGRES_URI),
+    envDatabaseUrl: Boolean(process.env.DATABASE_URL),
+  });
+  log('debug', 'Environment variables for PostgreSQL URI', {
+    POSTGRES_URI: process.env.POSTGRES_URI,
+    DATABASE_URL: process.env.DATABASE_URL,
+  });
+  return normalizeUri(process.env.POSTGRES_URI || process.env.DATABASE_URL) || DEFAULT_POSTGRES_URI;
+}
 
 const getPg = () => {
   try {

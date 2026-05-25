@@ -13,6 +13,8 @@ const connectDatabase = async () => {
   const provider = getDatabaseProvider();
 
   if (provider === 'postgres') {
+    log('info', 'Using PostgreSQL database', { databaseProvider: provider });
+    log('info', 'PostgreSQL connection URI', { uri: maskDatabaseUri(getPostgresUri()) });
     return connectPostgres(getPostgresUri());
   }
 
