@@ -55,3 +55,13 @@ O frontend atual é ótimo como MVP, mas dá para evoluir:
 - Criar GitHub Actions rodando `npm test` antes de deploy.
 
 Minha sugestão de próximo passo concreto: **melhorar o appointment usando a duração real do serviço e filtros de agenda por data/profissional**. Isso entrega valor real para o produto e deixa a API bem mais útil.
+
+**8. Melhorias para usar MongoDB ou Postgres**
+
+Para este projeto, eu faria em etapas:
+
+- Criar repositories para Mongo, mantendo o comportamento atual.
+- Trocar os services para usar repositories, não models Mongoose direto.
+- Criar contrato mínimo por entidade: create, findById, findMany, updateById, deleteById, exists.
+- Só depois adicionar Postgres.
+- Padronizar IDs, datas e paginação, porque Mongo usa _id e Postgres normalmente usa id.

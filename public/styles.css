@@ -437,6 +437,10 @@ body {
   padding: 16px;
   border-bottom: 1px solid var(--border);
   background: #faf9f8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .form-header h3 {
@@ -444,6 +448,13 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
+}
+
+.form-header-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
 }
 
 .form-body {
@@ -552,8 +563,15 @@ form textarea {
 form input:disabled,
 form select:disabled,
 form textarea:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.6;
+}
+
+form.is-submitting button:disabled,
+form.is-submitting input:disabled,
+form.is-submitting select:disabled,
+form.is-submitting textarea:disabled {
+  cursor: wait;
 }
 
 .btn-secondary {

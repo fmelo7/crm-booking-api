@@ -4,10 +4,10 @@ const loadWithMocks = require('../helpers/load-with-mocks');
 const createStub = require('../helpers/stub');
 
 const servicePath = '../../src/modules/appointment/appointment.service';
-const appointmentModelPath = '../../src/modules/appointment/appointment.model';
-const customerModelPath = '../../src/modules/customer/customer.model';
-const serviceModelPath = '../../src/modules/service/service.model';
-const professionalModelPath = '../../src/modules/professional/professional.model';
+const appointmentRepositoryPath = '../../src/modules/appointment/appointment.repository';
+const customerRepositoryPath = '../../src/modules/customer/customer.repository';
+const serviceRepositoryPath = '../../src/modules/service/service.repository';
+const professionalRepositoryPath = '../../src/modules/professional/professional.repository';
 
 const ids = {
   customerId: '665f1d6f7c2a8e0012345671',
@@ -17,15 +17,15 @@ const ids = {
 };
 
 const loadService = ({
-  appointmentModel = {},
-  customerModel = {},
-  serviceModel = {},
-  professionalModel = {},
+  appointmentRepository = {},
+  customerRepository = {},
+  serviceRepository = {},
+  professionalRepository = {},
 }) => loadWithMocks(servicePath, {
-  [appointmentModelPath]: appointmentModel,
-  [customerModelPath]: customerModel,
-  [serviceModelPath]: serviceModel,
-  [professionalModelPath]: professionalModel,
+  [appointmentRepositoryPath]: appointmentRepository,
+  [customerRepositoryPath]: customerRepository,
+  [serviceRepositoryPath]: serviceRepository,
+  [professionalRepositoryPath]: professionalRepository,
 });
 
 const createAppointmentDoc = (overrides = {}) => {
@@ -48,15 +48,15 @@ const createAppointmentDoc = (overrides = {}) => {
 };
 
 test('appointment service creates an appointment using the real service duration', async () => {
-  const appointmentModel = {
-    findOne: createStub(async () => null),
+  const appointmentRepository = {
+    findConflict: createStub(async () => null),
     create: createStub(async (data) => ({ _id: 'appointment-id', ...data })),
   };
   const service = loadService({
-    appointmentModel,
-    customerModel: { findById: createStub(async () => ({ _id: ids.customerId })) },
-    serviceModel: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 90 })) },
-    professionalModel: { findById: createStub(async () => ({ _id: ids.professionalId })) },
+    appointmentRepository,
+    customerRepository: { findById: createStub(async () => ({ _id: ids.customerId })) },
+    serviceRepository: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 90 })) },
+    professionalRepository: { findById: createStub(async () => ({ _id: ids.professionalId })) },
   });
 
   const result = await service.createAppointment({
@@ -67,22 +67,21 @@ test('appointment service creates an appointment using the real service duration
 
   assert.equal(result._id, 'appointment-id');
   assert.equal(result.endAt.toISOString(), '2026-06-01T15:30:00.000Z');
-  assert.deepEqual(appointmentModel.findOne.calls[0], [{
-    professional: ids.professionalId,
-    status: 'scheduled',
-    startAt: { $lt: new Date('2026-06-01T15:30:00.000Z') },
-    endAt: { $gt: new Date('2026-06-01T14:00:00.000Z') },
+  assert.deepEqual(appointmentRepository.findConflict.calls[0], [{
+    professionalId: ids.professionalId,
+    startDate: new Date('2026-06-01T14:00:00.000Z'),
+    endDate: new Date('2026-06-01T15:30:00.000Z'),
   }]);
-  assert.equal(appointmentModel.create.calls[0][0].status, 'scheduled');
+  assert.equal(appointmentRepository.create.calls[0][0].status, 'scheduled');
 });
 
 test('appointment service rejects appointments in the past', async () => {
-  const appointmentModel = { findOne: createStub() };
+  const appointmentRepository = { findConflict: createStub() };
   const service = loadService({
-    appointmentModel,
-    customerModel: { findById: createStub(async () => ({ _id: ids.customerId })) },
-    serviceModel: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 60 })) },
-    professionalModel: { findById: createStub(async () => ({ _id: ids.professionalId })) },
+    appointmentRepository,
+    customerRepository: { findById: createStub(async () => ({ _id: ids.customerId })) },
+    serviceRepository: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 60 })) },
+    professionalRepository: { findById: createStub(async () => ({ _id: ids.professionalId })) },
   });
 
   await assert.rejects(
@@ -92,20 +91,25 @@ test('appointment service rejects appointments in the past', async () => {
     }),
     { status: 400, message: 'Não é possível agendar no passado' }
   );
-  assert.equal(appointmentModel.findOne.calls.length, 0);
+  assert.equal(appointmentRepository.findConflict.calls.length, 0);
 });
 
 test('appointment service filters appointments by date, professional, customer and status', async () => {
   const appointments = [{ _id: ids.appointmentId }];
-  const populate = createStub(async () => appointments);
-  const limit = createStub(() => ({ populate }));
-  const skip = createStub(() => ({ limit }));
-  const sort = createStub(() => ({ skip }));
-  const appointmentModel = {
-    find: createStub(() => ({ sort })),
-    countDocuments: createStub(async () => 1),
+  const appointmentRepository = {
+    paginate: createStub(async () => ({
+      data: appointments,
+      pagination: {
+        page: 2,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: true,
+      },
+    })),
   };
-  const service = loadService({ appointmentModel });
+  const service = loadService({ appointmentRepository });
 
   const result = await service.getAllAppointments({
     date: '2026-06-01',
@@ -116,7 +120,7 @@ test('appointment service filters appointments by date, professional, customer a
     limit: 10,
   });
 
-  assert.deepEqual(appointmentModel.find.calls[0], [{
+  assert.deepEqual(appointmentRepository.paginate.calls[0][0], {
     professional: ids.professionalId,
     customer: ids.customerId,
     status: 'cancelled',
@@ -124,12 +128,13 @@ test('appointment service filters appointments by date, professional, customer a
       $gte: new Date('2026-06-01T00:00:00'),
       $lt: new Date('2026-06-02T00:00:00'),
     },
-  }]);
-  assert.deepEqual(sort.calls, [[{ startAt: 1 }]]);
-  assert.deepEqual(skip.calls, [[10]]);
-  assert.deepEqual(limit.calls, [[10]]);
-  assert.deepEqual(populate.calls, [['customer service professional']]);
-  assert.deepEqual(appointmentModel.countDocuments.calls[0], appointmentModel.find.calls[0]);
+  });
+  assert.deepEqual(appointmentRepository.paginate.calls[0][1], {
+    page: 2,
+    limit: 10,
+    sort: { startAt: 1 },
+    populate: 'customer service professional',
+  });
   assert.deepEqual(result, {
     data: appointments,
     pagination: {
@@ -145,13 +150,13 @@ test('appointment service filters appointments by date, professional, customer a
 
 test('appointment service reschedules with real duration and records history', async () => {
   const appointment = createAppointmentDoc();
-  const appointmentModel = {
+  const appointmentRepository = {
     findById: createStub(async () => appointment),
-    findOne: createStub(async () => null),
+    findConflict: createStub(async () => null),
   };
   const service = loadService({
-    appointmentModel,
-    serviceModel: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 45 })) },
+    appointmentRepository,
+    serviceRepository: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 45 })) },
   });
 
   const result = await service.rescheduleAppointment(ids.appointmentId, {
@@ -165,22 +170,21 @@ test('appointment service reschedules with real duration and records history', a
   assert.equal(appointment.notes, 'Cliente pediu para remarcar');
   assert.equal(appointment.reschedules.length, 1);
   assert.equal(appointment.reschedules[0].oldStartAt.toISOString(), '2026-06-01T14:00:00.000Z');
-  assert.deepEqual(appointmentModel.findOne.calls[0], [{
-    _id: { $ne: ids.appointmentId },
-    professional: ids.professionalId,
-    status: 'scheduled',
-    startAt: { $lt: new Date('2026-06-02T16:45:00.000Z') },
-    endAt: { $gt: new Date('2026-06-02T16:00:00.000Z') },
+  assert.deepEqual(appointmentRepository.findConflict.calls[0], [{
+    professionalId: ids.professionalId,
+    startDate: new Date('2026-06-02T16:00:00.000Z'),
+    endDate: new Date('2026-06-02T16:45:00.000Z'),
+    excludeId: ids.appointmentId,
   }]);
   assert.equal(appointment.save.calls.length, 1);
   assert.deepEqual(appointment.populate.calls, [['customer service professional']]);
 });
 
 test('appointment service does not reschedule a cancelled appointment', async () => {
-  const appointmentModel = {
+  const appointmentRepository = {
     findById: createStub(async () => createAppointmentDoc({ status: 'cancelled' })),
   };
-  const service = loadService({ appointmentModel });
+  const service = loadService({ appointmentRepository });
 
   await assert.rejects(
     () => service.rescheduleAppointment(ids.appointmentId, { startAt: '2026-06-02T16:00:00.000Z' }),
@@ -190,10 +194,10 @@ test('appointment service does not reschedule a cancelled appointment', async ()
 
 test('appointment service cancels by updating status instead of deleting', async () => {
   const appointment = createAppointmentDoc();
-  const appointmentModel = {
+  const appointmentRepository = {
     findById: createStub(async () => appointment),
   };
-  const service = loadService({ appointmentModel });
+  const service = loadService({ appointmentRepository });
 
   const result = await service.cancelAppointment(ids.appointmentId);
 
@@ -205,10 +209,10 @@ test('appointment service cancels by updating status instead of deleting', async
 
 test('appointment service completes by updating status', async () => {
   const appointment = createAppointmentDoc();
-  const appointmentModel = {
+  const appointmentRepository = {
     findById: createStub(async () => appointment),
   };
-  const service = loadService({ appointmentModel });
+  const service = loadService({ appointmentRepository });
 
   const result = await service.completeAppointment(ids.appointmentId);
 
@@ -218,15 +222,15 @@ test('appointment service completes by updating status', async () => {
 });
 
 test('appointment service calculates availability with the selected service duration', async () => {
-  const appointmentModel = {
-    find: createStub(async () => [{
+  const appointmentRepository = {
+    findScheduledOverlapping: createStub(async () => [{
       startAt: new Date('2026-06-01T10:00:00'),
       endAt: new Date('2026-06-01T11:00:00'),
     }]),
   };
   const service = loadService({
-    appointmentModel,
-    serviceModel: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 120 })) },
+    appointmentRepository,
+    serviceRepository: { findById: createStub(async () => ({ _id: ids.serviceId, durationMinutes: 120 })) },
   });
 
   const slots = await service.getAvailability({
@@ -237,7 +241,11 @@ test('appointment service calculates availability with the selected service dura
 
   assert.equal(slots.at(-1).getHours(), 16);
   assert.equal(slots.some(slot => slot.getHours() === 9 && slot.getMinutes() === 0), false);
-  assert.deepEqual(appointmentModel.find.calls[0][0].status, 'scheduled');
+  assert.deepEqual(appointmentRepository.findScheduledOverlapping.calls[0], [{
+    professionalId: ids.professionalId,
+    startDate: new Date('2026-06-01T09:00:00'),
+    endDate: new Date('2026-06-01T18:00:00'),
+  }]);
 });
 
 test('appointment service rejects invalid ids', async () => {

@@ -34,7 +34,9 @@ Exemplo:
 
 ```env
 PORT=3000
+DATABASE_PROVIDER=mongodb
 MONGODB_URI=mongodb://127.0.0.1:27017/crm-booking-api
+POSTGRES_URI=postgres://postgres:postgres@127.0.0.1:5432/crm_booking_api
 SWAGGER_SERVER_URL=http://localhost:3000
 ```
 
@@ -43,7 +45,9 @@ Variáveis:
 | Nome | Obrigatória | Descrição |
 | --- | --- | --- |
 | `PORT` | Não | Porta HTTP. Padrão: `3000`. |
+| `DATABASE_PROVIDER` | Não | Banco usado pela aplicação: `mongodb` ou `postgres`. Padrão: `mongodb`. |
 | `MONGODB_URI` | Não | URI do MongoDB. Padrão: `mongodb://127.0.0.1:27017/crm-booking-api`. |
+| `POSTGRES_URI` | Não | URI do PostgreSQL. Usada quando `DATABASE_PROVIDER=postgres`. |
 | `SWAGGER_SERVER_URL` | Não | URL exibida como servidor base no Swagger. |
 | `CORS_ORIGINS` | Não | Lista de origens permitidas, separadas por vírgula. Exemplo: `https://app.com,http://localhost:5173`. |
 | `RATE_LIMIT_WINDOW_MS` | Não | Janela do rate limit em milissegundos. Padrão: `900000`. |
@@ -271,7 +275,7 @@ Regras de agendamento:
 npm test
 ```
 
-Os testes unitários usam `node:test` e mocks dos models Mongoose. Eles não dependem de MongoDB rodando.
+Os testes unitários usam `node:test` e mocks dos repositories. Eles não dependem de banco rodando.
 
 Cobertura atual:
 

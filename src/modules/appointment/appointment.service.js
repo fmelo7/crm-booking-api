@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
-const Appointment = require('./appointment.model');
-const Customer = require('../customer/customer.model');
-const Service = require('../service/service.model');
-const Professional = require('../professional/professional.model');
-const { paginate } = require('../common/pagination');
+const appointmentRepository = require('./appointment.repository');
+const customerRepository = require('../customer/customer.repository');
+const serviceRepository = require('../service/service.repository');
+const professionalRepository = require('../professional/professional.repository');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -40,9 +39,9 @@ exports.createAppointment = async (data) => {
     throw { status: 400, message: 'IDs inválidos' };
   }
 
-  const customer = await Customer.findById(customerId);
-  const service = await Service.findById(serviceId);
-  const professional = await Professional.findById(professionalId);
+  const customer = await customerRepository.findById(customerId);
+  const service = await serviceRepository.findById(serviceId);
+  const professional = await professionalRepository.findById(professionalId);
 
   if (!customer || !service || !professional) {
     throw { status: 404, message: 'Cliente, serviço ou profissional não encontrado' };
@@ -51,18 +50,17 @@ exports.createAppointment = async (data) => {
   const startDate = parseStartAt(startAt);
   const endDate = calculateEndAt(startDate, service.durationMinutes);
 
-  const conflict = await Appointment.findOne({
-    professional: professionalId,
-    status: 'scheduled',
-    startAt: { $lt: endDate },
-    endAt: { $gt: startDate }
+  const conflict = await appointmentRepository.findConflict({
+    professionalId,
+    startDate,
+    endDate,
   });
 
   if (conflict) {
     throw { status: 409, message: 'Horário ocupado' };
   }
 
-  return Appointment.create({
+  return appointmentRepository.create({
     customer: customerId,
     service: serviceId,
     professional: professionalId,
@@ -117,7 +115,7 @@ exports.getAllAppointments = async (filters = {}) => {
     }
   }
 
-  return paginate(Appointment, query, {
+  return appointmentRepository.paginate(query, {
     page: filters.page,
     limit: filters.limit,
     sort: { startAt: 1 },
@@ -130,7 +128,7 @@ exports.getAppointmentById = async (id) => {
     throw { status: 400, message: 'ID de agendamento inválido' };
   }
 
-  const item = await Appointment.findById(id).populate('customer service professional');
+  const item = await appointmentRepository.findByIdPopulated(id);
   if (!item) throw { status: 404, message: 'Agendamento não encontrado' };
   return item;
 };
@@ -146,14 +144,14 @@ exports.rescheduleAppointment = async (id, data) => {
     throw { status: 400, message: 'startAt é obrigatório para reagendar' };
   }
 
-  const current = await Appointment.findById(id);
+  const current = await appointmentRepository.findById(id);
   if (!current) {
     throw { status: 404, message: 'Agendamento não encontrado' };
   }
 
   ensureScheduled(current, 'reagendado');
 
-  const service = await Service.findById(current.service);
+  const service = await serviceRepository.findById(current.service);
   if (!service) {
     throw { status: 404, message: 'Serviço do agendamento não encontrado' };
   }
@@ -161,12 +159,11 @@ exports.rescheduleAppointment = async (id, data) => {
   const startDate = parseStartAt(startAt);
   const endDate = calculateEndAt(startDate, service.durationMinutes);
 
-  const conflict = await Appointment.findOne({
-    _id: { $ne: id },
-    professional: current.professional,
-    status: 'scheduled',
-    startAt: { $lt: endDate },
-    endAt: { $gt: startDate }
+  const conflict = await appointmentRepository.findConflict({
+    professionalId: current.professional,
+    startDate,
+    endDate,
+    excludeId: id,
   });
 
   if (conflict) {
@@ -195,7 +192,7 @@ exports.cancelAppointment = async (id) => {
     throw { status: 400, message: 'ID de agendamento inválido' };
   }
 
-  const appointment = await Appointment.findById(id);
+  const appointment = await appointmentRepository.findById(id);
 
   if (!appointment) {
     throw { status: 404, message: 'Agendamento não encontrado' };
@@ -214,7 +211,7 @@ exports.completeAppointment = async (id) => {
     throw { status: 400, message: 'ID de agendamento inválido' };
   }
 
-  const appointment = await Appointment.findById(id);
+  const appointment = await appointmentRepository.findById(id);
 
   if (!appointment) {
     throw { status: 404, message: 'Agendamento não encontrado' };
@@ -238,7 +235,7 @@ exports.getAvailability = async ({ professionalId, date, serviceId, durationMinu
       throw { status: 400, message: 'Serviço inválido' };
     }
 
-    const service = await Service.findById(serviceId);
+    const service = await serviceRepository.findById(serviceId);
     if (!service) {
       throw { status: 404, message: 'Serviço não encontrado' };
     }
@@ -262,11 +259,10 @@ exports.getAvailability = async ({ professionalId, date, serviceId, durationMinu
   const endOfDay = new Date(selectedDate);
   endOfDay.setHours(18, 0, 0, 0);
 
-  const appointments = await Appointment.find({
-    professional: professionalId,
-    status: 'scheduled',
-    startAt: { $lt: endOfDay },
-    endAt: { $gt: startOfDay }
+  const appointments = await appointmentRepository.findScheduledOverlapping({
+    professionalId,
+    startDate: startOfDay,
+    endDate: endOfDay,
   });
 
   const slots = [];

@@ -15,6 +15,8 @@ const state = {
     services: '',
     professionals: '',
   },
+  availabilityRequestId: 0,
+  availabilityAbortController: null,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -38,6 +40,13 @@ const api = async (path, options = {}) => {
 
 const listData = (response) => Array.isArray(response) ? response : response.data || [];
 
+const availabilityIdleText = 'Selecione serviço, profissional e data para ver os horários disponíveis.';
+
+const setAvailabilityMessage = (text = availabilityIdleText) => {
+  const container = $('#availabilityContainer');
+  if (container) container.innerHTML = `<p>${text}</p>`;
+};
+
 const setLoading = (isLoading, text = 'Carregando...') => {
   const overlay = $('#loadingOverlay');
   if (!overlay) return;
@@ -47,6 +56,7 @@ const setLoading = (isLoading, text = 'Carregando...') => {
 };
 
 const setFormLoading = (form, isLoading) => {
+  form.classList.toggle('is-submitting', isLoading);
   form.querySelectorAll('button, input, select, textarea').forEach((field) => {
     field.disabled = isLoading;
   });
@@ -581,18 +591,54 @@ const bindForms = () => {
       }
     }
   });
+
+  $('#resetAppointmentForm').addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    resetAppointmentForm();
+  });
 };
 
 const resetAppointmentForm = () => {
+  state.availabilityRequestId += 1;
+  if (state.availabilityAbortController) {
+    state.availabilityAbortController.abort();
+    state.availabilityAbortController = null;
+  }
   const form = $('#appointmentForm');
+  setFormLoading(form, false);
   resetForm(form);
-  form.elements.customerId.disabled = false;
-  form.elements.serviceId.disabled = false;
-  form.elements.professionalId.disabled = false;
+  form.querySelectorAll('button, input, select, textarea').forEach((field) => {
+    field.disabled = false;
+  });
   form.elements.appointmentDate.value = toDateInput(new Date());
   form.elements.startAt.value = '';
-  $('#availabilityContainer').innerHTML = '<p>Selecione serviço, profissional e data para ver os horários disponíveis.</p>';
+  setAvailabilityMessage();
   $('#appointmentFormTitle').textContent = 'Novo agendamento';
+  $('#appointmentSubmit').textContent = 'Salvar agendamento';
+  $$('#appointmentsList .item').forEach((item) => item.classList.remove('is-selected'));
+};
+
+const fillAppointmentForm = async (appointmentId, selectedItem) => {
+  const appointment = state.appointments.find((item) => item._id === appointmentId);
+  if (!appointment) return;
+
+  const form = $('#appointmentForm');
+  form.elements.id.value = appointment._id;
+  form.elements.customerId.value = typeof appointment.customer === 'object' ? appointment.customer._id : appointment.customer;
+  form.elements.serviceId.value = typeof appointment.service === 'object' ? appointment.service._id : appointment.service;
+  form.elements.professionalId.value = typeof appointment.professional === 'object' ? appointment.professional._id : appointment.professional;
+  form.elements.customerId.disabled = true;
+  form.elements.serviceId.disabled = true;
+  form.elements.professionalId.disabled = true;
+  form.elements.appointmentDate.value = toDateInput(new Date(appointment.startAt));
+  form.elements.startAt.value = toDatetimeLocal(appointment.startAt);
+  form.elements.notes.value = appointment.notes || '';
+  $('#appointmentFormTitle').textContent = 'Reagendar agendamento';
+  $('#appointmentSubmit').textContent = 'Reagendar';
+  $$('#appointmentsList .item').forEach((item) => item.classList.remove('is-selected'));
+  selectedItem?.classList.add('is-selected');
+  await loadAvailability();
 };
 
 const bindActions = () => {
@@ -626,6 +672,12 @@ const bindActions = () => {
         setLoading(true);
         await loadData();
         showMessage('Agenda atualizada.');
+        return;
+      }
+
+      if (target.id === 'newAppointment') {
+        resetAppointmentForm();
+        showMessage('Novo agendamento iniciado.');
         return;
       }
 
@@ -671,22 +723,7 @@ const bindActions = () => {
       }
 
       if (target.dataset.selectAppointment) {
-        const appointment = state.appointments.find((item) => item._id === target.dataset.selectAppointment);
-        const form = $('#appointmentForm');
-        form.elements.id.value = appointment._id;
-        form.elements.customerId.value = typeof appointment.customer === 'object' ? appointment.customer._id : appointment.customer;
-        form.elements.serviceId.value = typeof appointment.service === 'object' ? appointment.service._id : appointment.service;
-        form.elements.professionalId.value = typeof appointment.professional === 'object' ? appointment.professional._id : appointment.professional;
-        form.elements.customerId.disabled = true;
-        form.elements.serviceId.disabled = true;
-        form.elements.professionalId.disabled = true;
-        form.elements.appointmentDate.value = toDateInput(new Date(appointment.startAt));
-        form.elements.startAt.value = toDatetimeLocal(appointment.startAt);
-        form.elements.notes.value = appointment.notes || '';
-        $('#appointmentFormTitle').textContent = 'Reagendar agendamento';
-        $$('#appointmentsList .item').forEach((item) => item.classList.remove('is-selected'));
-        target.closest('.item').classList.add('is-selected');
-        await loadAvailability();
+        await fillAppointmentForm(target.dataset.selectAppointment, target.closest('.item'));
         return;
       }
 
@@ -722,6 +759,11 @@ const bindActions = () => {
         form.elements.phone.value = professional.phone || '';
         form.elements.email.value = professional.email || '';
         form.elements.active.checked = professional.active !== false;
+        return;
+      }
+
+      if (target.dataset.editAppointment) {
+        await fillAppointmentForm(target.dataset.editAppointment, target.closest('.item'));
         return;
       }
 
@@ -774,6 +816,8 @@ const bindActions = () => {
 };
 
 const loadAvailability = async () => {
+  const requestId = state.availabilityRequestId + 1;
+  state.availabilityRequestId = requestId;
   const form = $('#appointmentForm');
   const container = $('#availabilityContainer');
 
@@ -782,7 +826,8 @@ const loadAvailability = async () => {
   const date = form.elements.appointmentDate.value;
 
   if (!professionalId || !serviceId || !date) {
-    container.innerHTML = '<p>Selecione serviço, profissional e data para ver os horários disponíveis.</p>';
+    if (requestId !== state.availabilityRequestId) return;
+    setAvailabilityMessage();
     return;
   }
 
@@ -791,15 +836,40 @@ const loadAvailability = async () => {
   if (!service) return;
 
   try {
+    if (state.availabilityAbortController) {
+      state.availabilityAbortController.abort();
+    }
+    state.availabilityAbortController = new AbortController();
     container.innerHTML = '<p class="loading-text">Buscando horários...</p>';
     const slots = await api(
-      `/api/appointments/availability?professionalId=${encodeURIComponent(professionalId)}&serviceId=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`
+      `/api/appointments/availability?professionalId=${encodeURIComponent(professionalId)}&serviceId=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`,
+      { signal: state.availabilityAbortController.signal }
     );
 
-    renderAvailability(slots);
+    if (requestId !== state.availabilityRequestId) return;
+    state.availabilityAbortController = null;
+    renderAvailability(includeSelectedSlot(slots));
   } catch (err) {
+    if (requestId !== state.availabilityRequestId) return;
+    if (err.name === 'AbortError') return;
+    state.availabilityAbortController = null;
     showMessage(err.message, true);
   }
+};
+
+const includeSelectedSlot = (slots) => {
+  const form = $('#appointmentForm');
+  const selectedStartAt = form.elements.startAt.value;
+
+  if (!selectedStartAt) return slots;
+
+  const selectedDate = form.elements.appointmentDate.value;
+  const selectedSlot = fromDatetimeLocal(selectedStartAt);
+
+  if (toDateInput(new Date(selectedSlot)) !== selectedDate) return slots;
+  if (slots.some((slot) => toDatetimeLocal(slot) === selectedStartAt)) return slots;
+
+  return [...slots, selectedSlot].sort((left, right) => new Date(left) - new Date(right));
 };
 
 const renderAvailability = (slots) => {
@@ -833,7 +903,7 @@ const init = async () => {
   bindActions();
   state.appointmentFilters.date = toDateInput(new Date());
   $('#appointmentForm').elements.appointmentDate.value = state.appointmentFilters.date;
-  $('#availabilityContainer').innerHTML = '<p>Selecione serviço, profissional e data para ver os horários disponíveis.</p>';
+  setAvailabilityMessage();
 
   try {
     await loadData();

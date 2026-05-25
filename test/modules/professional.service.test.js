@@ -4,63 +4,59 @@ const loadWithMocks = require('../helpers/load-with-mocks');
 const createStub = require('../helpers/stub');
 
 const servicePath = '../../src/modules/professional/professional.service';
-const modelPath = '../../src/modules/professional/professional.model';
+const repositoryPath = '../../src/modules/professional/professional.repository';
+const appointmentRepositoryPath = '../../src/modules/appointment/appointment.repository';
 
-const loadService = (model) => loadWithMocks(servicePath, {
-  [modelPath]: model,
+const loadService = (repository, appointmentRepository = { existsForProfessional: createStub(async () => null) }) => loadWithMocks(servicePath, {
+  [repositoryPath]: repository,
+  [appointmentRepositoryPath]: appointmentRepository,
 });
 
 test('professional service creates a professional when required fields are present', async () => {
   const created = { _id: 'professional-id', name: 'Ana Souza', category: 'Cabeleireira' };
-  const model = {
+  const repository = {
     create: createStub(async (data) => ({ _id: 'professional-id', ...data })),
   };
-  const service = loadService(model);
+  const service = loadService(repository);
 
   const result = await service.createProfessional({ name: 'Ana Souza', category: 'Cabeleireira' });
 
   assert.deepEqual(result, created);
-  assert.deepEqual(model.create.calls, [[{ name: 'Ana Souza', category: 'Cabeleireira' }]]);
+  assert.deepEqual(repository.create.calls, [[{ name: 'Ana Souza', category: 'Cabeleireira' }]]);
 });
 
 test('professional service rejects creation without name or category', async () => {
-  const model = {
+  const repository = {
     create: createStub(),
   };
-  const service = loadService(model);
+  const service = loadService(repository);
 
   await assert.rejects(
     () => service.createProfessional({ name: 'Ana Souza' }),
     { status: 400, message: 'Nome e categoria são obrigatórios' }
   );
-  assert.equal(model.create.calls.length, 0);
+  assert.equal(repository.create.calls.length, 0);
 });
 
 test('professional service lists professionals with search and pagination', async () => {
   const professionals = [{ _id: 'professional-id', name: 'Ana Souza' }];
-  const limit = createStub(async () => professionals);
-  const skip = createStub(() => ({ limit }));
-  const sort = createStub(() => ({ skip }));
-  const model = {
-    find: createStub(() => ({ sort })),
-    countDocuments: createStub(async () => 1),
+  const repository = {
+    paginate: createStub(async () => ({ data: professionals, pagination: { total: 1 } })),
   };
-  const service = loadService(model);
+  const service = loadService(repository);
 
   const result = await service.getProfessionals({ search: 'ana', page: 1, limit: 10 });
 
-  assert.deepEqual(model.find.calls[0][0].$or.map((item) => Object.keys(item)[0]), ['name', 'category', 'email', 'phone']);
-  assert.deepEqual(sort.calls, [[{ name: 1 }]]);
-  assert.deepEqual(skip.calls, [[0]]);
-  assert.deepEqual(limit.calls, [[10]]);
+  assert.deepEqual(repository.paginate.calls[0][0].$or.map((item) => Object.keys(item)[0]), ['name', 'category', 'email', 'phone']);
+  assert.deepEqual(repository.paginate.calls[0][1], { page: 1, limit: 10, sort: { name: 1 } });
   assert.equal(result.pagination.total, 1);
 });
 
 test('professional service returns 404 when professional is not found', async () => {
-  const model = {
+  const repository = {
     findById: createStub(async () => null),
   };
-  const service = loadService(model);
+  const service = loadService(repository);
 
   await assert.rejects(
     () => service.getProfessionalById('missing-id'),
@@ -70,30 +66,50 @@ test('professional service returns 404 when professional is not found', async ()
 
 test('professional service updates with validators enabled', async () => {
   const updated = { _id: 'professional-id', name: 'Ana Atualizada', category: 'Cabeleireira' };
-  const model = {
-    findByIdAndUpdate: createStub(async () => updated),
+  const repository = {
+    updateById: createStub(async () => updated),
   };
-  const service = loadService(model);
+  const service = loadService(repository);
 
   const result = await service.updateProfessional('professional-id', { name: 'Ana Atualizada' });
 
   assert.equal(result, updated);
-  assert.deepEqual(model.findByIdAndUpdate.calls, [[
+  assert.deepEqual(repository.updateById.calls, [[
     'professional-id',
     { name: 'Ana Atualizada' },
-    { new: true, runValidators: true },
   ]]);
 });
 
 test('professional service deletes an existing professional', async () => {
   const deleted = { _id: 'professional-id', name: 'Ana Souza' };
-  const model = {
-    findByIdAndDelete: createStub(async () => deleted),
+  const repository = {
+    deleteById: createStub(async () => deleted),
   };
-  const service = loadService(model);
+  const appointmentRepository = {
+    existsForProfessional: createStub(async () => null),
+  };
+  const service = loadService(repository, appointmentRepository);
 
   const result = await service.deleteProfessional('professional-id');
 
   assert.equal(result, deleted);
-  assert.deepEqual(model.findByIdAndDelete.calls, [['professional-id']]);
+  assert.deepEqual(appointmentRepository.existsForProfessional.calls, [['professional-id']]);
+  assert.deepEqual(repository.deleteById.calls, [['professional-id']]);
+});
+
+test('professional service blocks deleting a professional linked to appointments', async () => {
+  const repository = {
+    deleteById: createStub(),
+  };
+  const appointmentRepository = {
+    existsForProfessional: createStub(async () => ({ _id: 'appointment-id' })),
+  };
+  const service = loadService(repository, appointmentRepository);
+
+  await assert.rejects(
+    () => service.deleteProfessional('professional-id'),
+    { status: 409, message: 'Profissional possui agendamentos vinculados e não pode ser removido' }
+  );
+  assert.deepEqual(appointmentRepository.existsForProfessional.calls, [['professional-id']]);
+  assert.equal(repository.deleteById.calls.length, 0);
 });

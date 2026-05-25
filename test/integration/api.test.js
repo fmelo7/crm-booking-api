@@ -78,6 +78,7 @@ test('POST /api/appointments creates an appointment with real service duration',
   assert.equal(response.body.customer, customer.id);
   assert.equal(response.body.service, service.id);
   assert.equal(response.body.professional, professional.id);
+  assert.equal(response.body.id, response.body._id);
   assert.equal(response.body.status, 'scheduled');
   assert.equal(response.body.endAt, '2030-01-01T15:30:00.000Z');
 });
@@ -148,7 +149,9 @@ test('GET /api/appointments filters by date range and professional', async () =>
     .expect(200);
 
   assert.equal(response.body.data.length, 1);
+  assert.equal(response.body.data[0].id, response.body.data[0]._id);
   assert.equal(response.body.data[0].professional._id, professional.id);
+  assert.equal(response.body.data[0].professional.id, professional.id);
   assert.deepEqual(response.body.pagination, {
     page: 1,
     limit: 10,
@@ -157,6 +160,38 @@ test('GET /api/appointments filters by date range and professional', async () =>
     hasNextPage: false,
     hasPreviousPage: false,
   });
+});
+
+test('DELETE /api resources rejects removing records linked to appointments', async () => {
+  const { customer, service, professional } = await createFixture({ durationMinutes: 60 });
+
+  await Appointment.create({
+    customer: customer.id,
+    service: service.id,
+    professional: professional.id,
+    startAt: new Date('2030-01-02T10:00:00.000Z'),
+    endAt: new Date('2030-01-02T11:00:00.000Z'),
+    status: 'scheduled',
+  });
+
+  const cases = [
+    [`/api/customers/${customer.id}`, 'Cliente possui agendamentos vinculados e não pode ser removido'],
+    [`/api/services/${service.id}`, 'Serviço possui agendamentos vinculados e não pode ser removido'],
+    [`/api/professionals/${professional.id}`, 'Profissional possui agendamentos vinculados e não pode ser removido'],
+  ];
+
+  for (const [path, message] of cases) {
+    const response = await request(app)
+      .delete(path)
+      .expect(409);
+
+    assert.equal(response.body.error.status, 409);
+    assert.equal(response.body.error.message, message);
+  }
+
+  assert.equal(await Customer.exists({ _id: customer.id }).then(Boolean), true);
+  assert.equal(await Service.exists({ _id: service.id }).then(Boolean), true);
+  assert.equal(await Professional.exists({ _id: professional.id }).then(Boolean), true);
 });
 
 test('GET /api/customers searches customers and paginates', async () => {
@@ -172,6 +207,7 @@ test('GET /api/customers searches customers and paginates', async () => {
 
   assert.equal(response.body.data.length, 1);
   assert.equal(response.body.data[0].name, 'Maria Silva');
+  assert.equal(response.body.data[0].id, response.body.data[0]._id);
   assert.equal(response.body.pagination.total, 1);
 });
 

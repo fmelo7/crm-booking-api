@@ -1,10 +1,22 @@
 const mongoose = require('mongoose');
+const { getDatabaseProvider } = require('../modules/common/databaseProvider');
+const { connectPostgres, DEFAULT_POSTGRES_URI } = require('./postgres');
 
 const DEFAULT_MONGODB_URI = 'mongodb://127.0.0.1:27017/crm-booking-api';
 
-const connectDatabase = async (uri = process.env.MONGODB_URI || DEFAULT_MONGODB_URI) => {
+const connectMongo = async (uri = process.env.MONGODB_URI || DEFAULT_MONGODB_URI) => {
   await mongoose.connect(uri);
   return uri;
+};
+
+const connectDatabase = async () => {
+  const provider = getDatabaseProvider();
+
+  if (provider === 'postgres') {
+    return connectPostgres(process.env.POSTGRES_URI || DEFAULT_POSTGRES_URI);
+  }
+
+  return connectMongo(process.env.MONGODB_URI || DEFAULT_MONGODB_URI);
 };
 
 const maskDatabaseUri = (uri) => {
@@ -24,5 +36,6 @@ const maskDatabaseUri = (uri) => {
 module.exports = {
   connectDatabase,
   DEFAULT_MONGODB_URI,
+  DEFAULT_POSTGRES_URI,
   maskDatabaseUri,
 };
