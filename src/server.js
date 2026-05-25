@@ -9,6 +9,10 @@ const { log } = require('./middlewares/logger');
 
 const PORT = process.env.PORT || 3000;
 const DATABASE_PROVIDER = getDatabaseProvider();
+const DATABASE_CONNECT_RETRIES = Number(process.env.DATABASE_CONNECT_RETRIES || 10);
+const DATABASE_CONNECT_RETRY_MS = Number(process.env.DATABASE_CONNECT_RETRY_MS || 3000);
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const startServer = () => {
   app.listen(PORT, () => {
@@ -23,7 +27,34 @@ log('info', 'Database provider resolved', {
   hasMongoUri: Boolean(process.env.MONGODB_URI),
 });
 
-connectDatabase()
+const connectDatabaseWithRetry = async () => {
+  let lastError;
+
+  for (let attempt = 1; attempt <= DATABASE_CONNECT_RETRIES; attempt += 1) {
+    try {
+      return await connectDatabase();
+    } catch (err) {
+      lastError = err;
+      log('warn', 'Database connection attempt failed', {
+        databaseProvider: DATABASE_PROVIDER,
+        attempt,
+        attempts: DATABASE_CONNECT_RETRIES,
+        retryInMs: attempt < DATABASE_CONNECT_RETRIES ? DATABASE_CONNECT_RETRY_MS : 0,
+        error: {
+          message: err.message,
+        },
+      });
+
+      if (attempt < DATABASE_CONNECT_RETRIES) {
+        await wait(DATABASE_CONNECT_RETRY_MS);
+      }
+    }
+  }
+
+  throw lastError;
+};
+
+connectDatabaseWithRetry()
   .then((uri) => {
     app.set('dbConnected', true);
     log('info', 'Database connected', {

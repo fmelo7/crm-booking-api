@@ -54,6 +54,8 @@ Variáveis:
 | `CORS_ORIGINS` | Não | Lista de origens permitidas, separadas por vírgula. Exemplo: `https://app.com,http://localhost:5173`. |
 | `RATE_LIMIT_WINDOW_MS` | Não | Janela do rate limit em milissegundos. Padrão: `900000`. |
 | `RATE_LIMIT_MAX` | Não | Número máximo de requisições por IP dentro da janela. Padrão: `300`. |
+| `DATABASE_CONNECT_RETRIES` | Não | Tentativas de conexão com o banco antes de marcar a API como degradada. Padrão: `10`. |
+| `DATABASE_CONNECT_RETRY_MS` | Não | Intervalo entre tentativas de conexão em milissegundos. Padrão: `3000`. |
 | `NODE_ENV` | Não | Ambiente da aplicação, como `production`. |
 
 ## Rodando localmente
