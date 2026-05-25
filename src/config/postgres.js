@@ -4,6 +4,9 @@ const DEFAULT_POSTGRES_URI = 'postgres://postgres:postgres@127.0.0.1:5432/crm_bo
 
 let pool;
 
+const getPostgresUri = () =>
+  process.env.POSTGRES_URI || process.env.DATABASE_URL || DEFAULT_POSTGRES_URI;
+
 const getPg = () => {
   try {
     return require('pg');
@@ -16,7 +19,7 @@ const getPool = () => {
   if (!pool) {
     const { Pool } = getPg();
     pool = new Pool({
-      connectionString: process.env.POSTGRES_URI || DEFAULT_POSTGRES_URI,
+      connectionString: getPostgresUri(),
     });
   }
 
@@ -79,7 +82,7 @@ const initSchema = async () => {
   `);
 };
 
-const connectPostgres = async (uri = process.env.POSTGRES_URI || DEFAULT_POSTGRES_URI) => {
+const connectPostgres = async (uri = getPostgresUri()) => {
   process.env.POSTGRES_URI = uri;
   await query('SELECT 1');
   await initSchema();
@@ -98,5 +101,6 @@ module.exports = {
   connectPostgres,
   createId,
   DEFAULT_POSTGRES_URI,
+  getPostgresUri,
   query,
 };
