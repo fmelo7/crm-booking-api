@@ -17,7 +17,11 @@ const {
   listCustomerSchema,
 } = require('../../modules/customer/customer.validation');
 const { idParamSchema } = require('../../modules/common/validation');
-const { parseSchema } = require('../common/zod');
+const {
+  parseBody,
+  parseIdParam,
+  parseQuery,
+} = require('../common/zod');
 
 class CustomerController {
   constructor(customerProvider) {
@@ -25,26 +29,26 @@ class CustomerController {
   }
 
   list(query) {
-    return this.customerProvider.list(parseSchema(listCustomerSchema, query));
+    return this.customerProvider.list(parseQuery(listCustomerSchema, query));
   }
 
   getById(id) {
-    parseSchema(idParamSchema, { id });
-    return this.customerProvider.getById(id);
+    return this.customerProvider.getById(parseIdParam(idParamSchema, id));
   }
 
   async create(body) {
-    return this.customerProvider.create(parseSchema(createCustomerSchema, body));
+    return this.customerProvider.create(parseBody(createCustomerSchema, body));
   }
 
   update(id, body) {
-    parseSchema(idParamSchema, { id });
-    return this.customerProvider.update(id, parseSchema(createCustomerSchema, body));
+    return this.customerProvider.update(
+      parseIdParam(idParamSchema, id),
+      parseBody(createCustomerSchema, body)
+    );
   }
 
   async remove(id) {
-    parseSchema(idParamSchema, { id });
-    await this.customerProvider.remove(id);
+    await this.customerProvider.remove(parseIdParam(idParamSchema, id));
   }
 }
 

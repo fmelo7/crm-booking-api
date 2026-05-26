@@ -18,6 +18,18 @@ const parseSchema = (schema, data) => {
   return result.data;
 };
 
+const parseBody = (schema, body) => parseSchema(schema, body);
+
+const parseQuery = (schema, query) => parseSchema(schema, query);
+
+const parseParams = (schema, params) => parseSchema(schema, params);
+
+const parseIdParam = (schema, id) => parseParams(schema, { id }).id;
+
 module.exports = {
+  parseBody,
+  parseIdParam,
+  parseParams,
+  parseQuery,
   parseSchema,
 };
