@@ -77,6 +77,7 @@ Para este projeto, eu faria em etapas:
 - próxima etapa: transformar os services/repositories em providers NestJS reais com injeção de dependência
   - iniciado por `customers`: regra movida para provider NestJS com repositories injetados
   - `services`: regra movida para provider NestJS com repositories injetados
+  - `professionals`: regra movida para provider NestJS com repositories injetados
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**
