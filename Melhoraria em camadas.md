@@ -82,6 +82,7 @@ Para este projeto, eu faria em etapas:
   - repositories organizados em `RepositoryModule` compartilhado no NestJS
 - runtime NestJS separado das rotas Express legadas usando `configureBaseApp`
 - testes de integração apontando para o runtime NestJS principal
+- app Express legado isolado em `src/legacyApp.js`, com `src/app.js` mantido como alias de compatibilidade
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**
