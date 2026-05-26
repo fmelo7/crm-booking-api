@@ -17,7 +17,11 @@ const {
   listProfessionalSchema,
 } = require('../../modules/professional/professional.validation');
 const { idParamSchema } = require('../../modules/common/validation');
-const { parseSchema } = require('../common/zod');
+const {
+  parseBody,
+  parseIdParam,
+  parseQuery,
+} = require('../common/zod');
 
 class ProfessionalController {
   constructor(professionalProvider) {
@@ -25,26 +29,26 @@ class ProfessionalController {
   }
 
   list(query) {
-    return this.professionalProvider.list(parseSchema(listProfessionalSchema, query));
+    return this.professionalProvider.list(parseQuery(listProfessionalSchema, query));
   }
 
   getById(id) {
-    parseSchema(idParamSchema, { id });
-    return this.professionalProvider.getById(id);
+    return this.professionalProvider.getById(parseIdParam(idParamSchema, id));
   }
 
   create(body) {
-    return this.professionalProvider.create(parseSchema(createProfessionalSchema, body));
+    return this.professionalProvider.create(parseBody(createProfessionalSchema, body));
   }
 
   update(id, body) {
-    parseSchema(idParamSchema, { id });
-    return this.professionalProvider.update(id, parseSchema(createProfessionalSchema, body));
+    return this.professionalProvider.update(
+      parseIdParam(idParamSchema, id),
+      parseBody(createProfessionalSchema, body)
+    );
   }
 
   async remove(id) {
-    parseSchema(idParamSchema, { id });
-    await this.professionalProvider.remove(id);
+    await this.professionalProvider.remove(parseIdParam(idParamSchema, id));
   }
 }
 

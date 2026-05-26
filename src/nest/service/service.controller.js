@@ -17,7 +17,11 @@ const {
   listServiceSchema,
 } = require('../../modules/service/service.validation');
 const { idParamSchema } = require('../../modules/common/validation');
-const { parseSchema } = require('../common/zod');
+const {
+  parseBody,
+  parseIdParam,
+  parseQuery,
+} = require('../common/zod');
 
 class ServiceController {
   constructor(serviceProvider) {
@@ -25,26 +29,26 @@ class ServiceController {
   }
 
   list(query) {
-    return this.serviceProvider.list(parseSchema(listServiceSchema, query));
+    return this.serviceProvider.list(parseQuery(listServiceSchema, query));
   }
 
   getById(id) {
-    parseSchema(idParamSchema, { id });
-    return this.serviceProvider.getById(id);
+    return this.serviceProvider.getById(parseIdParam(idParamSchema, id));
   }
 
   create(body) {
-    return this.serviceProvider.create(parseSchema(createServiceSchema, body));
+    return this.serviceProvider.create(parseBody(createServiceSchema, body));
   }
 
   update(id, body) {
-    parseSchema(idParamSchema, { id });
-    return this.serviceProvider.update(id, parseSchema(createServiceSchema, body));
+    return this.serviceProvider.update(
+      parseIdParam(idParamSchema, id),
+      parseBody(createServiceSchema, body)
+    );
   }
 
   async remove(id) {
-    parseSchema(idParamSchema, { id });
-    await this.serviceProvider.remove(id);
+    await this.serviceProvider.remove(parseIdParam(idParamSchema, id));
   }
 }
 
