@@ -16,6 +16,7 @@ const createNestApp = async () => {
     includeTerminalHandlers: false,
     legacyModules: {
       customers: false,
+      services: false,
     },
   });
   nestApp.useGlobalFilters(new HttpExceptionFilter());
