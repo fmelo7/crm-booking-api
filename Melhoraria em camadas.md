@@ -79,6 +79,7 @@ Para este projeto, eu faria em etapas:
   - `services`: regra movida para provider NestJS com repositories injetados
   - `professionals`: regra movida para provider NestJS com repositories injetados
   - `appointments`: regra movida para provider NestJS com repositories injetados
+  - repositories organizados em `RepositoryModule` compartilhado no NestJS
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**

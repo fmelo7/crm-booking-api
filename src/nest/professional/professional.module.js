@@ -1,18 +1,14 @@
 const { Module } = require('@nestjs/common');
 const ProfessionalController = require('./professional.controller');
 const ProfessionalProvider = require('./professional.provider');
-const ProfessionalRepositoryProvider = require('./professional.repository.provider');
-const AppointmentRepositoryProvider = require('../appointment/appointment.repository.provider');
+const RepositoryModule = require('../repository/repository.module');
 
 class ProfessionalModule {}
 
 Module({
+  imports: [RepositoryModule],
   controllers: [ProfessionalController],
-  providers: [
-    AppointmentRepositoryProvider,
-    ProfessionalProvider,
-    ProfessionalRepositoryProvider,
-  ],
+  providers: [ProfessionalProvider],
 })(ProfessionalModule);
 
 module.exports = ProfessionalModule;
