@@ -85,6 +85,7 @@ Para este projeto, eu faria em etapas:
 - app Express legado isolado em `src/legacyApp.js`, com `src/app.js` mantido como alias de compatibilidade
 - healthcheck migrado para controller NestJS, mantendo handler compartilhado para o legado
 - `package.json#main` apontando para `src/app.js` para evitar iniciar servidor ao importar o pacote
+- `configureBaseApp` separado para o runtime NestJS não carregar rotas Express legadas
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**

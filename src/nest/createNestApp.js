@@ -5,7 +5,7 @@ const AppModule = require('./app.module');
 const {
   configureBaseApp,
   configureTerminalHandlers,
-} = require('../configureApp');
+} = require('../configureBaseApp');
 const HttpExceptionFilter = require('./common/http-exception.filter');
 
 const createNestApp = async () => {
