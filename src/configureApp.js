@@ -16,7 +16,27 @@ const professionalRoutes = require('./modules/professional/professional.routes')
 const serviceRoutes = require('./modules/service/service.routes');
 const customerRoutes = require('./modules/customer/customer.routes');
 
-const configureApp = (app) => {
+const defaultLegacyModules = {
+  appointments: true,
+  professionals: true,
+  services: true,
+  customers: true,
+};
+
+const configureTerminalHandlers = (app) => {
+  app.use(notFound);
+  app.use(errorHandler);
+
+  return app;
+};
+
+const configureApp = (app, options = {}) => {
+  const legacyModules = {
+    ...defaultLegacyModules,
+    ...(options.legacyModules || {}),
+  };
+  const includeTerminalHandlers = options.includeTerminalHandlers !== false;
+
   app.disable('x-powered-by');
   app.use(securityHeaders);
   app.use(cors);
@@ -52,15 +72,29 @@ const configureApp = (app) => {
   });
 
   app.use('/api', createRateLimiter());
-  app.use('/api/appointments', appointmentRoutes);
-  app.use('/api/professionals', professionalRoutes);
-  app.use('/api/services', serviceRoutes);
-  app.use('/api/customers', customerRoutes);
 
-  app.use(notFound);
-  app.use(errorHandler);
+  if (legacyModules.appointments) {
+    app.use('/api/appointments', appointmentRoutes);
+  }
+
+  if (legacyModules.professionals) {
+    app.use('/api/professionals', professionalRoutes);
+  }
+
+  if (legacyModules.services) {
+    app.use('/api/services', serviceRoutes);
+  }
+
+  if (legacyModules.customers) {
+    app.use('/api/customers', customerRoutes);
+  }
+
+  if (includeTerminalHandlers) {
+    configureTerminalHandlers(app);
+  }
 
   return app;
 };
 
 module.exports = configureApp;
+module.exports.configureTerminalHandlers = configureTerminalHandlers;

@@ -70,4 +70,5 @@ Para este projeto, eu faria em etapas:
 
 - fazer a migração para NestJS no branch migrate-nestjs
 - etapa inicial feita: bootstrap com NestJS mantendo as rotas Express existentes
+- módulo `customers` migrado para controller/provider nativos do NestJS no runtime
 - próxima etapa: migrar um módulo por vez para controllers/providers nativos do NestJS
