@@ -55,3 +55,15 @@ test('Nest appointment controller keeps availability route ahead of id route', a
   assert.equal(response.body.error.status, 400);
   assert.equal(response.body.error.message, 'Professional inválido');
 });
+
+test('Nest appointment controller validates availability query params', async () => {
+  const response = await request(expressApp)
+    .get('/api/appointments/availability')
+    .query({ professionalId: 'invalid' })
+    .expect(400);
+
+  assert.equal(response.body.error.status, 400);
+  assert.equal(response.body.error.code, 'VALIDATION_ERROR');
+  assert.equal(response.body.error.message, 'Erro de validação');
+  assert.equal(response.body.error.details[0].field, 'professionalId');
+});

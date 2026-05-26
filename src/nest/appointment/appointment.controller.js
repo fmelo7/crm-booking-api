@@ -14,6 +14,7 @@ const {
 } = require('@nestjs/common');
 const AppointmentProvider = require('./appointment.provider');
 const {
+  availabilityAppointmentSchema,
   createAppointmentSchema,
   filterAppointmentSchema,
   idParamSchema,
@@ -31,14 +32,9 @@ class AppointmentController {
   }
 
   getAvailability(query) {
-    const { professionalId, date, serviceId, durationMinutes } = query;
-
-    return this.appointmentProvider.getAvailability({
-      professionalId,
-      date,
-      serviceId,
-      durationMinutes: durationMinutes ? Number(durationMinutes) : 60,
-    });
+    return this.appointmentProvider.getAvailability(
+      parseQuery(availabilityAppointmentSchema, query)
+    );
   }
 
   list(query) {

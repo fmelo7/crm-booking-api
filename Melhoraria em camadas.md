@@ -89,6 +89,7 @@ Para este projeto, eu faria em etapas:
 - configurador Express legado isolado em `configureLegacyApp.js`, com `configureApp.js` como alias
 - iniciada padronização de validação nos controllers NestJS com helpers `parseBody`, `parseQuery` e `parseIdParam`
   - aplicado em `customers`, `services`, `professionals` e `appointments`
+  - schema específico criado para query de disponibilidade de agenda
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**

@@ -30,7 +30,15 @@ const filterAppointmentSchema = z.object({
   ...paginationSchema
 });
 
+const availabilityAppointmentSchema = z.object({
+  professionalId: objectId.optional(),
+  date: z.string().optional(),
+  serviceId: objectId.optional(),
+  durationMinutes: z.coerce.number().int().min(1).max(480).optional(),
+});
+
 module.exports = {
+  availabilityAppointmentSchema,
   createAppointmentSchema,
   rescheduleAppointmentSchema,
   idParamSchema,
