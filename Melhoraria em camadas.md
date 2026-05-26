@@ -83,6 +83,7 @@ Para este projeto, eu faria em etapas:
 - runtime NestJS separado das rotas Express legadas usando `configureBaseApp`
 - testes de integração apontando para o runtime NestJS principal
 - app Express legado isolado em `src/legacyApp.js`, com `src/app.js` mantido como alias de compatibilidade
+- healthcheck migrado para controller NestJS, mantendo handler compartilhado para o legado
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**
