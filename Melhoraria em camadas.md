@@ -96,6 +96,12 @@ Para este projeto, eu faria em etapas:
 - `.env.example` organizado por provider de banco e variáveis de runtime
 - GitHub Actions alinhado com scripts separados de legado, integração e NestJS
 - `AppointmentProvider` e service legado de appointments removidos da dependência direta de Mongoose para validar IDs, usando util comum
+- regras auxiliares de appointments extraídas para `appointment.rules.js` e compartilhadas entre Nest e legado
+- filtros de listagem de appointments extraídos para `appointment.rules.js` e compartilhados entre Nest e legado
+- cálculo de janela e slots de disponibilidade extraído para `appointment.rules.js` e compartilhado entre Nest e legado
+- montagem de queries de busca extraída para `searchQuery.js` e compartilhada entre Nest e legado
+- asserções comuns de entidades extraídas para `entityAssertions.js` e compartilhadas entre Nest e legado
+- repository providers do Nest padronizados com fábrica `createRepositoryProvider`
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**

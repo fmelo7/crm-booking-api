@@ -1,8 +1,18 @@
 const { Injectable } = require('@nestjs/common');
 const CustomerRepositoryProvider = require('./customer.repository.provider');
 const AppointmentRepositoryProvider = require('../appointment/appointment.repository.provider');
+const {
+  assertFound,
+  assertNoLinkedAppointment,
+  assertRequiredFields,
+} = require('../../modules/common/entityAssertions');
+const { buildSearchQuery } = require('../../modules/common/searchQuery');
 
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const messages = {
+  linkedAppointment: 'Cliente possui agendamentos vinculados e não pode ser removido',
+  notFound: 'Cliente não encontrado',
+  required: 'Nome do cliente é obrigatório',
+};
 
 class CustomerProvider {
   constructor(customerRepository, appointmentRepository) {
@@ -11,26 +21,13 @@ class CustomerProvider {
   }
 
   create(data) {
-    const { name } = data;
-
-    if (!name) {
-      throw { status: 400, message: 'Nome do cliente é obrigatório' };
-    }
+    assertRequiredFields(data, ['name'], messages.required);
 
     return this.customerRepository.create(data);
   }
 
   list(filters) {
-    const query = {};
-
-    if (filters.search) {
-      const search = new RegExp(escapeRegExp(filters.search), 'i');
-      query.$or = [
-        { name: search },
-        { email: search },
-        { phone: search },
-      ];
-    }
+    const query = buildSearchQuery(filters.search, ['name', 'email', 'phone']);
 
     return this.customerRepository.paginate(query, {
       page: filters.page,
@@ -41,25 +38,20 @@ class CustomerProvider {
 
   async getById(id) {
     const item = await this.customerRepository.findById(id);
-    if (!item) throw { status: 404, message: 'Cliente não encontrado' };
-    return item;
+    return assertFound(item, messages.notFound);
   }
 
   async update(id, data) {
     const item = await this.customerRepository.updateById(id, data);
-    if (!item) throw { status: 404, message: 'Cliente não encontrado' };
-    return item;
+    return assertFound(item, messages.notFound);
   }
 
   async remove(id) {
     const appointment = await this.appointmentRepository.existsForCustomer(id);
-    if (appointment) {
-      throw { status: 409, message: 'Cliente possui agendamentos vinculados e não pode ser removido' };
-    }
+    assertNoLinkedAppointment(appointment, messages.linkedAppointment);
 
     const item = await this.customerRepository.deleteById(id);
-    if (!item) throw { status: 404, message: 'Cliente não encontrado' };
-    return item;
+    return assertFound(item, messages.notFound);
   }
 }
 

@@ -1,28 +1,12 @@
-const { Injectable } = require('@nestjs/common');
 const professionalRepository = require('../../modules/professional/professional.repository');
+const { createRepositoryProvider } = require('../common/repositoryProvider');
 
-class ProfessionalRepositoryProvider {
-  create(data) {
-    return professionalRepository.create(data);
-  }
-
-  paginate(query, options) {
-    return professionalRepository.paginate(query, options);
-  }
-
-  findById(id) {
-    return professionalRepository.findById(id);
-  }
-
-  updateById(id, data) {
-    return professionalRepository.updateById(id, data);
-  }
-
-  deleteById(id) {
-    return professionalRepository.deleteById(id);
-  }
-}
-
-Injectable()(ProfessionalRepositoryProvider);
+const ProfessionalRepositoryProvider = createRepositoryProvider(professionalRepository, [
+  'create',
+  'paginate',
+  'findById',
+  'updateById',
+  'deleteById',
+]);
 
 module.exports = ProfessionalRepositoryProvider;

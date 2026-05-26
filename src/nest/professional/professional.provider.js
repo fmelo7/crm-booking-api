@@ -1,8 +1,18 @@
 const { Injectable } = require('@nestjs/common');
 const AppointmentRepositoryProvider = require('../appointment/appointment.repository.provider');
 const ProfessionalRepositoryProvider = require('./professional.repository.provider');
+const {
+  assertFound,
+  assertNoLinkedAppointment,
+  assertRequiredFields,
+} = require('../../modules/common/entityAssertions');
+const { buildSearchQuery } = require('../../modules/common/searchQuery');
 
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const messages = {
+  linkedAppointment: 'Profissional possui agendamentos vinculados e não pode ser removido',
+  notFound: 'Profissional não encontrado',
+  required: 'Nome e categoria são obrigatórios',
+};
 
 class ProfessionalProvider {
   constructor(professionalRepository, appointmentRepository) {
@@ -11,27 +21,13 @@ class ProfessionalProvider {
   }
 
   create(data) {
-    const { name, category } = data;
-
-    if (!name || !category) {
-      throw { status: 400, message: 'Nome e categoria são obrigatórios' };
-    }
+    assertRequiredFields(data, ['name', 'category'], messages.required);
 
     return this.professionalRepository.create(data);
   }
 
   list(filters) {
-    const query = {};
-
-    if (filters.search) {
-      const search = new RegExp(escapeRegExp(filters.search), 'i');
-      query.$or = [
-        { name: search },
-        { category: search },
-        { email: search },
-        { phone: search },
-      ];
-    }
+    const query = buildSearchQuery(filters.search, ['name', 'category', 'email', 'phone']);
 
     return this.professionalRepository.paginate(query, {
       page: filters.page,
@@ -42,25 +38,20 @@ class ProfessionalProvider {
 
   async getById(id) {
     const item = await this.professionalRepository.findById(id);
-    if (!item) throw { status: 404, message: 'Profissional não encontrado' };
-    return item;
+    return assertFound(item, messages.notFound);
   }
 
   async update(id, data) {
     const item = await this.professionalRepository.updateById(id, data);
-    if (!item) throw { status: 404, message: 'Profissional não encontrado' };
-    return item;
+    return assertFound(item, messages.notFound);
   }
 
   async remove(id) {
     const appointment = await this.appointmentRepository.existsForProfessional(id);
-    if (appointment) {
-      throw { status: 409, message: 'Profissional possui agendamentos vinculados e não pode ser removido' };
-    }
+    assertNoLinkedAppointment(appointment, messages.linkedAppointment);
 
     const item = await this.professionalRepository.deleteById(id);
-    if (!item) throw { status: 404, message: 'Profissional não encontrado' };
-    return item;
+    return assertFound(item, messages.notFound);
   }
 }
 

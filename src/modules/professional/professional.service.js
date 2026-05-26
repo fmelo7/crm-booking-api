@@ -1,30 +1,26 @@
 const professionalRepository = require('./professional.repository');
 const appointmentRepository = require('../appointment/appointment.repository');
+const {
+  assertFound,
+  assertNoLinkedAppointment,
+  assertRequiredFields,
+} = require('../common/entityAssertions');
+const { buildSearchQuery } = require('../common/searchQuery');
 
-const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const messages = {
+  linkedAppointment: 'Profissional possui agendamentos vinculados e não pode ser removido',
+  notFound: 'Profissional não encontrado',
+  required: 'Nome e categoria são obrigatórios',
+};
 
 exports.createProfessional = async (data) => {
-  const { name, category } = data;
-
-  if (!name || !category) {
-    throw { status: 400, message: 'Nome e categoria são obrigatórios' };
-  }
+  assertRequiredFields(data, ['name', 'category'], messages.required);
 
   return professionalRepository.create(data);
 };
 
 exports.getProfessionals = async (filters = {}) => {
-  const query = {};
-
-  if (filters.search) {
-    const search = new RegExp(escapeRegExp(filters.search), 'i');
-    query.$or = [
-      { name: search },
-      { category: search },
-      { email: search },
-      { phone: search },
-    ];
-  }
+  const query = buildSearchQuery(filters.search, ['name', 'category', 'email', 'phone']);
 
   return professionalRepository.paginate(query, {
     page: filters.page,
@@ -35,23 +31,18 @@ exports.getProfessionals = async (filters = {}) => {
 
 exports.getProfessionalById = async (id) => {
   const item = await professionalRepository.findById(id);
-  if (!item) throw { status: 404, message: 'Profissional não encontrado' };
-  return item;
+  return assertFound(item, messages.notFound);
 };
 
 exports.updateProfessional = async (id, data) => {
   const item = await professionalRepository.updateById(id, data);
-  if (!item) throw { status: 404, message: 'Profissional não encontrado' };
-  return item;
+  return assertFound(item, messages.notFound);
 };
 
 exports.deleteProfessional = async (id) => {
   const appointment = await appointmentRepository.existsForProfessional(id);
-  if (appointment) {
-    throw { status: 409, message: 'Profissional possui agendamentos vinculados e não pode ser removido' };
-  }
+  assertNoLinkedAppointment(appointment, messages.linkedAppointment);
 
   const item = await professionalRepository.deleteById(id);
-  if (!item) throw { status: 404, message: 'Profissional não encontrado' };
-  return item;
+  return assertFound(item, messages.notFound);
 };
