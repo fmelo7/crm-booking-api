@@ -16,13 +16,6 @@ const professionalRoutes = require('./modules/professional/professional.routes')
 const serviceRoutes = require('./modules/service/service.routes');
 const customerRoutes = require('./modules/customer/customer.routes');
 
-const defaultLegacyModules = {
-  appointments: true,
-  professionals: true,
-  services: true,
-  customers: true,
-};
-
 const configureTerminalHandlers = (app) => {
   app.use(notFound);
   app.use(errorHandler);
@@ -30,13 +23,7 @@ const configureTerminalHandlers = (app) => {
   return app;
 };
 
-const configureApp = (app, options = {}) => {
-  const legacyModules = {
-    ...defaultLegacyModules,
-    ...(options.legacyModules || {}),
-  };
-  const includeTerminalHandlers = options.includeTerminalHandlers !== false;
-
+const configureBaseApp = (app) => {
   app.disable('x-powered-by');
   app.use(securityHeaders);
   app.use(cors);
@@ -73,28 +60,27 @@ const configureApp = (app, options = {}) => {
 
   app.use('/api', createRateLimiter());
 
-  if (legacyModules.appointments) {
-    app.use('/api/appointments', appointmentRoutes);
-  }
+  return app;
+};
 
-  if (legacyModules.professionals) {
-    app.use('/api/professionals', professionalRoutes);
-  }
+const configureLegacyRoutes = (app) => {
+  app.use('/api/appointments', appointmentRoutes);
+  app.use('/api/professionals', professionalRoutes);
+  app.use('/api/services', serviceRoutes);
+  app.use('/api/customers', customerRoutes);
 
-  if (legacyModules.services) {
-    app.use('/api/services', serviceRoutes);
-  }
+  return app;
+};
 
-  if (legacyModules.customers) {
-    app.use('/api/customers', customerRoutes);
-  }
-
-  if (includeTerminalHandlers) {
-    configureTerminalHandlers(app);
-  }
+const configureApp = (app) => {
+  configureBaseApp(app);
+  configureLegacyRoutes(app);
+  configureTerminalHandlers(app);
 
   return app;
 };
 
 module.exports = configureApp;
+module.exports.configureBaseApp = configureBaseApp;
+module.exports.configureLegacyRoutes = configureLegacyRoutes;
 module.exports.configureTerminalHandlers = configureTerminalHandlers;

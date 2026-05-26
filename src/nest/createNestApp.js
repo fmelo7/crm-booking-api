@@ -2,8 +2,10 @@ require('reflect-metadata');
 
 const { NestFactory } = require('@nestjs/core');
 const AppModule = require('./app.module');
-const configureApp = require('../configureApp');
-const { configureTerminalHandlers } = require('../configureApp');
+const {
+  configureBaseApp,
+  configureTerminalHandlers,
+} = require('../configureApp');
 const HttpExceptionFilter = require('./common/http-exception.filter');
 
 const createNestApp = async () => {
@@ -12,15 +14,7 @@ const createNestApp = async () => {
   });
   const expressApp = nestApp.getHttpAdapter().getInstance();
 
-  configureApp(expressApp, {
-    includeTerminalHandlers: false,
-    legacyModules: {
-      appointments: false,
-      customers: false,
-      professionals: false,
-      services: false,
-    },
-  });
+  configureBaseApp(expressApp);
   nestApp.useGlobalFilters(new HttpExceptionFilter());
   await nestApp.init();
   configureTerminalHandlers(expressApp);
