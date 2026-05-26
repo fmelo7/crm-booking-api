@@ -104,6 +104,7 @@ Para este projeto, eu faria em etapas:
 - repository providers do Nest padronizados com fábrica `createRepositoryProvider`
 - aplicação manual de decorators NestJS padronizada com helper `decorators.js`
 - metadata de injeção NestJS padronizada com helper `injection.js`
+- definição de módulos NestJS padronizada com helper `module.js`
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**

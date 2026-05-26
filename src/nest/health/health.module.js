@@ -1,10 +1,8 @@
-const { Module } = require('@nestjs/common');
 const HealthController = require('./health.controller');
+const { defineModule } = require('../common/module');
 
-class HealthModule {}
-
-Module({
+const HealthModule = defineModule({
   controllers: [HealthController],
-})(HealthModule);
+});
 
 module.exports = HealthModule;

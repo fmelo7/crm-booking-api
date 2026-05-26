@@ -1,14 +1,12 @@
-const { Module } = require('@nestjs/common');
 const CustomerController = require('./customer.controller');
 const CustomerProvider = require('./customer.provider');
 const RepositoryModule = require('../repository/repository.module');
+const { defineModule } = require('../common/module');
 
-class CustomerModule {}
-
-Module({
+const CustomerModule = defineModule({
   imports: [RepositoryModule],
   controllers: [CustomerController],
   providers: [CustomerProvider],
-})(CustomerModule);
+});
 
 module.exports = CustomerModule;
