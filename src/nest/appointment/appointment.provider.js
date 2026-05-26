@@ -1,8 +1,8 @@
-const { Injectable } = require('@nestjs/common');
 const AppointmentRepositoryProvider = require('./appointment.repository.provider');
 const CustomerRepositoryProvider = require('../customer/customer.repository.provider');
 const ProfessionalRepositoryProvider = require('../professional/professional.repository.provider');
 const ServiceRepositoryProvider = require('../service/service.repository.provider');
+const { defineInjectable } = require('../common/injection');
 const { isValidObjectId } = require('../../modules/common/objectId');
 const {
   buildAvailabilityWindow,
@@ -217,16 +217,11 @@ class AppointmentProvider {
   }
 }
 
-Reflect.defineMetadata(
-  'design:paramtypes',
-  [
-    AppointmentRepositoryProvider,
-    CustomerRepositoryProvider,
-    ServiceRepositoryProvider,
-    ProfessionalRepositoryProvider,
-  ],
-  AppointmentProvider
-);
-Injectable()(AppointmentProvider);
+defineInjectable(AppointmentProvider, [
+  AppointmentRepositoryProvider,
+  CustomerRepositoryProvider,
+  ServiceRepositoryProvider,
+  ProfessionalRepositoryProvider,
+]);
 
 module.exports = AppointmentProvider;

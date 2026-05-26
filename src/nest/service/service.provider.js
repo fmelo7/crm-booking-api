@@ -1,6 +1,6 @@
-const { Injectable } = require('@nestjs/common');
 const AppointmentRepositoryProvider = require('../appointment/appointment.repository.provider');
 const ServiceRepositoryProvider = require('./service.repository.provider');
+const { defineInjectable } = require('../common/injection');
 const {
   assertFound,
   assertNoLinkedAppointment,
@@ -55,11 +55,6 @@ class ServiceProvider {
   }
 }
 
-Reflect.defineMetadata(
-  'design:paramtypes',
-  [ServiceRepositoryProvider, AppointmentRepositoryProvider],
-  ServiceProvider
-);
-Injectable()(ServiceProvider);
+defineInjectable(ServiceProvider, [ServiceRepositoryProvider, AppointmentRepositoryProvider]);
 
 module.exports = ServiceProvider;

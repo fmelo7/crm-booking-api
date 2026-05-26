@@ -26,6 +26,7 @@ const {
   decorateMethod,
   decorateParam,
 } = require('../common/decorators');
+const { setParamTypes } = require('../common/injection');
 
 class ServiceController {
   constructor(serviceProvider) {
@@ -56,7 +57,7 @@ class ServiceController {
   }
 }
 
-Reflect.defineMetadata('design:paramtypes', [ServiceProvider], ServiceController);
+setParamTypes(ServiceController, [ServiceProvider]);
 
 Controller('api/services')(ServiceController);
 
