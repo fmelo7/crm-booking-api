@@ -4,13 +4,15 @@ const mongoose = require('mongoose');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
-const app = require('../../src/app');
+const createNestApp = require('../../src/nest/createNestApp');
 const Customer = require('../../src/modules/customer/customer.model');
 const Service = require('../../src/modules/service/service.model');
 const Professional = require('../../src/modules/professional/professional.model');
 const Appointment = require('../../src/modules/appointment/appointment.model');
 
+let app;
 let mongo;
+let nestApp;
 
 test.before(async () => {
   mongo = await MongoMemoryServer.create({
@@ -19,10 +21,16 @@ test.before(async () => {
     },
   });
   await mongoose.connect(mongo.getUri());
+  const createdApp = await createNestApp();
+  nestApp = createdApp.nestApp;
+  app = createdApp.expressApp;
   app.set('dbConnected', true);
 });
 
 test.after(async () => {
+  if (nestApp) {
+    await nestApp.close();
+  }
   await mongoose.disconnect();
   if (mongo) {
     await mongo.stop();

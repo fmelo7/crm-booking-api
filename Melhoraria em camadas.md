@@ -81,6 +81,7 @@ Para este projeto, eu faria em etapas:
   - `appointments`: regra movida para provider NestJS com repositories injetados
   - repositories organizados em `RepositoryModule` compartilhado no NestJS
 - runtime NestJS separado das rotas Express legadas usando `configureBaseApp`
+- testes de integração apontando para o runtime NestJS principal
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**
