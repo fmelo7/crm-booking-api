@@ -4,4 +4,9 @@ const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, {
   message: 'Invalid ObjectId'
 });
 
-module.exports = { objectId };
+const isValidObjectId = (value) => objectId.safeParse(value).success;
+
+module.exports = {
+  isValidObjectId,
+  objectId,
+};

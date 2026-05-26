@@ -1,11 +1,9 @@
 const { Injectable } = require('@nestjs/common');
-const mongoose = require('mongoose');
 const AppointmentRepositoryProvider = require('./appointment.repository.provider');
 const CustomerRepositoryProvider = require('../customer/customer.repository.provider');
 const ProfessionalRepositoryProvider = require('../professional/professional.repository.provider');
 const ServiceRepositoryProvider = require('../service/service.repository.provider');
-
-const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+const { isValidObjectId } = require('../../modules/common/objectId');
 
 const parseStartAt = (startAt) => {
   const startDate = new Date(startAt);
@@ -49,7 +47,7 @@ class AppointmentProvider {
       throw { status: 400, message: 'Campos obrigatórios ausentes' };
     }
 
-    if (!isValidId(customerId) || !isValidId(serviceId) || !isValidId(professionalId)) {
+    if (!isValidObjectId(customerId) || !isValidObjectId(serviceId) || !isValidObjectId(professionalId)) {
       throw { status: 400, message: 'IDs inválidos' };
     }
 
@@ -138,7 +136,7 @@ class AppointmentProvider {
   }
 
   async getById(id) {
-    if (!isValidId(id)) {
+    if (!isValidObjectId(id)) {
       throw { status: 400, message: 'ID de agendamento inválido' };
     }
 
@@ -150,7 +148,7 @@ class AppointmentProvider {
   async reschedule(id, data) {
     const { startAt, notes } = data;
 
-    if (!isValidId(id)) {
+    if (!isValidObjectId(id)) {
       throw { status: 400, message: 'ID de agendamento inválido' };
     }
 
@@ -202,7 +200,7 @@ class AppointmentProvider {
   }
 
   async cancel(id) {
-    if (!isValidId(id)) {
+    if (!isValidObjectId(id)) {
       throw { status: 400, message: 'ID de agendamento inválido' };
     }
 
@@ -221,7 +219,7 @@ class AppointmentProvider {
   }
 
   async complete(id) {
-    if (!isValidId(id)) {
+    if (!isValidObjectId(id)) {
       throw { status: 400, message: 'ID de agendamento inválido' };
     }
 
@@ -240,12 +238,12 @@ class AppointmentProvider {
   }
 
   async getAvailability({ professionalId, date, serviceId, durationMinutes = 60 }) {
-    if (!isValidId(professionalId)) {
+    if (!isValidObjectId(professionalId)) {
       throw { status: 400, message: 'Professional inválido' };
     }
 
     if (serviceId) {
-      if (!isValidId(serviceId)) {
+      if (!isValidObjectId(serviceId)) {
         throw { status: 400, message: 'Serviço inválido' };
       }
 

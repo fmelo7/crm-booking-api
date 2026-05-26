@@ -1,10 +1,8 @@
-const mongoose = require('mongoose');
 const appointmentRepository = require('./appointment.repository');
 const customerRepository = require('../customer/customer.repository');
 const serviceRepository = require('../service/service.repository');
 const professionalRepository = require('../professional/professional.repository');
-
-const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+const { isValidObjectId } = require('../common/objectId');
 
 const parseStartAt = (startAt) => {
   const startDate = new Date(startAt);
@@ -35,7 +33,7 @@ exports.createAppointment = async (data) => {
     throw { status: 400, message: 'Campos obrigatórios ausentes' };
   }
 
-  if (!isValidId(customerId) || !isValidId(serviceId) || !isValidId(professionalId)) {
+  if (!isValidObjectId(customerId) || !isValidObjectId(serviceId) || !isValidObjectId(professionalId)) {
     throw { status: 400, message: 'IDs inválidos' };
   }
 
@@ -124,7 +122,7 @@ exports.getAllAppointments = async (filters = {}) => {
 };
 
 exports.getAppointmentById = async (id) => {
-  if (!isValidId(id)) {
+  if (!isValidObjectId(id)) {
     throw { status: 400, message: 'ID de agendamento inválido' };
   }
 
@@ -136,7 +134,7 @@ exports.getAppointmentById = async (id) => {
 exports.rescheduleAppointment = async (id, data) => {
   const { startAt, notes } = data;
 
-  if (!isValidId(id)) {
+  if (!isValidObjectId(id)) {
     throw { status: 400, message: 'ID de agendamento inválido' };
   }
 
@@ -188,7 +186,7 @@ exports.rescheduleAppointment = async (id, data) => {
 };
 
 exports.cancelAppointment = async (id) => {
-  if (!isValidId(id)) {
+  if (!isValidObjectId(id)) {
     throw { status: 400, message: 'ID de agendamento inválido' };
   }
 
@@ -207,7 +205,7 @@ exports.cancelAppointment = async (id) => {
 };
 
 exports.completeAppointment = async (id) => {
-  if (!isValidId(id)) {
+  if (!isValidObjectId(id)) {
     throw { status: 400, message: 'ID de agendamento inválido' };
   }
 
@@ -226,12 +224,12 @@ exports.completeAppointment = async (id) => {
 };
 
 exports.getAvailability = async ({ professionalId, date, serviceId, durationMinutes = 60 }) => {
-  if (!isValidId(professionalId)) {
+  if (!isValidObjectId(professionalId)) {
     throw { status: 400, message: 'Professional inválido' };
   }
 
   if (serviceId) {
-    if (!isValidId(serviceId)) {
+    if (!isValidObjectId(serviceId)) {
       throw { status: 400, message: 'Serviço inválido' };
     }
 
