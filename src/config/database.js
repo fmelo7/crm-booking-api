@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { getDatabaseProvider, isRailwayRuntime } = require('../modules/common/databaseProvider');
 const { connectPostgres, DEFAULT_POSTGRES_URI, getPostgresUri } = require('./postgres');
+const { log } = require('../middlewares/logger');
 
 const DEFAULT_MONGODB_URI = 'mongodb://127.0.0.1:27017/crm-booking-api';
 
