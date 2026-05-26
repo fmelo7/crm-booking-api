@@ -1,4 +1,4 @@
 const express = require('express');
-const configureApp = require('./configureApp');
+const configureLegacyApp = require('./configureLegacyApp');
 
-module.exports = configureApp(express());
+module.exports = configureLegacyApp(express());
