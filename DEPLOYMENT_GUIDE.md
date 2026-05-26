@@ -16,7 +16,7 @@
 
 ### 1.2 Configure o Repositório
 - **Repository name:** `crm-booking-api`
-- **Description:** `CRM Booking API with Express, MongoDB and Node.js`
+- **Description:** `CRM Booking API with NestJS, PostgreSQL/MongoDB and Node.js`
 - **Visibility:** Public (recomendado) ou Private
 - **Não inicialize** com README, .gitignore, ou LICENSE (já temos)
 - Clique em **Create repository**
@@ -46,7 +46,7 @@ git push -u origin main
 ## 🛠️ Passo 3: Preparar o Projeto para Railway
 
 ### 3.1 Configurar PORT variável
-Seu projeto já está pronto! O Railway usará a variável `PORT` do `.env`
+Seu projeto já está pronto! O Railway injeta a variável `PORT` automaticamente em runtime.
 
 O projeto também inclui `railway.json` com:
 - comando de start: `npm start`
@@ -56,7 +56,9 @@ O projeto também inclui `railway.json` com:
 
 ### 3.2 Variáveis de Ambiente no Railway
 O Railway precisará de:
-- `MONGODB_URI` - String de conexão com MongoDB
+- `DATABASE_PROVIDER` - `postgres` ou `mongodb`
+- `POSTGRES_URI` ou `DATABASE_URL` - String de conexão com PostgreSQL, se usar Postgres
+- `MONGODB_URI` - String de conexão com MongoDB, se usar MongoDB
 - `PORT` - Porta (deixar em branco, Railway define automaticamente)
 - `NODE_ENV` - Pode ser `production`
 
@@ -77,13 +79,25 @@ O Railway precisará de:
 No painel do Railway:
 1. Clique em **Variables**
 2. Adicione as variáveis:
-   - `MONGODB_URI` = String de conexão com MongoDB Atlas ou local
+   - `DATABASE_PROVIDER` = `postgres` ou `mongodb`
+   - `POSTGRES_URI` = String de conexão com PostgreSQL, se usar Postgres
+   - `MONGODB_URI` = String de conexão com MongoDB Atlas, se usar MongoDB
    - `NODE_ENV` = `production`
    - `PORT` = (deixar em branco - Railway atribui automaticamente)
 
-### 4.4 Adicione MongoDB
+### 4.4 Adicione Banco de Dados
 
-**Opção A: MongoDB Atlas (Recomendado - Nuvem)**
+**Opção A: PostgreSQL do Railway**
+1. No painel do Railway, clique em **"Add Service"**
+2. Selecione **"Database"**
+3. Escolha **"PostgreSQL"**
+4. Configure na API:
+   - `DATABASE_PROVIDER=postgres`
+   - `POSTGRES_URI=${{Postgres.DATABASE_URL}}`
+
+> Em alguns projetos o Railway expõe a variável como `DATABASE_URL`. A API aceita `DATABASE_URL`, mas `POSTGRES_URI` deixa explícito qual banco a API está usando.
+
+**Opção B: MongoDB Atlas**
 1. Vá para [mongodb.com/atlas](https://mongodb.com/atlas)
 2. Crie uma conta gratuita
 3. Crie um cluster gratuito
@@ -92,15 +106,11 @@ No painel do Railway:
    ```text
    mongodb+srv://<usuario>:<senha>@cluster0.bcqvd84.mongodb.net/crm-booking-api?retryWrites=true&w=majority
    ```
-6. Cole em `MONGODB_URI` no Railway
+6. Configure na API:
+   - `DATABASE_PROVIDER=mongodb`
+   - `MONGODB_URI=<sua string do Atlas>`
 
 > Se a string não incluir o nome do database, o Mongoose pode abrir conexão em um database padrão inesperado. É melhor definir explicitamente o nome do banco.
-
-**Opção B: Use MongoDB do Railway**
-1. No painel do Railway, clique em **"Add Service"**
-2. Selecione **"Database"**
-3. Escolha **"MongoDB"**
-4. Railway automaticamente adicionará `MONGODB_URI`
 
 ---
 
@@ -114,7 +124,7 @@ No painel do Railway:
 
 3. Verifique os logs no painel do Railway para ver se está funcionando
 
-O health check só retorna `200` quando o MongoDB está conectado. Se a aplicação subir sem conexão com banco, `/api/health` retorna `503`, o Railway considera o deploy não saudável e tenta reiniciar conforme `railway.json`.
+O health check só retorna `200` quando o banco configurado está conectado. Se a aplicação subir sem conexão com banco, `/api/health` retorna `503`, o Railway considera o deploy não saudável e tenta reiniciar conforme `railway.json`.
 
 ---
 

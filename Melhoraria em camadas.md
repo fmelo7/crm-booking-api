@@ -92,6 +92,10 @@ Para este projeto, eu faria em etapas:
   - schema específico criado para query de disponibilidade de agenda
 - scripts de teste separados para legado, integração e NestJS
 - README alinhado com runtime NestJS, bancos suportados, scripts de teste e estrutura atual
+- guia de deploy alinhado com NestJS, PostgreSQL/MongoDB e healthcheck atual
+- `.env.example` organizado por provider de banco e variáveis de runtime
+- GitHub Actions alinhado com scripts separados de legado, integração e NestJS
+- `AppointmentProvider` e service legado de appointments removidos da dependência direta de Mongoose para validar IDs, usando util comum
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**
