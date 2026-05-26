@@ -3,7 +3,7 @@
 require('dotenv').config();
 
 const { getDatabaseProvider } = require('./modules/common/databaseProvider');
-const app = require('./app');
+const createNestApp = require('./nest/createNestApp');
 const { connectDatabase, maskDatabaseUri } = require('./config/database');
 const { getMaskedEnv, isEnvDebugEnabled } = require('./config/envDebug');
 const { log } = require('./middlewares/logger');
@@ -14,12 +14,6 @@ const DATABASE_CONNECT_RETRIES = Number(process.env.DATABASE_CONNECT_RETRIES || 
 const DATABASE_CONNECT_RETRY_MS = Number(process.env.DATABASE_CONNECT_RETRY_MS || 3000);
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const startServer = () => {
-  app.listen(PORT, () => {
-    log('info', 'HTTP server started', { port: Number(PORT) });
-  });
-};
 
 log('info', 'Database provider resolved', {
   databaseProvider: DATABASE_PROVIDER,
@@ -61,16 +55,18 @@ const connectDatabaseWithRetry = async () => {
   throw lastError;
 };
 
-connectDatabaseWithRetry()
-  .then((uri) => {
-    app.set('dbConnected', true);
+const bootstrap = async () => {
+  const { nestApp, expressApp } = await createNestApp();
+
+  try {
+    const uri = await connectDatabaseWithRetry();
+    expressApp.set('dbConnected', true);
     log('info', 'Database connected', {
       databaseProvider: DATABASE_PROVIDER,
       databaseUri: maskDatabaseUri(uri),
     });
-  })
-  .catch((err) => {
-    app.set('dbConnected', false);
+  } catch (err) {
+    expressApp.set('dbConnected', false);
     log('error', 'Database connection failed', {
       databaseProvider: DATABASE_PROVIDER,
       error: {
@@ -78,7 +74,19 @@ connectDatabaseWithRetry()
         stack: err.stack,
       },
     });
-  })
-  .finally(() => {
-    startServer();
+  }
+
+  await nestApp.listen(PORT);
+  log('info', 'HTTP server started', { port: Number(PORT), runtime: 'nestjs' });
+};
+
+bootstrap()
+  .catch((err) => {
+    log('error', 'HTTP server failed to start', {
+      error: {
+        message: err.message,
+        stack: err.stack,
+      },
+    });
+    process.exit(1);
   });

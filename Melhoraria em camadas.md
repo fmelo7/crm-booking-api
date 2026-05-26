@@ -65,3 +65,9 @@ Para este projeto, eu faria em etapas:
 - Criar contrato mínimo por entidade: create, findById, findMany, updateById, deleteById, exists.
 - Só depois adicionar Postgres.
 - Padronizar IDs, datas e paginação, porque Mongo usa _id e Postgres normalmente usa id.
+
+**9. Migrar para NestJS**
+
+- fazer a migração para NestJS no branch migrate-nestjs
+- etapa inicial feita: bootstrap com NestJS mantendo as rotas Express existentes
+- próxima etapa: migrar um módulo por vez para controllers/providers nativos do NestJS

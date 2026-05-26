@@ -17,10 +17,15 @@
     "test": "NODE_ENV=test node --test test/controllers/*.test.js test/integration/*.test.js test/modules/*.test.js"
   },
   "dependencies": {
+    "@nestjs/common": "^11.1.24",
+    "@nestjs/core": "^11.1.24",
+    "@nestjs/platform-express": "^11.1.24",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongoose": "^9.6.2",
     "pg": "^8.21.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
     "swagger-ui-express": "^4.1.6",
     "zod": "^4.4.3"
   },
