@@ -15,6 +15,7 @@ const createNestApp = async () => {
   configureApp(expressApp, {
     includeTerminalHandlers: false,
     legacyModules: {
+      appointments: false,
       customers: false,
       professionals: false,
       services: false,

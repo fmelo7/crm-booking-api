@@ -1,4 +1,4 @@
-Melhoraria em camadas, nesta ordem:
+# Melhorias em camadas, nesta ordem:
 
 **1. Segurança básica**
 - Remover credenciais reais dos `.env` locais se estiverem no repo.
@@ -73,4 +73,5 @@ Para este projeto, eu faria em etapas:
 - módulo `customers` migrado para controller/provider nativos do NestJS no runtime
 - módulo `services` migrado para controller/provider nativos do NestJS no runtime
 - módulo `professionals` migrado para controller/provider nativos do NestJS no runtime
+- módulo `appointments` migrado para controller/provider nativos do NestJS no runtime
 - próxima etapa: migrar um módulo por vez para controllers/providers nativos do NestJS
