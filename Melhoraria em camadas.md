@@ -91,6 +91,7 @@ Para este projeto, eu faria em etapas:
   - aplicado em `customers`, `services`, `professionals` e `appointments`
   - schema específico criado para query de disponibilidade de agenda
 - scripts de teste separados para legado, integração e NestJS
+- README alinhado com runtime NestJS, bancos suportados, scripts de teste e estrutura atual
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**

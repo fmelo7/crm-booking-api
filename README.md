@@ -1,22 +1,23 @@
 # CRM Booking API
 
-Backend REST para um CRM de agendamentos, construído com Node.js, Express e MongoDB.
+Backend REST para um CRM de agendamentos, construído com Node.js, NestJS e suporte a MongoDB ou PostgreSQL.
 
 A API gerencia clientes, serviços, profissionais e agendamentos. A documentação OpenAPI fica disponível via Swagger UI.
 
 ## Stack
 
 - Node.js 20.x
+- NestJS
 - Express 5
-- MongoDB com Mongoose
+- MongoDB com Mongoose ou PostgreSQL com `pg`
 - Swagger UI
-- `node:test` para testes unitários
+- `node:test` para testes automatizados
 
 ## Requisitos
 
 - Node.js 20.x
 - npm
-- MongoDB local ou uma URI do MongoDB Atlas
+- MongoDB local/Atlas ou PostgreSQL local/remoto
 
 ## Instalação
 
@@ -138,11 +139,11 @@ Exemplo de resposta:
 }
 ```
 
-Quando o MongoDB não está conectado, o endpoint responde `503` com `status: "degraded"`. Esse comportamento é usado como readiness check no Railway.
+Quando o banco configurado não está conectado, o endpoint responde `503` com `status: "degraded"`. Esse comportamento é usado como readiness check no Railway.
 
 ## Observabilidade
 
-A API emite logs estruturados em JSON para inicialização, conexão com MongoDB, erros e requisições HTTP.
+A API emite logs estruturados em JSON para inicialização, conexão com banco de dados, erros e requisições HTTP.
 
 Cada requisição recebe um `x-request-id`; se o cliente não enviar esse header, a API gera um UUID. O mesmo identificador aparece nos logs e na resposta do health check.
 
@@ -270,9 +271,10 @@ Payload para reagendar:
 
 Regras de agendamento:
 
-- `endAt` é calculado automaticamente como 60 minutos depois de `startAt`.
+- `endAt` é calculado automaticamente usando a duração real do serviço.
 - A API impede conflito de horário para o mesmo profissional.
-- Cancelar um agendamento remove o registro.
+- Cancelar um agendamento altera o status para `cancelled`.
+- Concluir um agendamento altera o status para `completed`.
 
 ## Testes
 
@@ -280,7 +282,15 @@ Regras de agendamento:
 npm test
 ```
 
-Os testes unitários usam `node:test` e mocks dos repositories. Eles não dependem de banco rodando.
+Scripts disponíveis:
+
+```bash
+npm run test:legacy
+npm run test:integration
+npm run test:nest
+```
+
+Os testes usam `node:test`. A suíte de integração sobe MongoDB em memória; os testes Nest e de integração usam `supertest`.
 
 Cobertura atual:
 
@@ -295,10 +305,23 @@ Cobertura atual:
 ```text
 src/
   app.js
+  legacyApp.js
   server.js
   swagger.js
+  configureBaseApp.js
+  configureLegacyApp.js
   config/
     database.js
+    postgres.js
+  nest/
+    app.module.js
+    createNestApp.js
+    appointment/
+    customer/
+    health/
+    professional/
+    repository/
+    service/
   modules/
     appointment/
       appointment.controller.js
@@ -311,18 +334,23 @@ src/
     service/
 test/
   helpers/
+  integration/
   modules/
+  nest/
 ```
 
 Responsabilidades:
 
-- `app.js`: configura Express, JSON, Swagger UI, health check e rotas.
-- `server.js`: carrega envs e inicia o servidor.
-- `config/database.js`: centraliza a conexão com MongoDB.
+- `server.js`: carrega envs, conecta o banco e inicia o servidor NestJS.
+- `nest/`: runtime principal com controllers, modules, providers e repositories injetáveis.
+- `configureBaseApp.js`: configura middlewares HTTP compartilhados, arquivos estáticos, Swagger e rate limit.
+- `legacyApp.js`: app Express legado mantido para compatibilidade.
+- `app.js`: alias de compatibilidade para `legacyApp.js`.
+- `config/database.js`: centraliza a conexão com MongoDB ou PostgreSQL.
 - `swagger.js`: monta a spec OpenAPI a partir dos módulos.
-- `*.routes.js`: define as rotas HTTP.
-- `*.controller.js`: traduz request/response.
-- `*.service.js`: concentra regras de negócio.
+- `modules/`: camada legada e adapters de repository Mongo/Postgres.
+- `*.routes.js`: define as rotas HTTP do legado Express.
+- `*.service.js`: concentra regras de negócio legadas ainda cobertas por testes.
 - `*.model.js`: define schemas Mongoose.
 - `*.swagger.js`: documenta schemas e paths do módulo.
 
