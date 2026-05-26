@@ -6,6 +6,10 @@ const {
   Req,
 } = require('@nestjs/common');
 const { buildHealthResponse } = require('../../health');
+const {
+  decorateMethod,
+  decorateParam,
+} = require('../common/decorators');
 
 class HealthController {
   getHealth(req) {
@@ -19,7 +23,7 @@ class HealthController {
 
 Controller('api')(HealthController);
 
-Get('health')(HealthController.prototype, 'getHealth', Object.getOwnPropertyDescriptor(HealthController.prototype, 'getHealth'));
-Req()(HealthController.prototype, 'getHealth', 0);
+decorateMethod(HealthController, 'getHealth', [Get('health')]);
+decorateParam(HealthController, 'getHealth', 0, Req());
 
 module.exports = HealthController;

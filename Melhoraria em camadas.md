@@ -102,6 +102,7 @@ Para este projeto, eu faria em etapas:
 - montagem de queries de busca extraída para `searchQuery.js` e compartilhada entre Nest e legado
 - asserções comuns de entidades extraídas para `entityAssertions.js` e compartilhadas entre Nest e legado
 - repository providers do Nest padronizados com fábrica `createRepositoryProvider`
+- aplicação manual de decorators NestJS padronizada com helper `decorators.js`
 - depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
 
 **10. Caminho para microserviços**

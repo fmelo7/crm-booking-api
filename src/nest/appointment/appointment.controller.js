@@ -25,6 +25,10 @@ const {
   parseIdParam,
   parseQuery,
 } = require('../common/zod');
+const {
+  decorateMethod,
+  decorateParam,
+} = require('../common/decorators');
 
 class AppointmentController {
   constructor(appointmentProvider) {
@@ -69,27 +73,26 @@ Reflect.defineMetadata('design:paramtypes', [AppointmentProvider], AppointmentCo
 
 Controller('api/appointments')(AppointmentController);
 
-Get('availability')(AppointmentController.prototype, 'getAvailability', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'getAvailability'));
-Query()(AppointmentController.prototype, 'getAvailability', 0);
+decorateMethod(AppointmentController, 'getAvailability', [Get('availability')]);
+decorateParam(AppointmentController, 'getAvailability', 0, Query());
 
-Get()(AppointmentController.prototype, 'list', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'list'));
-Query()(AppointmentController.prototype, 'list', 0);
+decorateMethod(AppointmentController, 'list', [Get()]);
+decorateParam(AppointmentController, 'list', 0, Query());
 
-Get(':id')(AppointmentController.prototype, 'getById', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'getById'));
-Param('id')(AppointmentController.prototype, 'getById', 0);
+decorateMethod(AppointmentController, 'getById', [Get(':id')]);
+decorateParam(AppointmentController, 'getById', 0, Param('id'));
 
-Post()(AppointmentController.prototype, 'create', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'create'));
-HttpCode(201)(AppointmentController.prototype, 'create', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'create'));
-Body()(AppointmentController.prototype, 'create', 0);
+decorateMethod(AppointmentController, 'create', [Post(), HttpCode(201)]);
+decorateParam(AppointmentController, 'create', 0, Body());
 
-Put(':id/reschedule')(AppointmentController.prototype, 'reschedule', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'reschedule'));
-Param('id')(AppointmentController.prototype, 'reschedule', 0);
-Body()(AppointmentController.prototype, 'reschedule', 1);
+decorateMethod(AppointmentController, 'reschedule', [Put(':id/reschedule')]);
+decorateParam(AppointmentController, 'reschedule', 0, Param('id'));
+decorateParam(AppointmentController, 'reschedule', 1, Body());
 
-Patch(':id/complete')(AppointmentController.prototype, 'complete', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'complete'));
-Param('id')(AppointmentController.prototype, 'complete', 0);
+decorateMethod(AppointmentController, 'complete', [Patch(':id/complete')]);
+decorateParam(AppointmentController, 'complete', 0, Param('id'));
 
-Delete(':id/cancel')(AppointmentController.prototype, 'cancel', Object.getOwnPropertyDescriptor(AppointmentController.prototype, 'cancel'));
-Param('id')(AppointmentController.prototype, 'cancel', 0);
+decorateMethod(AppointmentController, 'cancel', [Delete(':id/cancel')]);
+decorateParam(AppointmentController, 'cancel', 0, Param('id'));
 
 module.exports = AppointmentController;

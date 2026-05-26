@@ -22,6 +22,10 @@ const {
   parseIdParam,
   parseQuery,
 } = require('../common/zod');
+const {
+  decorateMethod,
+  decorateParam,
+} = require('../common/decorators');
 
 class ProfessionalController {
   constructor(professionalProvider) {
@@ -56,22 +60,20 @@ Reflect.defineMetadata('design:paramtypes', [ProfessionalProvider], Professional
 
 Controller('api/professionals')(ProfessionalController);
 
-Get()(ProfessionalController.prototype, 'list', Object.getOwnPropertyDescriptor(ProfessionalController.prototype, 'list'));
-Query()(ProfessionalController.prototype, 'list', 0);
+decorateMethod(ProfessionalController, 'list', [Get()]);
+decorateParam(ProfessionalController, 'list', 0, Query());
 
-Get(':id')(ProfessionalController.prototype, 'getById', Object.getOwnPropertyDescriptor(ProfessionalController.prototype, 'getById'));
-Param('id')(ProfessionalController.prototype, 'getById', 0);
+decorateMethod(ProfessionalController, 'getById', [Get(':id')]);
+decorateParam(ProfessionalController, 'getById', 0, Param('id'));
 
-Post()(ProfessionalController.prototype, 'create', Object.getOwnPropertyDescriptor(ProfessionalController.prototype, 'create'));
-HttpCode(201)(ProfessionalController.prototype, 'create', Object.getOwnPropertyDescriptor(ProfessionalController.prototype, 'create'));
-Body()(ProfessionalController.prototype, 'create', 0);
+decorateMethod(ProfessionalController, 'create', [Post(), HttpCode(201)]);
+decorateParam(ProfessionalController, 'create', 0, Body());
 
-Put(':id')(ProfessionalController.prototype, 'update', Object.getOwnPropertyDescriptor(ProfessionalController.prototype, 'update'));
-Param('id')(ProfessionalController.prototype, 'update', 0);
-Body()(ProfessionalController.prototype, 'update', 1);
+decorateMethod(ProfessionalController, 'update', [Put(':id')]);
+decorateParam(ProfessionalController, 'update', 0, Param('id'));
+decorateParam(ProfessionalController, 'update', 1, Body());
 
-Delete(':id')(ProfessionalController.prototype, 'remove', Object.getOwnPropertyDescriptor(ProfessionalController.prototype, 'remove'));
-HttpCode(204)(ProfessionalController.prototype, 'remove', Object.getOwnPropertyDescriptor(ProfessionalController.prototype, 'remove'));
-Param('id')(ProfessionalController.prototype, 'remove', 0);
+decorateMethod(ProfessionalController, 'remove', [Delete(':id'), HttpCode(204)]);
+decorateParam(ProfessionalController, 'remove', 0, Param('id'));
 
 module.exports = ProfessionalController;

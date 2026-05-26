@@ -22,6 +22,10 @@ const {
   parseIdParam,
   parseQuery,
 } = require('../common/zod');
+const {
+  decorateMethod,
+  decorateParam,
+} = require('../common/decorators');
 
 class CustomerController {
   constructor(customerProvider) {
@@ -56,22 +60,20 @@ Reflect.defineMetadata('design:paramtypes', [CustomerProvider], CustomerControll
 
 Controller('api/customers')(CustomerController);
 
-Get()(CustomerController.prototype, 'list', Object.getOwnPropertyDescriptor(CustomerController.prototype, 'list'));
-Query()(CustomerController.prototype, 'list', 0);
+decorateMethod(CustomerController, 'list', [Get()]);
+decorateParam(CustomerController, 'list', 0, Query());
 
-Get(':id')(CustomerController.prototype, 'getById', Object.getOwnPropertyDescriptor(CustomerController.prototype, 'getById'));
-Param('id')(CustomerController.prototype, 'getById', 0);
+decorateMethod(CustomerController, 'getById', [Get(':id')]);
+decorateParam(CustomerController, 'getById', 0, Param('id'));
 
-Post()(CustomerController.prototype, 'create', Object.getOwnPropertyDescriptor(CustomerController.prototype, 'create'));
-HttpCode(201)(CustomerController.prototype, 'create', Object.getOwnPropertyDescriptor(CustomerController.prototype, 'create'));
-Body()(CustomerController.prototype, 'create', 0);
+decorateMethod(CustomerController, 'create', [Post(), HttpCode(201)]);
+decorateParam(CustomerController, 'create', 0, Body());
 
-Put(':id')(CustomerController.prototype, 'update', Object.getOwnPropertyDescriptor(CustomerController.prototype, 'update'));
-Param('id')(CustomerController.prototype, 'update', 0);
-Body()(CustomerController.prototype, 'update', 1);
+decorateMethod(CustomerController, 'update', [Put(':id')]);
+decorateParam(CustomerController, 'update', 0, Param('id'));
+decorateParam(CustomerController, 'update', 1, Body());
 
-Delete(':id')(CustomerController.prototype, 'remove', Object.getOwnPropertyDescriptor(CustomerController.prototype, 'remove'));
-HttpCode(204)(CustomerController.prototype, 'remove', Object.getOwnPropertyDescriptor(CustomerController.prototype, 'remove'));
-Param('id')(CustomerController.prototype, 'remove', 0);
+decorateMethod(CustomerController, 'remove', [Delete(':id'), HttpCode(204)]);
+decorateParam(CustomerController, 'remove', 0, Param('id'));
 
 module.exports = CustomerController;

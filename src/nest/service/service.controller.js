@@ -22,6 +22,10 @@ const {
   parseIdParam,
   parseQuery,
 } = require('../common/zod');
+const {
+  decorateMethod,
+  decorateParam,
+} = require('../common/decorators');
 
 class ServiceController {
   constructor(serviceProvider) {
@@ -56,22 +60,20 @@ Reflect.defineMetadata('design:paramtypes', [ServiceProvider], ServiceController
 
 Controller('api/services')(ServiceController);
 
-Get()(ServiceController.prototype, 'list', Object.getOwnPropertyDescriptor(ServiceController.prototype, 'list'));
-Query()(ServiceController.prototype, 'list', 0);
+decorateMethod(ServiceController, 'list', [Get()]);
+decorateParam(ServiceController, 'list', 0, Query());
 
-Get(':id')(ServiceController.prototype, 'getById', Object.getOwnPropertyDescriptor(ServiceController.prototype, 'getById'));
-Param('id')(ServiceController.prototype, 'getById', 0);
+decorateMethod(ServiceController, 'getById', [Get(':id')]);
+decorateParam(ServiceController, 'getById', 0, Param('id'));
 
-Post()(ServiceController.prototype, 'create', Object.getOwnPropertyDescriptor(ServiceController.prototype, 'create'));
-HttpCode(201)(ServiceController.prototype, 'create', Object.getOwnPropertyDescriptor(ServiceController.prototype, 'create'));
-Body()(ServiceController.prototype, 'create', 0);
+decorateMethod(ServiceController, 'create', [Post(), HttpCode(201)]);
+decorateParam(ServiceController, 'create', 0, Body());
 
-Put(':id')(ServiceController.prototype, 'update', Object.getOwnPropertyDescriptor(ServiceController.prototype, 'update'));
-Param('id')(ServiceController.prototype, 'update', 0);
-Body()(ServiceController.prototype, 'update', 1);
+decorateMethod(ServiceController, 'update', [Put(':id')]);
+decorateParam(ServiceController, 'update', 0, Param('id'));
+decorateParam(ServiceController, 'update', 1, Body());
 
-Delete(':id')(ServiceController.prototype, 'remove', Object.getOwnPropertyDescriptor(ServiceController.prototype, 'remove'));
-HttpCode(204)(ServiceController.prototype, 'remove', Object.getOwnPropertyDescriptor(ServiceController.prototype, 'remove'));
-Param('id')(ServiceController.prototype, 'remove', 0);
+decorateMethod(ServiceController, 'remove', [Delete(':id'), HttpCode(204)]);
+decorateParam(ServiceController, 'remove', 0, Param('id'));
 
 module.exports = ServiceController;
