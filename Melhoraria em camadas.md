@@ -74,4 +74,32 @@ Para este projeto, eu faria em etapas:
 - módulo `services` migrado para controller/provider nativos do NestJS no runtime
 - módulo `professionals` migrado para controller/provider nativos do NestJS no runtime
 - módulo `appointments` migrado para controller/provider nativos do NestJS no runtime
-- próxima etapa: migrar um módulo por vez para controllers/providers nativos do NestJS
+- próxima etapa: transformar os services/repositories em providers NestJS reais com injeção de dependência
+  - iniciado por `customers`: regra movida para provider NestJS com repositories injetados
+- depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
+
+**10. Caminho para microserviços**
+
+Antes de separar em microserviços, manter o projeto como monólito modular em NestJS:
+
+- Separar bem os módulos por domínio: appointments, customers, services e professionals.
+- Definir contratos claros entre módulos, evitando imports diretos difíceis de extrair depois.
+- Centralizar tipos/DTOs e validações compartilhadas em uma camada comum.
+- Manter repositories atrás de providers para permitir trocar implementação local por chamada externa no futuro.
+- Fortalecer testes por módulo antes de extrair qualquer serviço.
+
+Quando fizer sentido extrair, começar pelo módulo `appointments`, porque concentra as regras mais importantes:
+
+- disponibilidade de agenda;
+- conflito de horários;
+- reagendamento;
+- cancelamento/conclusão;
+- histórico de alterações.
+
+Estratégia sugerida para a extração:
+
+- Começar em monorepo com `apps/api-gateway` e `apps/appointments-service`.
+- Usar REST no início se quiser simplicidade, ou mensageria/gRPC quando houver necessidade real.
+- Evitar banco compartilhado entre microserviços no longo prazo.
+- Planejar eventos de domínio, por exemplo `AppointmentCreated`, `AppointmentRescheduled`, `AppointmentCancelled`.
+- Só extrair `customers`, `services` e `professionals` depois que `appointments` estiver estável como serviço separado.
