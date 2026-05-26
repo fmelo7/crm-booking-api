@@ -19,7 +19,11 @@ const {
   idParamSchema,
   rescheduleAppointmentSchema,
 } = require('../../modules/appointment/appointment.validation');
-const { parseSchema } = require('../common/zod');
+const {
+  parseBody,
+  parseIdParam,
+  parseQuery,
+} = require('../common/zod');
 
 class AppointmentController {
   constructor(appointmentProvider) {
@@ -38,34 +42,30 @@ class AppointmentController {
   }
 
   list(query) {
-    return this.appointmentProvider.list(parseSchema(filterAppointmentSchema, query));
+    return this.appointmentProvider.list(parseQuery(filterAppointmentSchema, query));
   }
 
   getById(id) {
-    parseSchema(idParamSchema, { id });
-    return this.appointmentProvider.getById(id);
+    return this.appointmentProvider.getById(parseIdParam(idParamSchema, id));
   }
 
   create(body) {
-    return this.appointmentProvider.create(parseSchema(createAppointmentSchema, body));
+    return this.appointmentProvider.create(parseBody(createAppointmentSchema, body));
   }
 
   reschedule(id, body) {
-    parseSchema(idParamSchema, { id });
     return this.appointmentProvider.reschedule(
-      id,
-      parseSchema(rescheduleAppointmentSchema, body)
+      parseIdParam(idParamSchema, id),
+      parseBody(rescheduleAppointmentSchema, body)
     );
   }
 
   complete(id) {
-    parseSchema(idParamSchema, { id });
-    return this.appointmentProvider.complete(id);
+    return this.appointmentProvider.complete(parseIdParam(idParamSchema, id));
   }
 
   cancel(id) {
-    parseSchema(idParamSchema, { id });
-    return this.appointmentProvider.cancel(id);
+    return this.appointmentProvider.cancel(parseIdParam(idParamSchema, id));
   }
 }
 
