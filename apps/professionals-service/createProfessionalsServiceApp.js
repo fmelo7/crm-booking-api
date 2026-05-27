@@ -9,6 +9,7 @@ const {
   createRateLimiter,
 } = require('../../src/middlewares/security');
 const { requestLogger } = require('../../src/middlewares/logger');
+const { createInternalServiceAuth } = require('../common/internalServiceAuth');
 const {
   configureTerminalHandlers,
 } = require('../../src/configureBaseApp');
@@ -20,6 +21,7 @@ const configureProfessionalsServiceBaseApp = (app) => {
   app.use(cors);
   app.use(express.json({ limit: '1mb' }));
   app.use(requestLogger);
+  app.use(createInternalServiceAuth());
   app.set('dbConnected', false);
   app.use('/api', createRateLimiter());
 

@@ -13,6 +13,8 @@ const previousEnv = {
   GATEWAY_BEARER_TOKENS: process.env.GATEWAY_BEARER_TOKENS,
   GATEWAY_PUBLIC_PATHS: process.env.GATEWAY_PUBLIC_PATHS,
   APPOINTMENTS_SERVICE_URL: process.env.APPOINTMENTS_SERVICE_URL,
+  INTERNAL_SERVICE_TOKEN: process.env.INTERNAL_SERVICE_TOKEN,
+  APPOINTMENTS_SERVICE_INTERNAL_TOKEN: process.env.APPOINTMENTS_SERVICE_INTERNAL_TOKEN,
 };
 const originalFetch = global.fetch;
 
@@ -20,6 +22,8 @@ test.before(async () => {
   process.env.GATEWAY_AUTH_MODE = 'bearer';
   process.env.GATEWAY_BEARER_TOKENS = 'test-token';
   delete process.env.APPOINTMENTS_SERVICE_URL;
+  delete process.env.INTERNAL_SERVICE_TOKEN;
+  delete process.env.APPOINTMENTS_SERVICE_INTERNAL_TOKEN;
   delete process.env.GATEWAY_PUBLIC_PATHS;
 
   const app = await createNestApp();
@@ -78,6 +82,7 @@ test('gateway resolves appointments service url from env', () => {
 
 test('gateway proxies appointment routes to appointments service when configured', async () => {
   process.env.APPOINTMENTS_SERVICE_URL = 'http://appointments-service:3001';
+  process.env.INTERNAL_SERVICE_TOKEN = 'internal-test-token';
 
   let proxiedRequest;
   global.fetch = async (url, options) => {
@@ -99,6 +104,7 @@ test('gateway proxies appointment routes to appointments service when configured
   assert.equal(proxiedRequest.url, 'http://appointments-service:3001/api/appointments?status=scheduled');
   assert.equal(proxiedRequest.options.method, 'GET');
   assert.equal(proxiedRequest.options.headers['x-request-id'], response.headers['x-request-id']);
+  assert.equal(proxiedRequest.options.headers['x-internal-token'], 'internal-test-token');
   assert.equal(response.headers['x-gateway-target'], 'appointments-service');
   assert.deepEqual(response.body, { data: [{ id: 'appointment-id' }] });
 

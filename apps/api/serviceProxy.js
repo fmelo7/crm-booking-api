@@ -16,6 +16,9 @@ const hopByHopHeaders = new Set([
 const getAppointmentsServiceUrl = () =>
   (process.env.APPOINTMENTS_SERVICE_URL || '').trim().replace(/\/$/, '');
 
+const getInternalServiceToken = () =>
+  (process.env.APPOINTMENTS_SERVICE_INTERNAL_TOKEN || process.env.INTERNAL_SERVICE_TOKEN || '').trim();
+
 const buildHeaders = (req) => {
   const headers = {};
 
@@ -31,6 +34,11 @@ const buildHeaders = (req) => {
 
   if (req.gateway?.auth?.subject) {
     headers['x-authenticated-subject'] = req.gateway.auth.subject;
+  }
+
+  const internalToken = getInternalServiceToken();
+  if (internalToken) {
+    headers['x-internal-token'] = internalToken;
   }
 
   return headers;
@@ -97,4 +105,5 @@ const createAppointmentsServiceProxy = ({
 module.exports = {
   createAppointmentsServiceProxy,
   getAppointmentsServiceUrl,
+  getInternalServiceToken,
 };

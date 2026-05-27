@@ -64,6 +64,9 @@ Variáveis:
 | `GATEWAY_AUTH_MODE` | Não | Modo de auth do gateway: `disabled` ou `bearer`. Padrão: `disabled`. |
 | `GATEWAY_BEARER_TOKENS` | Não | Tokens bearer aceitos quando `GATEWAY_AUTH_MODE=bearer`, separados por vírgula. |
 | `GATEWAY_PUBLIC_PATHS` | Não | Prefixos públicos extras, separados por vírgula. Padrões: `/`, `/api/health`, `/api-docs`. |
+| `INTERNAL_SERVICE_TOKEN` | Não | Token exigido pelos serviços internos em `x-internal-token` quando configurado. |
+| `APPOINTMENTS_SERVICE_INTERNAL_TOKEN` | Não | Token específico enviado pelo gateway ao appointments-service. Usa `INTERNAL_SERVICE_TOKEN` como fallback. |
+| `INTERNAL_SERVICE_PUBLIC_PATHS` | Não | Prefixos públicos extras dos serviços internos. Padrão: `/api/health`. |
 | `DATABASE_CONNECT_RETRIES` | Não | Tentativas de conexão com o banco antes de marcar a API como degradada. Padrão: `10`. |
 | `DATABASE_CONNECT_RETRY_MS` | Não | Intervalo entre tentativas de conexão em milissegundos. Padrão: `3000`. |
 | `DEBUG_ENV` | Não | Inclui variáveis mascaradas em `GET /api/health`. Use temporariamente para diagnóstico. |
@@ -112,6 +115,7 @@ Para fazer o gateway encaminhar appointments para o serviço separado:
 
 ```env
 APPOINTMENTS_SERVICE_URL=http://localhost:3001
+INTERNAL_SERVICE_TOKEN=um-token-interno
 ```
 
 Infraestrutura local com Docker:
@@ -397,6 +401,7 @@ Responsabilidades:
 - `apps/api`: entrypoint do runtime HTTP principal e primeira camada de gateway.
 - `apps/api/gateway.js`: contexto de gateway, autenticação bearer configurável e rotas públicas.
 - `apps/api/serviceProxy.js`: proxy configurável do gateway para serviços internos, começando por appointments.
+- `apps/common/internalServiceAuth.js`: autenticação simples de chamadas internas entre gateway e serviços.
 - `apps/frontend/public`: frontend estático servido pela API.
 - `apps/appointments-service`: primeiro boot separado do domínio de appointments.
 - `apps/customers-service`: primeiro boot separado do domínio de customers.

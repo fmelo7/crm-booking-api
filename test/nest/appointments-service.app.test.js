@@ -6,6 +6,7 @@ const createAppointmentsServiceApp = require('../../apps/appointments-service/cr
 
 let nestApp;
 let expressApp;
+const previousInternalToken = process.env.INTERNAL_SERVICE_TOKEN;
 
 test.before(async () => {
   const app = await createAppointmentsServiceApp();
@@ -16,6 +17,12 @@ test.before(async () => {
 test.after(async () => {
   if (nestApp) {
     await nestApp.close();
+  }
+
+  if (previousInternalToken === undefined) {
+    delete process.env.INTERNAL_SERVICE_TOKEN;
+  } else {
+    process.env.INTERNAL_SERVICE_TOKEN = previousInternalToken;
   }
 });
 
@@ -43,4 +50,21 @@ test('appointments service does not expose customer routes', async () => {
     .expect(404);
 
   assert.equal(response.body.error.status, 404);
+});
+
+test('appointments service requires internal token when configured', async () => {
+  process.env.INTERNAL_SERVICE_TOKEN = 'internal-test-token';
+
+  const rejected = await request(expressApp)
+    .get('/api/appointments/availability')
+    .expect(401);
+
+  assert.equal(rejected.body.error.code, 'INTERNAL_UNAUTHORIZED');
+
+  const accepted = await request(expressApp)
+    .get('/api/appointments/availability')
+    .set('x-internal-token', 'internal-test-token')
+    .expect(400);
+
+  assert.equal(accepted.body.error.message, 'Professional inválido');
 });

@@ -305,6 +305,8 @@ Ainda pendente para uma infraestrutura madura:
 
 **10. Segurança**
 
+Status: concluído na primeira versão.
+
 Camada de segurança no gateway:
 
 - OAuth2/OIDC ou JWT validado no gateway;
@@ -319,6 +321,26 @@ Serviços internos também devem validar chamadas internas:
 - token interno ou mTLS no futuro;
 - checagem de escopos internos;
 - rejeitar chamadas sem contexto de identidade quando necessário.
+
+Implementado:
+
+- gateway mantém autenticação externa configurável por `GATEWAY_AUTH_MODE`.
+- serviços internos passam a ter autenticação opcional por `x-internal-token`.
+- `INTERNAL_SERVICE_TOKEN` ativa a proteção de rotas `/api` nos serviços.
+- `/api/health` permanece público por padrão nos serviços internos.
+- `INTERNAL_SERVICE_PUBLIC_PATHS` permite liberar prefixos extras.
+- proxy do gateway propaga `x-internal-token` para `appointments-service`.
+- `APPOINTMENTS_SERVICE_INTERNAL_TOKEN` permite token específico para appointments, com fallback para `INTERNAL_SERVICE_TOKEN`.
+- docker-compose local configura `INTERNAL_SERVICE_TOKEN` entre gateway e serviços.
+- testes cobrem rejeição sem token e propagação do token pelo gateway.
+
+Ainda pendente para segurança madura:
+
+- OAuth2/OIDC real no gateway;
+- autorização por escopos/permissões;
+- mTLS entre serviços;
+- rotação/gestão segura de segredos;
+- auditoria persistente de ações sensíveis.
 
 **11. O que evitar**
 

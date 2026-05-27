@@ -22,4 +22,5 @@ Observações:
 
 - O compose ainda usa um MongoDB compartilhado enquanto o roadmap não chega na separação de banco/schema por serviço.
 - O gateway encaminha `/api/appointments/*` para `appointments-service` via `APPOINTMENTS_SERVICE_URL`.
+- Serviços internos exigem `x-internal-token` quando `INTERNAL_SERVICE_TOKEN` está configurado.
 - Logs continuam em JSON no stdout/stderr, prontos para coleta por Docker, ELK/OpenSearch ou outro agente.

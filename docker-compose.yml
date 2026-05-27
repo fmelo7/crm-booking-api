@@ -21,6 +21,7 @@ services:
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
       APPOINTMENTS_SERVICE_URL: http://appointments-service:3001
+      INTERNAL_SERVICE_TOKEN: local-internal-token
       GATEWAY_AUTH_MODE: disabled
       RATE_LIMIT_WINDOW_MS: 900000
       RATE_LIMIT_MAX: 300
@@ -46,6 +47,7 @@ services:
       APPOINTMENTS_SERVICE_PORT: 3001
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      INTERNAL_SERVICE_TOKEN: local-internal-token
       RATE_LIMIT_WINDOW_MS: 900000
       RATE_LIMIT_MAX: 300
     ports:
@@ -68,6 +70,7 @@ services:
       CUSTOMERS_SERVICE_PORT: 3002
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      INTERNAL_SERVICE_TOKEN: local-internal-token
       RATE_LIMIT_WINDOW_MS: 900000
       RATE_LIMIT_MAX: 300
     ports:
@@ -90,6 +93,7 @@ services:
       SERVICES_SERVICE_PORT: 3003
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      INTERNAL_SERVICE_TOKEN: local-internal-token
       RATE_LIMIT_WINDOW_MS: 900000
       RATE_LIMIT_MAX: 300
     ports:
@@ -112,6 +116,7 @@ services:
       PROFESSIONALS_SERVICE_PORT: 3004
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      INTERNAL_SERVICE_TOKEN: local-internal-token
       RATE_LIMIT_WINDOW_MS: 900000
       RATE_LIMIT_MAX: 300
     ports:
