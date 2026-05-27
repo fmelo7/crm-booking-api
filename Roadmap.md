@@ -344,12 +344,24 @@ Ainda pendente para segurança madura:
 
 **11. O que evitar**
 
+Status: guardrails automatizados criados.
+
 - Criar uma lib compartilhada com toda regra de negócio.
 - Compartilhar model Mongoose ou entity SQL entre serviços.
 - Fazer um serviço acessar diretamente o banco do outro.
 - Fazer todos os serviços dependerem de `packages/domains/*`.
 - Extrair todos os serviços ao mesmo tempo.
 - Começar com mensageria complexa antes de estabilizar os contratos.
+
+Implementado:
+
+- `test/nest/architecture-boundaries.test.js` criado como suíte de proteção arquitetural.
+- contratos não podem importar runtime, banco ou implementação de domínio.
+- camadas puras de appointments não podem importar infraestrutura ou NestJS.
+- apps de serviço não podem importar outros apps de serviço diretamente.
+- app module de cada serviço só pode expor o próprio domínio e health.
+
+Esses testes não eliminam todo acoplamento transitório ainda existente, mas impedem os acoplamentos mais perigosos de crescerem enquanto a extração amadurece.
 
 **12. Ordem recomendada**
 
