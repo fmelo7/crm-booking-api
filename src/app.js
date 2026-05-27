@@ -1,1 +1,1 @@
-module.exports = require('./legacyApp');
+module.exports = require('./nest/createNestApp');

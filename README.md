@@ -52,6 +52,7 @@ Variáveis:
 | `POSTGRES_URI` | Não | URI do PostgreSQL. Usada quando `DATABASE_PROVIDER=postgres`. |
 | `DATABASE_URL` | Não | URI alternativa do PostgreSQL, comum no Railway. Usada se `POSTGRES_URI` não estiver definida. |
 | `SWAGGER_SERVER_URL` | Não | URL exibida como servidor base no Swagger. |
+| `FRONTEND_PUBLIC_DIR` | Não | Diretório estático servido pela API. Padrão: `apps/frontend/public`. |
 | `CORS_ORIGINS` | Não | Lista de origens permitidas, separadas por vírgula. Exemplo: `https://app.com,http://localhost:5173`. |
 | `RATE_LIMIT_WINDOW_MS` | Não | Janela do rate limit em milissegundos. Padrão: `900000`. |
 | `RATE_LIMIT_MAX` | Não | Número máximo de requisições por IP dentro da janela. Padrão: `300`. |
@@ -285,12 +286,13 @@ npm test
 Scripts disponíveis:
 
 ```bash
+npm test
 npm run test:legacy
 npm run test:integration
 npm run test:nest
 ```
 
-Os testes usam `node:test`. A suíte de integração sobe MongoDB em memória; os testes Nest e de integração usam `supertest`.
+Os testes usam `node:test`. A suíte padrão cobre o caminho principal NestJS com testes Nest e integração. A suíte de integração sobe MongoDB em memória; os testes Nest e de integração usam `supertest`. A suíte legada Express permanece separada em `npm run test:legacy` enquanto for útil para compatibilidade.
 
 Cobertura atual:
 
@@ -303,6 +305,15 @@ Cobertura atual:
 ## Estrutura
 
 ```text
+apps/
+  api/
+    app.js
+    server.js
+  frontend/
+    public/
+  appointments-service/
+packages/
+  contracts/
 src/
   app.js
   legacyApp.js
@@ -341,11 +352,15 @@ test/
 
 Responsabilidades:
 
-- `server.js`: carrega envs, conecta o banco e inicia o servidor NestJS.
+- `apps/api`: entrypoint do runtime HTTP principal.
+- `apps/frontend/public`: frontend estático servido pela API.
+- `apps/appointments-service`: placeholder para a primeira extração de microserviço.
+- `packages/contracts`: contratos compartilháveis entre app, frontend e futuros serviços.
+- `src/server.js`: carrega envs, conecta o banco e inicia o servidor NestJS.
+- `src/app.js`: alias para a factory do app NestJS usada pelo caminho principal.
 - `nest/`: runtime principal com controllers, modules, providers e repositories injetáveis.
 - `configureBaseApp.js`: configura middlewares HTTP compartilhados, arquivos estáticos, Swagger e rate limit.
-- `legacyApp.js`: app Express legado mantido para compatibilidade.
-- `app.js`: alias de compatibilidade para `legacyApp.js`.
+- `legacyApp.js`: app Express legado mantido apenas para compatibilidade explícita.
 - `config/database.js`: centraliza a conexão com MongoDB ou PostgreSQL.
 - `swagger.js`: monta a spec OpenAPI a partir dos módulos.
 - `modules/`: camada legada e adapters de repository Mongo/Postgres.

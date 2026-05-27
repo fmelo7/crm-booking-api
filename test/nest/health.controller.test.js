@@ -39,3 +39,11 @@ test('Nest health controller returns ok when database is connected', async () =>
   assert.equal(response.body.status, 'ok');
   assert.equal(response.body.dbConnected, true);
 });
+
+test('Nest app serves the frontend from apps/frontend/public', async () => {
+  const response = await request(expressApp)
+    .get('/')
+    .expect(200);
+
+  assert.match(response.text, /<title>Sev365 Booking<\/title>/);
+});

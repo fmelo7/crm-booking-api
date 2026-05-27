@@ -105,7 +105,17 @@ Para este projeto, eu faria em etapas:
 - aplicação manual de decorators NestJS padronizada com helper `decorators.js`
 - metadata de injeção NestJS padronizada com helper `injection.js`
 - definição de módulos NestJS padronizada com helper `module.js`
-- depois remover a camada Express legada do caminho principal, mantendo apenas compatibilidade enquanto for útil
+- camada Express legada removida do caminho principal:
+  - `src/app.js` agora exporta a factory NestJS
+  - `npm test` agora cobre NestJS + integração, sem rodar a suíte legada por padrão
+  - suíte Express legada mantida explicitamente em `npm run test:legacy`
+- projeto preparado para separação em apps e microserviços:
+  - `apps/api` criado como entrypoint do runtime HTTP principal
+  - `apps/frontend/public` criado como fronteira do frontend estático
+  - `apps/appointments-service` criado como placeholder da primeira extração de microserviço
+  - `packages/contracts` criado para contratos compartilháveis, começando por eventos de appointments
+  - `FRONTEND_PUBLIC_DIR` permite apontar a API para outro build de frontend
+- próximo passo: reduzir dependência dos módulos Nest em artefatos legados de controller/routes/services até restarem apenas adapters/repositories compartilhados e contratos estáveis
 
 **10. Caminho para microserviços**
 
