@@ -11,7 +11,7 @@ const {
   calculateEndAt,
   ensureScheduled,
   parseStartAt,
-} = require('../../../packages/domains/appointment/appointment.rules');
+} = require('../../../packages/domains/appointment/rules');
 
 class AppointmentProvider {
   constructor(

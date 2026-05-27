@@ -19,7 +19,7 @@ const {
   filterAppointmentSchema,
   idParamSchema,
   rescheduleAppointmentSchema,
-} = require('../../../packages/domains/appointment/appointment.validation');
+} = require('../../../packages/domains/appointment/validation');
 const {
   parseBody,
   parseIdParam,

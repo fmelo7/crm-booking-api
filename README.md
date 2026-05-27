@@ -56,6 +56,9 @@ Variáveis:
 | `CORS_ORIGINS` | Não | Lista de origens permitidas, separadas por vírgula. Exemplo: `https://app.com,http://localhost:5173`. |
 | `RATE_LIMIT_WINDOW_MS` | Não | Janela do rate limit em milissegundos. Padrão: `900000`. |
 | `RATE_LIMIT_MAX` | Não | Número máximo de requisições por IP dentro da janela. Padrão: `300`. |
+| `GATEWAY_AUTH_MODE` | Não | Modo de auth do gateway: `disabled` ou `bearer`. Padrão: `disabled`. |
+| `GATEWAY_BEARER_TOKENS` | Não | Tokens bearer aceitos quando `GATEWAY_AUTH_MODE=bearer`, separados por vírgula. |
+| `GATEWAY_PUBLIC_PATHS` | Não | Prefixos públicos extras, separados por vírgula. Padrões: `/`, `/api/health`, `/api-docs`. |
 | `DATABASE_CONNECT_RETRIES` | Não | Tentativas de conexão com o banco antes de marcar a API como degradada. Padrão: `10`. |
 | `DATABASE_CONNECT_RETRY_MS` | Não | Intervalo entre tentativas de conexão em milissegundos. Padrão: `3000`. |
 | `DEBUG_ENV` | Não | Inclui variáveis mascaradas em `GET /api/health`. Use temporariamente para diagnóstico. |
@@ -315,10 +318,13 @@ packages/
   contracts/
   domains/
     appointment/
-      appointment.model.js
       appointment.repository.js
-      appointment.validation.js
-      appointment.swagger.js
+      rules/
+      validation/
+      infrastructure/
+        mongo/
+        postgres/
+      docs/
     customer/
     professional/
     service/
@@ -348,11 +354,15 @@ test/
 
 Responsabilidades:
 
-- `apps/api`: entrypoint do runtime HTTP principal.
+- `apps/api`: entrypoint do runtime HTTP principal e primeira camada de gateway.
+- `apps/api/gateway.js`: contexto de gateway, autenticação bearer configurável e rotas públicas.
 - `apps/frontend/public`: frontend estático servido pela API.
 - `apps/appointments-service`: placeholder para a primeira extração de microserviço.
 - `packages/contracts`: contratos compartilháveis entre app, frontend e futuros serviços.
 - `packages/domains`: pacotes internos por domínio com models, repositories, validações, regras e Swagger.
+- `packages/domains/appointment/rules`: regras puras de agenda sem dependência de banco.
+- `packages/domains/appointment/validation`: adapters de validação do domínio para contratos públicos.
+- `packages/domains/appointment/infrastructure`: adapters MongoDB/PostgreSQL do domínio.
 - `packages/shared/common`: utilitários compartilhados sem dependência de runtime HTTP.
 - `src/server.js`: carrega envs, conecta o banco e inicia o servidor NestJS.
 - `src/app.js`: alias para a factory do app NestJS usada pelo caminho principal.
@@ -360,9 +370,9 @@ Responsabilidades:
 - `configureBaseApp.js`: configura middlewares HTTP compartilhados, arquivos estáticos, Swagger e rate limit.
 - `config/database.js`: centraliza a conexão com MongoDB ou PostgreSQL.
 - `swagger.js`: monta a spec OpenAPI a partir dos módulos.
-- `*.model.js`: define schemas Mongoose.
-- `*.repository.js`: seleciona o adapter MongoDB ou PostgreSQL do domínio.
-- `*.validation.js`: define schemas de validação compartilhados pelos controllers NestJS.
+- `*.model.js`: define schemas Mongoose dentro da infraestrutura MongoDB do domínio.
+- `*.repository.js`: seleciona ou implementa o adapter MongoDB/PostgreSQL do domínio.
+- `validation/`: expõe schemas de validação consumidos pelos controllers NestJS a partir de contratos públicos.
 - `*.swagger.js`: documenta schemas e paths do módulo.
 
 ## Deploy

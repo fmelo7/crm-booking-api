@@ -8,7 +8,7 @@ const createNestApp = require('../../src/nest/createNestApp');
 const Customer = require('../../packages/domains/customer/customer.model');
 const Service = require('../../packages/domains/service/service.model');
 const Professional = require('../../packages/domains/professional/professional.model');
-const Appointment = require('../../packages/domains/appointment/appointment.model');
+const Appointment = require('../../packages/domains/appointment/infrastructure/mongo/appointment.model');
 
 let app;
 let mongo;

@@ -17,4 +17,5 @@ test('api app entrypoint exports the NestJS app factory', () => {
 test('contracts package exports appointment events without infrastructure dependencies', () => {
   assert.equal(contracts.APPOINTMENT_EVENTS_VERSION, 1);
   assert.equal(contracts.AppointmentEvents.CREATED, 'appointment.created');
+  assert.equal(contracts.AppointmentStatus.SCHEDULED, 'scheduled');
 });

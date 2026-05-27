@@ -4,20 +4,15 @@ Objetivo: evoluir o projeto de um monólito modular em NestJS para uma arquitetu
 
 Desenho alvo:
 
-```mermaid
-flowchart TB
- subgraph MS["microservices"]
-        APS{{"appointments-service"}}
-        CS{{"customers-service"}}
-        SS{{"services-service"}}
-        PS{{"professionals-service"}}
-  end
- subgraph INFRA["infra"]
-        IF["infra\n- bancos por serviço\n- filas/event bus\n- logs\n- métricas\n- tracing\n- ELK/OpenSearch\n- alertas"]
-  end
-    FE["frontend"] -- HTTPS GET/POST/PUT/DELETE --> APIGW["api-gateway / camada de segurança"]
-    APIGW -- autenticação / autorização / rate limit / auditoria / roteamento --> MS
-    MS -- APIs internas + eventos de domínio --> INFRA
+```
+[frontend]
+  -> HTTPS GET/POST/PUT/DELETE
+[api-gateway / camada de segurança]
+  -> autenticação, autorização, rate limit, auditoria, roteamento
+[appointments-service] <-> [customers-service] <-> [services-service] <-> [professionals-service]
+  -> comunicação por APIs internas e eventos de domínio
+[infra]
+  -> bancos por serviço, filas/event bus, logs, métricas, tracing, ELK/OpenSearch, alertas
 ```
 
 Regra principal: cada microserviço deve conseguir evoluir, testar, publicar e trocar sua infraestrutura sem depender diretamente do código interno dos outros.
@@ -46,7 +41,9 @@ Esse estado ainda é monólito modular. Os pacotes ajudam a organizar a extraç�
 - O gateway cuida de segurança, identidade, rate limit e roteamento externo.
 - Observabilidade deve ser transversal: logs estruturados, métricas, tracing e correlação por request id.
 
-**3. Próximo passo imediato: contratos**
+**3. Contratos públicos de appointments**
+
+Status: concluído na primeira versão.
 
 Antes de extrair qualquer serviço, formalizar em `packages/contracts`:
 
@@ -63,15 +60,27 @@ Antes de extrair qualquer serviço, formalizar em `packages/contracts`:
 
 Importante: `packages/contracts` não deve importar NestJS, Mongoose, `pg`, repositories ou código de infraestrutura.
 
+Implementado:
+
+- `appointment.constants.js` com versão de contrato e status.
+- `appointment.schemas.js` com DTOs públicos, queries, recurso e eventos versionados.
+- `appointment.errors.js` com códigos de erro públicos.
+- `appointment.events.js` usando a mesma versão do contrato.
+- `packages/domains/appointment/validation` passou a consumir os schemas públicos.
+- testes garantem validação de DTO/evento e ausência de imports de infraestrutura no pacote de contratos.
+
 **4. Separar domínio puro de infraestrutura**
 
-Dentro dos pacotes atuais, separar melhor:
+Status: concluído para `appointments` na primeira versão.
+
+Estrutura aplicada:
 
 ```text
 packages/domains/appointment/
+  appointment.repository.js
   rules/
   validation/
-  contracts-adapters/
+  docs/
   infrastructure/
     mongo/
     postgres/
@@ -84,7 +93,19 @@ Meta:
 - controllers Nest continuam em `apps/api` ou `src/nest`;
 - `appointments-service` poderá copiar ou assumir seu domínio sem carregar outros serviços junto.
 
+Implementado:
+
+- regras movidas para `packages/domains/appointment/rules`;
+- validação movida para `packages/domains/appointment/validation`;
+- Swagger movido para `packages/domains/appointment/docs`;
+- model/repository Mongo movidos para `packages/domains/appointment/infrastructure/mongo`;
+- repository Postgres movido para `packages/domains/appointment/infrastructure/postgres`;
+- `appointment.repository.js` ficou como seletor estável de adapter por provider;
+- imports do Nest e testes atualizados para as novas fronteiras.
+
 **5. Criar o api-gateway**
+
+Status: concluído na primeira versão.
 
 Evoluir `apps/api` para papel de gateway:
 
@@ -96,6 +117,18 @@ Evoluir `apps/api` para papel de gateway:
 - padronizar respostas de erro.
 
 No início, `apps/api` ainda pode chamar providers locais. Após extrações, passa a chamar HTTP interno, gRPC ou mensageria.
+
+Implementado:
+
+- `apps/api/gateway.js` criado como camada explícita de gateway.
+- contexto `req.gateway` com auth, rota pública e alvo lógico.
+- header `x-gateway-runtime` emitido nas respostas.
+- `GATEWAY_AUTH_MODE=disabled` preserva comportamento local/dev.
+- `GATEWAY_AUTH_MODE=bearer` exige `Authorization: Bearer <token>` em rotas `/api`, exceto rotas públicas.
+- `GATEWAY_BEARER_TOKENS` configura tokens aceitos para a primeira versão.
+- `GATEWAY_PUBLIC_PATHS` permite liberar prefixos extras.
+- health, docs e frontend permanecem públicos por padrão.
+- testes cobrem bloqueio de rota protegida e health público com auth ligada.
 
 **6. Extrair primeiro: appointments-service**
 
@@ -213,9 +246,9 @@ Serviços internos também devem validar chamadas internas:
 
 **12. Ordem recomendada**
 
-1. Formalizar contratos em `packages/contracts`.
-2. Separar domínio puro de infraestrutura em `packages/domains/appointment`.
-3. Transformar `apps/api` em gateway de segurança/roteamento.
+1. Formalizar contratos em `packages/contracts`. Concluído na primeira versão.
+2. Separar domínio puro de infraestrutura em `packages/domains/appointment`. Concluído para appointments na primeira versão.
+3. Transformar `apps/api` em gateway de segurança/roteamento. Concluído na primeira versão.
 4. Criar boot real para `apps/appointments-service`.
 5. Mover fluxo de appointments para o serviço novo.
 6. Fazer gateway chamar appointments-service.
