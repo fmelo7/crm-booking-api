@@ -96,6 +96,7 @@ No painel do Railway:
    - `POSTGRES_URI=${{Postgres.DATABASE_URL}}`
 
 > Em alguns projetos o Railway expõe a variável como `DATABASE_URL`. A API aceita `DATABASE_URL`, mas `POSTGRES_URI` deixa explícito qual banco a API está usando.
+> A sintaxe `${{Postgres.DATABASE_URL}}` é uma referência interna do Railway. Não coloque esse valor no arquivo `.env` local, porque o Docker Compose tenta interpretar `${...}` ao carregar `.env`.
 
 **Opção B: MongoDB Atlas**
 1. Vá para [mongodb.com/atlas](https://mongodb.com/atlas)

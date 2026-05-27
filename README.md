@@ -125,6 +125,9 @@ npm run infra:up
 npm run infra:down
 ```
 
+O compose deste repositório sobe apenas gateway e serviços. Configure o banco em `.env.local`, apontando para a sua infraestrutura local/provisionada.
+Depois de subir, acesse o frontend em `http://localhost:8080`.
+
 ## Interface Web
 
 Depois de subir a API, acesse:

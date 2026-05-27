@@ -1,26 +1,29 @@
 # Infraestrutura local
 
-Primeira camada de infraestrutura para rodar o gateway, os serviços e o banco localmente.
+Primeira camada para rodar o gateway e os serviços localmente.
 
 ```bash
 npm run infra:up
 npm run infra:down
 ```
 
-Os scripts usam `.env.example` como `--env-file` para evitar conflito com `.env` locais de deploy.
+Os scripts usam `.env.local` como `--env-file`. O arquivo `.env` pode conter variáveis de deploy, como referências do Railway, e não deve ser usado pelo Docker Compose local.
 
 Serviços expostos:
 
+- Frontend: `http://localhost:8080`
 - API gateway: `http://localhost:3000`
 - Appointments service: `http://localhost:3001`
 - Customers service: `http://localhost:3002`
 - Services service: `http://localhost:3003`
 - Professionals service: `http://localhost:3004`
-- MongoDB: `mongodb://localhost:27017/crm-booking-api`
 
 Observações:
 
-- O compose ainda usa um MongoDB compartilhado enquanto o roadmap não chega na separação de banco/schema por serviço.
+- Este compose não sobe MongoDB, PostgreSQL ou outra infraestrutura de banco.
+- A conexão de banco deve vir de `.env.local`, apontando para a sua infra local/provisionada separadamente.
+- Se o banco estiver exposto na máquina host ou em outro compose local, use `host.docker.internal` no `.env.local`, por exemplo `postgres://postgres:postgres@host.docker.internal:5432/crm_booking_api`.
+- O frontend roda em Nginx e encaminha `/api/*` para o gateway.
 - O gateway encaminha `/api/appointments/*` para `appointments-service` via `APPOINTMENTS_SERVICE_URL`.
 - Serviços internos exigem `x-internal-token` quando `INTERNAL_SERVICE_TOKEN` está configurado.
 - Logs continuam em JSON no stdout/stderr, prontos para coleta por Docker, ELK/OpenSearch ou outro agente.
