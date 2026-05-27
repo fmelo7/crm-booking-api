@@ -26,12 +26,6 @@ const buildHealthResponse = (req, dbConnected) => {
   };
 };
 
-const healthHandler = (req, res) => {
-  const dbConnected = req.app.get('dbConnected');
-  res.status(dbConnected ? 200 : 503).json(buildHealthResponse(req, dbConnected));
-};
-
 module.exports = {
   buildHealthResponse,
-  healthHandler,
 };

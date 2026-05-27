@@ -6,4 +6,4 @@ Este diretório delimita os executáveis do produto:
 - `frontend`: aplicação web servida hoje como estático.
 - `appointments-service`: ponto reservado para a primeira extração de microserviço.
 
-O código legado em `src/` continua sendo a fonte atual durante a migração incremental.
+O código em `src/` ainda concentra o runtime NestJS e os adapters compartilhados enquanto a migração física para `apps/` acontece de forma incremental.

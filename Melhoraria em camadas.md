@@ -68,54 +68,36 @@ Para este projeto, eu faria em etapas:
 
 **9. Migrar para NestJS**
 
-- fazer a migração para NestJS no branch migrate-nestjs
-- etapa inicial feita: bootstrap com NestJS mantendo as rotas Express existentes
-- módulo `customers` migrado para controller/provider nativos do NestJS no runtime
-- módulo `services` migrado para controller/provider nativos do NestJS no runtime
-- módulo `professionals` migrado para controller/provider nativos do NestJS no runtime
-- módulo `appointments` migrado para controller/provider nativos do NestJS no runtime
-- próxima etapa: transformar os services/repositories em providers NestJS reais com injeção de dependência
-  - iniciado por `customers`: regra movida para provider NestJS com repositories injetados
-  - `services`: regra movida para provider NestJS com repositories injetados
-  - `professionals`: regra movida para provider NestJS com repositories injetados
-  - `appointments`: regra movida para provider NestJS com repositories injetados
-  - repositories organizados em `RepositoryModule` compartilhado no NestJS
-- runtime NestJS separado das rotas Express legadas usando `configureBaseApp`
-- testes de integração apontando para o runtime NestJS principal
-- app Express legado isolado em `src/legacyApp.js`, com `src/app.js` mantido como alias de compatibilidade
-- healthcheck migrado para controller NestJS, mantendo handler compartilhado para o legado
-- `package.json#main` apontando para `src/app.js` para evitar iniciar servidor ao importar o pacote
-- `configureBaseApp` separado para o runtime NestJS não carregar rotas Express legadas
-- configurador Express legado isolado em `configureLegacyApp.js`, com `configureApp.js` como alias
-- iniciada padronização de validação nos controllers NestJS com helpers `parseBody`, `parseQuery` e `parseIdParam`
+- migração para NestJS concluída no runtime principal
+- módulos `customers`, `services`, `professionals` e `appointments` migrados para controllers/providers nativos do NestJS
+- regras movidas para providers NestJS com repositories injetados
+- repositories organizados em `RepositoryModule` compartilhado no NestJS
+- healthcheck migrado para controller NestJS
+- validação padronizada nos controllers NestJS com helpers `parseBody`, `parseQuery` e `parseIdParam`
   - aplicado em `customers`, `services`, `professionals` e `appointments`
   - schema específico criado para query de disponibilidade de agenda
-- scripts de teste separados para legado, integração e NestJS
-- README alinhado com runtime NestJS, bancos suportados, scripts de teste e estrutura atual
-- guia de deploy alinhado com NestJS, PostgreSQL/MongoDB e healthcheck atual
-- `.env.example` organizado por provider de banco e variáveis de runtime
-- GitHub Actions alinhado com scripts separados de legado, integração e NestJS
-- `AppointmentProvider` e service legado de appointments removidos da dependência direta de Mongoose para validar IDs, usando util comum
-- regras auxiliares de appointments extraídas para `appointment.rules.js` e compartilhadas entre Nest e legado
-- filtros de listagem de appointments extraídos para `appointment.rules.js` e compartilhados entre Nest e legado
-- cálculo de janela e slots de disponibilidade extraído para `appointment.rules.js` e compartilhado entre Nest e legado
-- montagem de queries de busca extraída para `searchQuery.js` e compartilhada entre Nest e legado
-- asserções comuns de entidades extraídas para `entityAssertions.js` e compartilhadas entre Nest e legado
+- `AppointmentProvider` removido da dependência direta de Mongoose para validar IDs, usando util comum
+- regras auxiliares de appointments extraídas para `appointment.rules.js`
+- filtros de listagem de appointments extraídos para `appointment.rules.js`
+- cálculo de janela e slots de disponibilidade extraído para `appointment.rules.js`
+- montagem de queries de busca extraída para `searchQuery.js`
+- asserções comuns de entidades extraídas para `entityAssertions.js`
 - repository providers do Nest padronizados com fábrica `createRepositoryProvider`
 - aplicação manual de decorators NestJS padronizada com helper `decorators.js`
 - metadata de injeção NestJS padronizada com helper `injection.js`
 - definição de módulos NestJS padronizada com helper `module.js`
-- camada Express legada removida do caminho principal:
-  - `src/app.js` agora exporta a factory NestJS
-  - `npm test` agora cobre NestJS + integração, sem rodar a suíte legada por padrão
-  - suíte Express legada mantida explicitamente em `npm run test:legacy`
+- camada Express antiga removida do projeto:
+  - `src/app.js` exporta a factory NestJS
+  - `apps/api` é o entrypoint do runtime HTTP principal
+  - `npm test` cobre NestJS + integração
+  - `legacyApp`, `configureLegacyApp`, rotas, controllers, services e testes Express antigos foram removidos
 - projeto preparado para separação em apps e microserviços:
   - `apps/api` criado como entrypoint do runtime HTTP principal
   - `apps/frontend/public` criado como fronteira do frontend estático
   - `apps/appointments-service` criado como placeholder da primeira extração de microserviço
   - `packages/contracts` criado para contratos compartilháveis, começando por eventos de appointments
   - `FRONTEND_PUBLIC_DIR` permite apontar a API para outro build de frontend
-- próximo passo: reduzir dependência dos módulos Nest em artefatos legados de controller/routes/services até restarem apenas adapters/repositories compartilhados e contratos estáveis
+- próximo passo: mover fisicamente adapters/repositories compartilhados de `src/modules` para pacotes internos por domínio, mantendo contratos estáveis
 
 **10. Caminho para microserviços**
 

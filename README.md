@@ -287,12 +287,11 @@ Scripts disponíveis:
 
 ```bash
 npm test
-npm run test:legacy
 npm run test:integration
 npm run test:nest
 ```
 
-Os testes usam `node:test`. A suíte padrão cobre o caminho principal NestJS com testes Nest e integração. A suíte de integração sobe MongoDB em memória; os testes Nest e de integração usam `supertest`. A suíte legada Express permanece separada em `npm run test:legacy` enquanto for útil para compatibilidade.
+Os testes usam `node:test`. A suíte padrão cobre o caminho principal NestJS com testes Nest e integração. A suíte de integração sobe MongoDB em memória; os testes Nest e de integração usam `supertest`.
 
 Cobertura atual:
 
@@ -316,11 +315,9 @@ packages/
   contracts/
 src/
   app.js
-  legacyApp.js
   server.js
   swagger.js
   configureBaseApp.js
-  configureLegacyApp.js
   config/
     database.js
     postgres.js
@@ -335,18 +332,13 @@ src/
     service/
   modules/
     appointment/
-      appointment.controller.js
       appointment.model.js
-      appointment.routes.js
-      appointment.service.js
       appointment.swagger.js
     customer/
     professional/
     service/
 test/
-  helpers/
   integration/
-  modules/
   nest/
 ```
 
@@ -360,13 +352,12 @@ Responsabilidades:
 - `src/app.js`: alias para a factory do app NestJS usada pelo caminho principal.
 - `nest/`: runtime principal com controllers, modules, providers e repositories injetáveis.
 - `configureBaseApp.js`: configura middlewares HTTP compartilhados, arquivos estáticos, Swagger e rate limit.
-- `legacyApp.js`: app Express legado mantido apenas para compatibilidade explícita.
 - `config/database.js`: centraliza a conexão com MongoDB ou PostgreSQL.
 - `swagger.js`: monta a spec OpenAPI a partir dos módulos.
-- `modules/`: camada legada e adapters de repository Mongo/Postgres.
-- `*.routes.js`: define as rotas HTTP do legado Express.
-- `*.service.js`: concentra regras de negócio legadas ainda cobertas por testes.
+- `modules/`: models, validations, repositories, regras compartilhadas e documentação Swagger usados pelo NestJS.
 - `*.model.js`: define schemas Mongoose.
+- `*.repository.js`: seleciona o adapter MongoDB ou PostgreSQL do domínio.
+- `*.validation.js`: define schemas de validação compartilhados pelos controllers NestJS.
 - `*.swagger.js`: documenta schemas e paths do módulo.
 
 ## Deploy
