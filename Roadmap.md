@@ -365,16 +365,32 @@ Esses testes não eliminam todo acoplamento transitório ainda existente, mas im
 
 **12. Ordem recomendada**
 
+Status: transformado em trilho operacional.
+
+Checklist atual:
+
 1. Formalizar contratos em `packages/contracts`. Concluído na primeira versão.
 2. Separar domínio puro de infraestrutura em `packages/domains/appointment`. Concluído para appointments na primeira versão.
 3. Transformar `apps/api` em gateway de segurança/roteamento. Concluído na primeira versão.
 4. Criar boot real para `apps/appointments-service`. Concluído na primeira versão.
-5. Mover fluxo de appointments para o serviço novo.
-6. Fazer gateway chamar appointments-service. Concluído na primeira versão via REST configurável.
-7. Adicionar eventos de domínio.
-8. Separar banco/schema de appointments.
-9. Adicionar observabilidade distribuída.
-10. Só então extrair customers, services e professionals.
+5. Fazer gateway chamar appointments-service. Concluído na primeira versão via REST configurável.
+6. Criar boots separados para serviços de suporte. Concluído na primeira versão.
+7. Criar infraestrutura local. Concluído na primeira versão.
+8. Criar segurança inicial entre gateway e serviços. Concluído na primeira versão.
+9. Criar guardrails contra acoplamento. Concluído.
+10. Mover fluxo de appointments para o serviço novo de forma definitiva.
+11. Adicionar eventos de domínio.
+12. Separar banco/schema de appointments.
+13. Adicionar observabilidade distribuída.
+14. Reduzir reutilização transitória de providers internos do monólito.
+15. Só então amadurecer customers, services e professionals com banco, contratos e eventos próprios.
+
+Implementado para sustentar a ordem:
+
+- CI atualizado para rodar `npm test`.
+- CI valida `docker compose --env-file .env.example config`.
+- referência antiga a `npm run test:legacy` removida do workflow.
+- testes de arquitetura passam a proteger os limites enquanto os próximos itens avançam.
 
 **13. Meta final**
 

@@ -24,11 +24,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run legacy tests
-        run: npm run test:legacy
+      - name: Validate Docker Compose config
+        run: docker compose --env-file .env.example config
 
-      - name: Run integration tests
-        run: npm run test:integration
-
-      - name: Run NestJS tests
-        run: npm run test:nest
+      - name: Run tests
+        run: npm test
