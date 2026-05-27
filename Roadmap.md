@@ -187,10 +187,23 @@ Ainda pendente para os próximos itens:
 
 **7. Comunicação entre serviços**
 
+Status: concluído na primeira versão para gateway -> appointments-service.
+
 Começar simples:
 
 - Gateway -> appointments-service via REST interno.
 - appointments-service consulta dados mínimos de customers/services/professionals por APIs internas quando necessário.
+
+Implementado:
+
+- `apps/api/serviceProxy.js` criado para proxy HTTP interno.
+- `APPOINTMENTS_SERVICE_URL` configura o alvo do `appointments-service`.
+- quando `APPOINTMENTS_SERVICE_URL` está definido, `/api/appointments/*` é encaminhado pelo gateway.
+- quando `APPOINTMENTS_SERVICE_URL` não está definido, o fluxo local do monólito continua funcionando.
+- gateway propaga `x-request-id`, headers de forwarding e sujeito autenticado quando existir.
+- respostas encaminhadas recebem `x-gateway-target: appointments-service`.
+- falhas de upstream retornam `502 UPSTREAM_UNAVAILABLE`.
+- testes cobrem resolução da URL interna e proxy de `/api/appointments`.
 
 Depois evoluir:
 
@@ -271,7 +284,7 @@ Serviços internos também devem validar chamadas internas:
 3. Transformar `apps/api` em gateway de segurança/roteamento. Concluído na primeira versão.
 4. Criar boot real para `apps/appointments-service`. Concluído na primeira versão.
 5. Mover fluxo de appointments para o serviço novo.
-6. Fazer gateway chamar appointments-service.
+6. Fazer gateway chamar appointments-service. Concluído na primeira versão via REST configurável.
 7. Adicionar eventos de domínio.
 8. Separar banco/schema de appointments.
 9. Adicionar observabilidade distribuída.

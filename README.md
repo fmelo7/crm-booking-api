@@ -48,6 +48,7 @@ Variáveis:
 | --- | --- | --- |
 | `PORT` | Não | Porta HTTP. Padrão: `3000`. |
 | `APPOINTMENTS_SERVICE_PORT` | Não | Porta HTTP do serviço de appointments. Padrão: `3001`. |
+| `APPOINTMENTS_SERVICE_URL` | Não | URL interna do serviço de appointments. Quando definida, o gateway encaminha `/api/appointments/*` para ela. |
 | `DATABASE_PROVIDER` | Não | Banco usado pela aplicação: `mongodb` ou `postgres`. Padrão: `mongodb`. |
 | `MONGODB_URI` | Não | URI do MongoDB. Padrão: `mongodb://127.0.0.1:27017/crm-booking-api`. |
 | `POSTGRES_URI` | Não | URI do PostgreSQL. Usada quando `DATABASE_PROVIDER=postgres`. |
@@ -96,6 +97,12 @@ Serviço de appointments separado:
 ```bash
 npm run start:appointments
 npm run dev:appointments
+```
+
+Para fazer o gateway encaminhar appointments para o serviço separado:
+
+```env
+APPOINTMENTS_SERVICE_URL=http://localhost:3001
 ```
 
 ## Interface Web
@@ -368,6 +375,7 @@ Responsabilidades:
 
 - `apps/api`: entrypoint do runtime HTTP principal e primeira camada de gateway.
 - `apps/api/gateway.js`: contexto de gateway, autenticação bearer configurável e rotas públicas.
+- `apps/api/serviceProxy.js`: proxy configurável do gateway para serviços internos, começando por appointments.
 - `apps/frontend/public`: frontend estático servido pela API.
 - `apps/appointments-service`: primeiro boot separado do domínio de appointments.
 - `packages/contracts`: contratos compartilháveis entre app, frontend e futuros serviços.
