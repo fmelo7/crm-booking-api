@@ -114,6 +114,13 @@ Para fazer o gateway encaminhar appointments para o serviço separado:
 APPOINTMENTS_SERVICE_URL=http://localhost:3001
 ```
 
+Infraestrutura local com Docker:
+
+```bash
+npm run infra:up
+npm run infra:down
+```
+
 ## Interface Web
 
 Depois de subir a API, acesse:
@@ -334,11 +341,13 @@ Cobertura atual:
 apps/
   api/
     app.js
+    Dockerfile
     server.js
   frontend/
     public/
   appointments-service/
     app.js
+    Dockerfile
     server.js
     createAppointmentsServiceApp.js
     src/
@@ -393,6 +402,8 @@ Responsabilidades:
 - `apps/customers-service`: primeiro boot separado do domínio de customers.
 - `apps/services-service`: primeiro boot separado do domínio de services.
 - `apps/professionals-service`: primeiro boot separado do domínio de professionals.
+- `docker-compose.yml`: infraestrutura local com gateway, serviços e MongoDB.
+- `infra/README.md`: notas da infraestrutura local e portas expostas.
 - `packages/contracts`: contratos compartilháveis entre app, frontend e futuros serviços.
 - `packages/domains`: pacotes internos por domínio com models, repositories, validações, regras e Swagger.
 - `packages/domains/appointment/rules`: regras puras de agenda sem dependência de banco.

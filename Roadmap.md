@@ -260,6 +260,8 @@ Ainda pendente para uma extração madura:
 
 **9. Infraestrutura**
 
+Status: concluído na primeira versão local.
+
 Preparar gradualmente:
 
 - Dockerfile por app;
@@ -272,6 +274,34 @@ Preparar gradualmente:
 - tracing distribuído;
 - ELK/OpenSearch para consulta de logs;
 - alertas por erro, latência e indisponibilidade.
+
+Implementado:
+
+- Dockerfile por app HTTP:
+  - `apps/api/Dockerfile`;
+  - `apps/appointments-service/Dockerfile`;
+  - `apps/customers-service/Dockerfile`;
+  - `apps/services-service/Dockerfile`;
+  - `apps/professionals-service/Dockerfile`.
+- `docker-compose.yml` com gateway, quatro serviços e MongoDB.
+- healthchecks por container HTTP.
+- volume persistente para MongoDB local.
+- gateway configurado no compose para chamar `appointments-service`.
+- `.dockerignore` criado para reduzir contexto de build e evitar `.env`/`node_modules`.
+- scripts:
+  - `npm run infra:up`;
+  - `npm run infra:down`.
+- `infra/README.md` documentando portas e limitações atuais.
+
+Ainda pendente para uma infraestrutura madura:
+
+- banco/schema próprio por serviço;
+- fila/event bus;
+- migrations por serviço;
+- pipelines de deploy independentes;
+- OpenTelemetry/tracing distribuído;
+- stack ELK/OpenSearch pronta em compose;
+- alertas.
 
 **10. Segurança**
 

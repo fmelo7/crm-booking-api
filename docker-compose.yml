@@ -1,0 +1,129 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_PROVIDER: mongodb
+      MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      APPOINTMENTS_SERVICE_URL: http://appointments-service:3001
+      GATEWAY_AUTH_MODE: disabled
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 300
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      appointments-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  appointments-service:
+    build:
+      context: .
+      dockerfile: apps/appointments-service/Dockerfile
+    environment:
+      NODE_ENV: production
+      APPOINTMENTS_SERVICE_PORT: 3001
+      DATABASE_PROVIDER: mongodb
+      MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 300
+    ports:
+      - "3001:3001"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  customers-service:
+    build:
+      context: .
+      dockerfile: apps/customers-service/Dockerfile
+    environment:
+      NODE_ENV: production
+      CUSTOMERS_SERVICE_PORT: 3002
+      DATABASE_PROVIDER: mongodb
+      MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 300
+    ports:
+      - "3002:3002"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  services-service:
+    build:
+      context: .
+      dockerfile: apps/services-service/Dockerfile
+    environment:
+      NODE_ENV: production
+      SERVICES_SERVICE_PORT: 3003
+      DATABASE_PROVIDER: mongodb
+      MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 300
+    ports:
+      - "3003:3003"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3003/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  professionals-service:
+    build:
+      context: .
+      dockerfile: apps/professionals-service/Dockerfile
+    environment:
+      NODE_ENV: production
+      PROFESSIONALS_SERVICE_PORT: 3004
+      DATABASE_PROVIDER: mongodb
+      MONGODB_URI: mongodb://mongo:27017/crm-booking-api
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 300
+    ports:
+      - "3004:3004"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3004/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo-data:

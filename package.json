@@ -24,6 +24,8 @@
     "dev:services": "nodemon apps/services-service/server.js",
     "dev:professionals": "nodemon apps/professionals-service/server.js",
     "dev:local": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config ./node_modules/.bin/nodemon apps/api/server.js",
+    "infra:up": "docker compose --env-file .env.example up --build",
+    "infra:down": "docker compose --env-file .env.example down",
     "test": "NODE_ENV=test node --test test/integration/*.test.js test/nest/*.test.js",
     "test:integration": "NODE_ENV=test node --test test/integration/*.test.js",
     "test:nest": "NODE_ENV=test node --test test/nest/*.test.js"
