@@ -1,429 +1,348 @@
-# Roadmap para microserviços independentes
+# Roadmap para projetos Nest independentes
 
-Objetivo: evoluir o projeto de um monólito modular em NestJS para uma arquitetura de microserviços com vida própria, sem criar uma biblioteca compartilhada gigante que acople todos os serviços.
+Objetivo: transformar o projeto atual em um conjunto de aplicações Node/Nest separadas, cada uma com seu proprio repositorio, pipeline, deploy, banco, contratos e observabilidade. O repositorio atual deixa de ser o destino final e passa a ser a base de extracao.
 
 Desenho alvo:
 
-```
-[frontend]
+```text
+[frontend-app]
   -> HTTPS GET/POST/PUT/DELETE
-[api-gateway / camada de segurança]
-  -> autenticação, autorização, rate limit, auditoria, roteamento
+[api-gateway]
+  -> OAuth/OIDC, autorizacao, rate limit, auditoria, roteamento
 [appointments-service] <-> [customers-service] <-> [services-service] <-> [professionals-service]
-  -> comunicação por APIs internas e eventos de domínio
-[infra]
-  -> bancos por serviço, filas/event bus, logs, métricas, tracing, ELK/OpenSearch, alertas
+  -> APIs internas e eventos de dominio
+[infra/platform]
+  -> bancos por servico, event bus, observabilidade, segredos, deploy, alertas
 ```
 
-Regra principal: cada microserviço deve conseguir evoluir, testar, publicar e trocar sua infraestrutura sem depender diretamente do código interno dos outros.
+Regra principal: nenhum microservico deve depender do codigo interno, banco, repository, model, provider ou module Nest de outro microservico. A integracao deve acontecer por API, eventos e contratos publicos versionados.
 
 **1. Estado atual**
 
+Status: base de migracao preparada.
+
 - Runtime principal em NestJS.
-- Camada Express antiga removida.
-- `apps/api` é o entrypoint HTTP principal.
-- `apps/frontend/public` é a fronteira atual do frontend.
-- `apps/appointments-service` existe como placeholder da primeira extração.
-- `packages/domains/*` concentra domínio, validações, repositories e adapters por domínio.
-- `packages/shared/common` concentra utilitários neutros.
-- `packages/contracts` existe para contratos compartilháveis.
+- Camada Express legada removida do caminho principal.
+- `apps/api` funciona como gateway inicial.
+- `apps/frontend/public` e a fronteira atual do frontend.
+- `apps/appointments-service`, `apps/customers-service`, `apps/services-service` e `apps/professionals-service` ja possuem boot HTTP separado.
+- `docker-compose.yml` sobe gateway, servicos e MongoDB local.
+- Gateway ja consegue encaminhar `/api/appointments/*` para `appointments-service`.
+- Seguranca interna inicial existe via `x-internal-token`.
+- Observabilidade inicial existe com `SERVICE_NAME`, `x-request-id`, `x-trace-id` e logs JSON.
+- `packages/contracts` e `packages/domains/*` ajudam a organizar a extracao, mas nao devem virar uma dependencia obrigatoria entre repositorios.
 
-Esse estado ainda é monólito modular. Os pacotes ajudam a organizar a extração, mas não devem virar dependência obrigatória entre microserviços no longo prazo.
+Esse estado ainda e um monorepo modular. O proximo passo nao e aumentar a lib compartilhada, e sim copiar, isolar e estabilizar cada aplicacao em seu proprio projeto.
 
-**2. Princípios de arquitetura**
+**2. Repositorios alvo**
 
-- Microserviços não compartilham banco de dados no destino final.
-- Microserviços não importam repositories, models Mongoose, queries SQL ou providers internos de outros serviços.
-- O compartilhamento permitido deve ser pequeno e estável: contratos, nomes de eventos, schemas públicos e tipos simples.
-- Regras de negócio pertencem ao serviço dono do domínio.
-- Comunicação síncrona deve passar por APIs internas bem definidas.
-- Comunicação assíncrona deve usar eventos de domínio.
-- O gateway cuida de segurança, identidade, rate limit e roteamento externo.
-- Observabilidade deve ser transversal: logs estruturados, métricas, tracing e correlação por request id.
+Criar repositorios separados:
 
-**3. Contratos públicos de appointments**
+- `serv365-frontend`
+- `serv365-api-gateway`
+- `serv365-appointments-service`
+- `serv365-customers-service`
+- `serv365-services-service`
+- `serv365-professionals-service`
+- `serv365-contracts`
+- `serv365-infra`
 
-Status: concluído na primeira versão.
+O repositorio `serv365-contracts` deve ser pequeno e estavel. Ele pode conter OpenAPI specs, JSON Schemas, nomes de eventos, exemplos de payload e clientes gerados, mas nao deve conter regra de negocio, repositories, models de banco, modules Nest ou providers internos.
 
-Antes de extrair qualquer serviço, formalizar em `packages/contracts`:
+O repositorio `serv365-infra` deve concentrar compose local, manifests, IaC, observabilidade, secrets templates, pipelines compartilhados e documentacao operacional. Ele nao deve conter regra de negocio dos servicos.
 
-- DTOs públicos de `appointments`;
-- status permitidos de appointment;
-- formatos de IDs e datas;
-- eventos:
-  - `appointment.created`;
-  - `appointment.rescheduled`;
-  - `appointment.cancelled`;
-  - `appointment.completed`;
-- payloads versionados para cada evento;
-- erros públicos esperados, como conflito de agenda e entidade não encontrada.
+**3. Padrao minimo de cada projeto Nest**
 
-Importante: `packages/contracts` não deve importar NestJS, Mongoose, `pg`, repositories ou código de infraestrutura.
-
-Implementado:
-
-- `appointment.constants.js` com versão de contrato e status.
-- `appointment.schemas.js` com DTOs públicos, queries, recurso e eventos versionados.
-- `appointment.errors.js` com códigos de erro públicos.
-- `appointment.events.js` usando a mesma versão do contrato.
-- `packages/domains/appointment/validation` passou a consumir os schemas públicos.
-- testes garantem validação de DTO/evento e ausência de imports de infraestrutura no pacote de contratos.
-
-**4. Separar domínio puro de infraestrutura**
-
-Status: concluído para `appointments` na primeira versão.
-
-Estrutura aplicada:
+Cada backend deve ser um projeto Node/Nest proprio:
 
 ```text
-packages/domains/appointment/
-  appointment.repository.js
-  rules/
-  validation/
-  docs/
-  infrastructure/
-    mongo/
-    postgres/
+serv365-appointments-service/
+  src/
+    main.ts
+    app.module.ts
+    health/
+    appointments/
+    infrastructure/
+    observability/
+  test/
+  Dockerfile
+  package.json
+  README.md
+  .env.example
+  .github/workflows/ci.yml
 ```
 
-Meta:
+Cada projeto deve ter:
 
-- regras puras podem ser testadas sem banco;
-- adapters Mongo/Postgres ficam isolados;
-- controllers Nest continuam em `apps/api` ou `src/nest`;
-- `appointments-service` poderá copiar ou assumir seu domínio sem carregar outros serviços junto.
+- `npm test` local e no CI;
+- `npm run build`;
+- Dockerfile proprio;
+- health check em `/api/health`;
+- logs JSON com `service`, `requestId` e `traceId`;
+- validacao de entrada;
+- tratamento padronizado de erro;
+- configuracao propria de banco;
+- migrations ou estrategia explicita de schema;
+- README com variaveis, portas, endpoints e eventos;
+- pipeline independente de build, test e deploy.
 
-Implementado:
+**4. Contratos antes da separacao fisica**
 
-- regras movidas para `packages/domains/appointment/rules`;
-- validação movida para `packages/domains/appointment/validation`;
-- Swagger movido para `packages/domains/appointment/docs`;
-- model/repository Mongo movidos para `packages/domains/appointment/infrastructure/mongo`;
-- repository Postgres movido para `packages/domains/appointment/infrastructure/postgres`;
-- `appointment.repository.js` ficou como seletor estável de adapter por provider;
-- imports do Nest e testes atualizados para as novas fronteiras.
+Status: proximo passo recomendado.
 
-**5. Criar o api-gateway**
+Antes de cortar repositorios, congelar contratos publicos:
 
-Status: concluído na primeira versão.
+- OpenAPI do gateway externo;
+- OpenAPI interna de cada servico;
+- schemas de eventos por dominio;
+- codigos de erro publicos;
+- estrategia de versionamento;
+- exemplos de request/response;
+- compatibilidade minima esperada entre versoes.
 
-Evoluir `apps/api` para papel de gateway:
+Saida esperada:
 
-- validar token OAuth/JWT;
-- resolver usuário/tenant/permissões;
-- aplicar rate limit;
-- emitir `x-request-id` e contexto de auditoria;
-- rotear chamadas para módulos locais ou serviços extraídos;
-- padronizar respostas de erro.
+- criar ou consolidar `serv365-contracts`;
+- publicar contratos por versao;
+- CI validando breaking changes;
+- gateway e servicos usando contratos como referencia, nao como acesso a codigo interno.
 
-No início, `apps/api` ainda pode chamar providers locais. Após extrações, passa a chamar HTTP interno, gRPC ou mensageria.
+**5. Extrair primeiro o appointments-service**
 
-Implementado:
+Status: primeiro corte real.
 
-- `apps/api/gateway.js` criado como camada explícita de gateway.
-- contexto `req.gateway` com auth, rota pública e alvo lógico.
-- header `x-gateway-runtime` emitido nas respostas.
-- `GATEWAY_AUTH_MODE=disabled` preserva comportamento local/dev.
-- `GATEWAY_AUTH_MODE=bearer` exige `Authorization: Bearer <token>` em rotas `/api`, exceto rotas públicas.
-- `GATEWAY_BEARER_TOKENS` configura tokens aceitos para a primeira versão.
-- `GATEWAY_PUBLIC_PATHS` permite liberar prefixos extras.
-- health, docs e frontend permanecem públicos por padrão.
-- testes cobrem bloqueio de rota protegida e health público com auth ligada.
-
-**6. Extrair primeiro: appointments-service**
-
-Status: concluído na primeira versão de boot separado.
-
-Começar por appointments porque concentra as regras mais sensíveis:
+Appointments deve ser o primeiro repositorio separado porque concentra o fluxo mais sensivel:
 
 - disponibilidade;
-- conflito de horários;
-- criação de appointment;
+- conflito de horarios;
+- criacao;
 - reagendamento;
 - cancelamento;
-- conclusão;
-- histórico.
+- conclusao;
+- historico.
 
-Primeira versão sugerida:
+Passos:
 
-```text
-apps/appointments-service/
-  server.js
-  src/
-    appointment.controller.js
-    appointment.provider.js
-    appointment.repository.js
-    appointment.events.js
-```
-
-Esse serviço deve ter testes próprios e boot próprio.
+1. Criar repo `serv365-appointments-service`.
+2. Copiar somente codigo necessario de appointments, health, configuracao, observabilidade e infraestrutura propria.
+3. Remover imports de `src/nest/*`, `apps/*` e `packages/domains/*` do monorepo.
+4. Manter apenas contratos publicos ou copiar regra de dominio para dentro do servico.
+5. Criar banco/schema proprio.
+6. Criar migrations proprias.
+7. Publicar eventos de dominio.
+8. Apontar o gateway para a URL real do servico separado.
+9. Remover fallback local de appointments no gateway quando o corte estiver validado.
 
 Critério de pronto:
 
-- sobe separado da API;
-- possui health check próprio;
-- tem banco ou schema próprio;
-- publica eventos de domínio;
-- não importa provider/controller/repository de `apps/api`;
-- usa apenas `packages/contracts` e utilitários realmente neutros.
+- repo sobe sozinho;
+- testes rodam sem o monorepo;
+- imagem Docker e gerada no proprio repo;
+- CI proprio passa;
+- banco/schema e proprio;
+- gateway chama somente via API interna;
+- nenhuma dependencia de repository/model/provider do monorepo.
 
-Implementado:
+**6. Extrair api-gateway**
 
-- `apps/appointments-service/server.js` criado como processo HTTP próprio.
-- `apps/appointments-service/createAppointmentsServiceApp.js` criado como factory NestJS própria.
-- `apps/appointments-service/src/app.module.js` importa apenas appointments e health.
-- scripts `start:appointments` e `dev:appointments` adicionados.
-- `APPOINTMENTS_SERVICE_PORT` documentado, com padrão `3001`.
-- serviço expõe `/api/health` e `/api/appointments`.
-- serviço não expõe rotas de customers, services ou professionals.
-- testes próprios garantem health, rota de appointments e ausência de customers.
+Status: depois do primeiro servico separado estar estavel.
 
-Ainda pendente para os próximos itens:
+Criar repo `serv365-api-gateway`.
 
-- mover o tráfego real do gateway para esse serviço;
-- publicar eventos de domínio;
-- separar banco/schema de appointments;
-- reduzir reutilização transitória de providers internos do monólito.
+Responsabilidades:
 
-**7. Comunicação entre serviços**
+- autenticar usuario via OAuth2/OIDC/JWT;
+- autorizar por escopo/permissao;
+- aplicar rate limit;
+- propagar identidade para servicos internos;
+- rotear para microservicos;
+- padronizar erro externo;
+- emitir auditoria;
+- manter CORS e seguranca HTTP;
+- propagar `x-request-id`, `x-trace-id` e `traceparent`.
 
-Status: concluído na primeira versão para gateway -> appointments-service.
+O gateway nao deve conter regra de negocio de appointments, customers, services ou professionals. Ele conhece rotas, politicas e contratos, nao repositories.
 
-Começar simples:
+Critério de pronto:
 
-- Gateway -> appointments-service via REST interno.
-- appointments-service consulta dados mínimos de customers/services/professionals por APIs internas quando necessário.
-
-Implementado:
-
-- `apps/api/serviceProxy.js` criado para proxy HTTP interno.
-- `APPOINTMENTS_SERVICE_URL` configura o alvo do `appointments-service`.
-- quando `APPOINTMENTS_SERVICE_URL` está definido, `/api/appointments/*` é encaminhado pelo gateway.
-- quando `APPOINTMENTS_SERVICE_URL` não está definido, o fluxo local do monólito continua funcionando.
-- gateway propaga `x-request-id`, headers de forwarding e sujeito autenticado quando existir.
-- respostas encaminhadas recebem `x-gateway-target: appointments-service`.
-- falhas de upstream retornam `502 UPSTREAM_UNAVAILABLE`.
-- testes cobrem resolução da URL interna e proxy de `/api/appointments`.
-
-Depois evoluir:
-
-- cache local de dados de leitura;
-- eventos para sincronizar projeções;
-- mensageria para fluxos assíncronos.
-
-Evitar no início:
-
-- transação distribuída;
-- banco compartilhado;
-- importar model/repository de outro serviço;
-- chamada circular obrigatória entre serviços.
-
-**8. Extrair services de suporte**
-
-Status: concluído na primeira versão de boot separado.
-
-Depois que appointments-service estiver estável:
-
-1. `customers-service`
-2. `services-service`
-3. `professionals-service`
-
-Cada serviço deve possuir:
-
-- API própria;
-- banco/tabelas próprias;
-- health check;
-- testes próprios;
-- logs e métricas;
-- contratos públicos;
-- eventos de alteração relevantes.
-
-Implementado:
-
-- `apps/customers-service` criado com boot HTTP próprio, health e rotas de customers.
-- `apps/services-service` criado com boot HTTP próprio, health e rotas de services.
-- `apps/professionals-service` criado com boot HTTP próprio, health e rotas de professionals.
-- scripts `start:*` e `dev:*` adicionados para os três serviços.
-- portas dedicadas documentadas:
-  - `CUSTOMERS_SERVICE_PORT=3002`;
-  - `SERVICES_SERVICE_PORT=3003`;
-  - `PROFESSIONALS_SERVICE_PORT=3004`.
-- testes garantem que cada serviço expõe health, expõe seu domínio e não expõe rotas de outros domínios.
-
-Ainda pendente para uma extração madura:
-
-- banco/schema próprio por serviço;
-- contratos públicos específicos de customers/services/professionals;
-- eventos de alteração por serviço;
-- gateway/proxy para esses serviços;
-- redução da reutilização transitória de providers internos do monólito.
-
-**9. Infraestrutura**
-
-Status: concluído na primeira versão local.
-
-Preparar gradualmente:
-
-- Dockerfile por app;
-- docker-compose local com gateway, serviços, bancos e fila;
-- migrations por serviço;
-- CI rodando testes por app/pacote;
-- deploy independente por serviço;
-- logs estruturados centralizados;
-- métricas com Prometheus/OpenTelemetry;
-- tracing distribuído;
-- ELK/OpenSearch para consulta de logs;
-- alertas por erro, latência e indisponibilidade.
-
-Implementado:
-
-- Dockerfile por app HTTP:
-  - `apps/api/Dockerfile`;
-  - `apps/appointments-service/Dockerfile`;
-  - `apps/customers-service/Dockerfile`;
-  - `apps/services-service/Dockerfile`;
-  - `apps/professionals-service/Dockerfile`.
-- `docker-compose.yml` com gateway, quatro serviços e MongoDB.
-- healthchecks por container HTTP.
-- volume persistente para MongoDB local.
-- gateway configurado no compose para chamar `appointments-service`.
-- `.dockerignore` criado para reduzir contexto de build e evitar `.env`/`node_modules`.
-- scripts:
-  - `npm run infra:up`;
-  - `npm run infra:down`.
-- `infra/README.md` documentando portas e limitações atuais.
-
-Ainda pendente para uma infraestrutura madura:
-
-- banco/schema próprio por serviço;
-- fila/event bus;
-- migrations por serviço;
-- pipelines de deploy independentes;
-- OpenTelemetry/tracing distribuído;
-- stack ELK/OpenSearch pronta em compose;
-- alertas.
-
-**10. Segurança**
-
-Status: concluído na primeira versão.
-
-Camada de segurança no gateway:
-
-- OAuth2/OIDC ou JWT validado no gateway;
-- propagação de identidade para serviços internos;
-- autorização por escopo/permissão;
-- rate limit por usuário/IP/tenant;
-- CORS no gateway;
-- auditoria de ações sensíveis.
-
-Serviços internos também devem validar chamadas internas:
-
-- token interno ou mTLS no futuro;
-- checagem de escopos internos;
-- rejeitar chamadas sem contexto de identidade quando necessário.
-
-Implementado:
-
-- gateway mantém autenticação externa configurável por `GATEWAY_AUTH_MODE`.
-- serviços internos passam a ter autenticação opcional por `x-internal-token`.
-- `INTERNAL_SERVICE_TOKEN` ativa a proteção de rotas `/api` nos serviços.
-- `/api/health` permanece público por padrão nos serviços internos.
-- `INTERNAL_SERVICE_PUBLIC_PATHS` permite liberar prefixos extras.
-- proxy do gateway propaga `x-internal-token` para `appointments-service`.
-- `APPOINTMENTS_SERVICE_INTERNAL_TOKEN` permite token específico para appointments, com fallback para `INTERNAL_SERVICE_TOKEN`.
-- docker-compose local configura `INTERNAL_SERVICE_TOKEN` entre gateway e serviços.
-- testes cobrem rejeição sem token e propagação do token pelo gateway.
-
-Ainda pendente para segurança madura:
-
-- OAuth2/OIDC real no gateway;
-- autorização por escopos/permissões;
-- mTLS entre serviços;
-- rotação/gestão segura de segredos;
-- auditoria persistente de ações sensíveis.
-
-**11. O que evitar**
-
-Status: guardrails automatizados criados.
-
-- Criar uma lib compartilhada com toda regra de negócio.
-- Compartilhar model Mongoose ou entity SQL entre serviços.
-- Fazer um serviço acessar diretamente o banco do outro.
-- Fazer todos os serviços dependerem de `packages/domains/*`.
-- Extrair todos os serviços ao mesmo tempo.
-- Começar com mensageria complexa antes de estabilizar os contratos.
-
-Implementado:
-
-- `test/nest/architecture-boundaries.test.js` criado como suíte de proteção arquitetural.
-- contratos não podem importar runtime, banco ou implementação de domínio.
-- camadas puras de appointments não podem importar infraestrutura ou NestJS.
-- apps de serviço não podem importar outros apps de serviço diretamente.
-- app module de cada serviço só pode expor o próprio domínio e health.
-
-Esses testes não eliminam todo acoplamento transitório ainda existente, mas impedem os acoplamentos mais perigosos de crescerem enquanto a extração amadurece.
-
-**12. Ordem recomendada**
-
-Status: transformado em trilho operacional.
-
-Checklist atual:
-
-1. Formalizar contratos em `packages/contracts`. Concluído na primeira versão.
-2. Separar domínio puro de infraestrutura em `packages/domains/appointment`. Concluído para appointments na primeira versão.
-3. Transformar `apps/api` em gateway de segurança/roteamento. Concluído na primeira versão.
-4. Criar boot real para `apps/appointments-service`. Concluído na primeira versão.
-5. Fazer gateway chamar appointments-service. Concluído na primeira versão via REST configurável.
-6. Criar boots separados para serviços de suporte. Concluído na primeira versão.
-7. Criar infraestrutura local. Concluído na primeira versão.
-8. Criar segurança inicial entre gateway e serviços. Concluído na primeira versão.
-9. Criar guardrails contra acoplamento. Concluído.
-10. Mover fluxo de appointments para o serviço novo de forma definitiva.
-11. Adicionar eventos de domínio.
-12. Separar banco/schema de appointments.
-13. Adicionar observabilidade distribuída. Concluído na primeira versão.
-14. Reduzir reutilização transitória de providers internos do monólito.
-15. Só então amadurecer customers, services e professionals com banco, contratos e eventos próprios.
-
-Implementado para sustentar a ordem:
-
-- CI atualizado para rodar `npm test`.
-- CI valida `docker compose --env-file .env.example config`.
-- referência antiga a `npm run test:legacy` removida do workflow.
-- testes de arquitetura passam a proteger os limites enquanto os próximos itens avançam.
-
-**13. Observabilidade distribuída**
-
-Status: concluído na primeira versão.
-
-Primeira camada implementada:
-
-- logs estruturados passam a identificar o serviço por `SERVICE_NAME`;
-- `x-request-id` continua identificando a requisição HTTP específica;
-- `x-trace-id` passa a correlacionar a jornada distribuída entre gateway e serviços;
-- `traceparent` recebido de clientes/agentes é reaproveitado para gerar o `traceId`;
-- `/api/health` expõe `service`, `requestId` e `traceId`;
-- gateway propaga `x-request-id`, `x-trace-id` e `traceparent` para `appointments-service`;
-- falhas de proxy e rejeições do gateway incluem `traceId` nos logs;
-- `docker-compose.yml` define `SERVICE_NAME` para gateway e serviços;
-- documentação de infra registra os headers de correlação.
-
-Ainda pendente para observabilidade madura:
-
-- exportar spans OpenTelemetry;
-- adicionar métricas Prometheus por serviço;
-- montar stack local de ELK/OpenSearch ou OpenTelemetry Collector;
-- alertas por erro, latência e indisponibilidade.
-
-**14. Meta final**
-
-Cada microserviço deve ter vida livre:
-
+- repo sobe sozinho;
+- nao importa modules Nest dos servicos;
+- tem testes de auth, rate limit, proxy e erros;
 - deploy independente;
-- banco próprio;
-- testes próprios;
-- contratos explícitos;
-- observabilidade própria;
-- regra de negócio local;
-- dependência mínima de libs compartilhadas;
-- integração com outros serviços por API/eventos, não por import interno.
+- configuracao por URL interna de cada servico.
+
+**7. Extrair frontend**
+
+Status: pode acontecer em paralelo apos contratos externos estabilizarem.
+
+Criar repo `serv365-frontend`.
+
+Responsabilidades:
+
+- UI e estado do cliente;
+- chamadas HTTP somente para o gateway;
+- configuracao por `API_BASE_URL`;
+- build e deploy independentes;
+- testes de UI ou fluxos essenciais;
+- observabilidade frontend quando fizer sentido.
+
+O frontend nao chama microservicos diretamente. Toda chamada externa passa pelo gateway.
+
+**8. Extrair customers, services e professionals**
+
+Status: depois de appointments e gateway definirem o molde.
+
+Ordem sugerida:
+
+1. `serv365-customers-service`
+2. `serv365-services-service`
+3. `serv365-professionals-service`
+
+Para cada servico:
+
+- criar repo Nest proprio;
+- copiar somente o dominio necessario;
+- remover dependencias do monorepo;
+- criar banco/schema proprio;
+- publicar contratos HTTP;
+- publicar eventos de alteracao;
+- ajustar gateway para rotear para o servico;
+- adicionar testes de contrato e integracao interna;
+- remover fallback local no gateway.
+
+Critério de pronto:
+
+- repo independente;
+- banco independente;
+- pipeline independente;
+- deploy independente;
+- observabilidade propria;
+- integracao apenas por API/evento.
+
+**9. Dados e bancos por servico**
+
+Status: obrigatorio antes de considerar microservico maduro.
+
+Destino:
+
+- appointments possui seu banco/schema;
+- customers possui seu banco/schema;
+- services possui seu banco/schema;
+- professionals possui seu banco/schema;
+- nenhum servico faz query direta no banco de outro;
+- dados duplicados existem apenas como projecoes de leitura ou cache, alimentados por eventos.
+
+Passos:
+
+1. Definir provider por servico.
+2. Criar migrations por repo.
+3. Planejar migracao dos dados atuais.
+4. Criar scripts idempotentes de backfill.
+5. Adicionar health/readiness por dependencia.
+6. Remover dependencias de banco compartilhado.
+
+**10. Comunicacao entre servicos**
+
+Status: evoluir gradualmente.
+
+Padrao inicial:
+
+- comunicacao externa: frontend -> gateway;
+- comunicacao interna sincrona: gateway -> servicos via REST;
+- comunicacao entre servicos: REST interno apenas quando necessario;
+- comunicacao assíncrona: eventos de dominio para sincronizacao e efeitos colaterais.
+
+Evitar:
+
+- transacao distribuida;
+- chamada circular obrigatoria;
+- import direto de codigo interno;
+- acesso direto ao banco de outro servico;
+- pacote compartilhado com regra de negocio.
+
+Destino:
+
+- cada servico publica eventos como `appointment.created`, `customer.updated`, `service.updated`, `professional.updated`;
+- consumidores mantem projecoes locais quando precisarem consultar rapido;
+- contratos de eventos sao versionados.
+
+**11. Seguranca**
+
+Status: primeira camada existe; precisa amadurecer por repo.
+
+Destino:
+
+- gateway valida OAuth2/OIDC/JWT real;
+- servicos internos validam token interno, mTLS ou identidade de workload;
+- escopos/permissoes sao propagados;
+- segredos ficam fora do codigo;
+- auditoria de acoes sensiveis e persistida;
+- rotacao de segredos e suportada.
+
+Cada repo deve ter `.env.example` proprio sem segredos reais.
+
+**12. Observabilidade**
+
+Status: primeira camada existe no monorepo.
+
+Destino por repo:
+
+- logs JSON com `service`, `environment`, `requestId`, `traceId`;
+- propagacao de `traceparent`;
+- OpenTelemetry para traces;
+- metricas Prometheus ou exporter equivalente;
+- dashboards por servico;
+- alertas por erro, latencia, saturacao e indisponibilidade.
+
+O `serv365-infra` deve conter a stack local ou manifests para collector, logs, metricas e tracing.
+
+**13. CI/CD e release independente**
+
+Status: criar por repositorio.
+
+Cada repo deve ter:
+
+- lint/test/build;
+- validacao de contratos;
+- build de imagem Docker;
+- versionamento;
+- changelog ou release notes;
+- deploy independente;
+- rollback documentado.
+
+O deploy de um servico nao deve exigir deploy dos outros, exceto quando houver breaking change planejada e versionada.
+
+**14. Ordem operacional recomendada**
+
+1. Congelar contratos atuais em formato publicavel.
+2. Criar template de projeto Nest independente.
+3. Criar `serv365-contracts`.
+4. Criar `serv365-appointments-service`.
+5. Migrar appointments para repo proprio e banco/schema proprio.
+6. Fazer gateway do monorepo chamar o appointments externo.
+7. Criar `serv365-api-gateway`.
+8. Migrar gateway para repo proprio.
+9. Criar `serv365-frontend`.
+10. Migrar frontend para repo proprio.
+11. Extrair `customers-service`.
+12. Extrair `services-service`.
+13. Extrair `professionals-service`.
+14. Criar `serv365-infra` como fonte operacional.
+15. Adicionar event bus e eventos versionados.
+16. Adicionar OpenTelemetry, metricas, dashboards e alertas.
+17. Remover do monorepo qualquer codigo que ja tenha dono em repo separado.
+
+**15. Criterio de conclusao**
+
+O plano esta concluido quando:
+
+- cada app esta em seu proprio repositorio;
+- cada backend e um projeto Nest independente;
+- frontend chama apenas o gateway;
+- gateway nao contem regra de negocio dos dominios;
+- microservicos nao importam codigo interno uns dos outros;
+- cada servico possui banco/schema proprio;
+- contratos sao publicos, versionados e testados;
+- cada repo tem CI/CD e Dockerfile proprio;
+- logs, metricas e traces permitem investigar uma chamada fim a fim;
+- o monorepo atual nao e mais necessario para buildar, testar ou publicar os servicos.
