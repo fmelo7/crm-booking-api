@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { getDatabaseProvider, isRailwayRuntime } = require('../modules/common/databaseProvider');
+const { getDatabaseProvider, isRailwayRuntime } = require('../../packages/shared/common/databaseProvider');
 const { connectPostgres, DEFAULT_POSTGRES_URI, getPostgresUri } = require('./postgres');
 const { log } = require('../middlewares/logger');
 

@@ -105,12 +105,12 @@ Depois de subir a API, acesse:
 http://localhost:3000/api-docs/
 ```
 
-A spec é montada de forma modular. O arquivo [src/swagger.js](src/swagger.js) varre automaticamente arquivos `*.swagger.js` dentro de `src/modules`.
+A spec é montada de forma modular. O arquivo [src/swagger.js](src/swagger.js) varre automaticamente arquivos `*.swagger.js` dentro de `packages/domains`.
 
 Para documentar um novo módulo, crie um arquivo como:
 
 ```text
-src/modules/example/example.swagger.js
+packages/domains/example/example.swagger.js
 ```
 
 Exportando:
@@ -313,6 +313,17 @@ apps/
   appointments-service/
 packages/
   contracts/
+  domains/
+    appointment/
+      appointment.model.js
+      appointment.repository.js
+      appointment.validation.js
+      appointment.swagger.js
+    customer/
+    professional/
+    service/
+  shared/
+    common/
 src/
   app.js
   server.js
@@ -330,13 +341,6 @@ src/
     professional/
     repository/
     service/
-  modules/
-    appointment/
-      appointment.model.js
-      appointment.swagger.js
-    customer/
-    professional/
-    service/
 test/
   integration/
   nest/
@@ -348,13 +352,14 @@ Responsabilidades:
 - `apps/frontend/public`: frontend estático servido pela API.
 - `apps/appointments-service`: placeholder para a primeira extração de microserviço.
 - `packages/contracts`: contratos compartilháveis entre app, frontend e futuros serviços.
+- `packages/domains`: pacotes internos por domínio com models, repositories, validações, regras e Swagger.
+- `packages/shared/common`: utilitários compartilhados sem dependência de runtime HTTP.
 - `src/server.js`: carrega envs, conecta o banco e inicia o servidor NestJS.
 - `src/app.js`: alias para a factory do app NestJS usada pelo caminho principal.
 - `nest/`: runtime principal com controllers, modules, providers e repositories injetáveis.
 - `configureBaseApp.js`: configura middlewares HTTP compartilhados, arquivos estáticos, Swagger e rate limit.
 - `config/database.js`: centraliza a conexão com MongoDB ou PostgreSQL.
 - `swagger.js`: monta a spec OpenAPI a partir dos módulos.
-- `modules/`: models, validations, repositories, regras compartilhadas e documentação Swagger usados pelo NestJS.
 - `*.model.js`: define schemas Mongoose.
 - `*.repository.js`: seleciona o adapter MongoDB ou PostgreSQL do domínio.
 - `*.validation.js`: define schemas de validação compartilhados pelos controllers NestJS.

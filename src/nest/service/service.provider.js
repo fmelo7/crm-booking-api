@@ -5,8 +5,8 @@ const {
   assertFound,
   assertNoLinkedAppointment,
   assertRequiredFields,
-} = require('../../modules/common/entityAssertions');
-const { buildSearchQuery } = require('../../modules/common/searchQuery');
+} = require('../../../packages/shared/common/entityAssertions');
+const { buildSearchQuery } = require('../../../packages/shared/common/searchQuery');
 
 const messages = {
   linkedAppointment: 'Serviço possui agendamentos vinculados e não pode ser removido',

@@ -1,4 +1,4 @@
-const customerRepository = require('../../modules/customer/customer.repository');
+const customerRepository = require('../../../packages/domains/customer/customer.repository');
 const { createRepositoryProvider } = require('../common/repositoryProvider');
 
 const CustomerRepositoryProvider = createRepositoryProvider(customerRepository, [

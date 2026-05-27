@@ -1,6 +1,6 @@
 const Professional = require('./professional.model');
-const { paginate } = require('../common/pagination');
-const { mapPaginated, mapProfessional } = require('../common/repositoryMappers');
+const { paginate } = require('../../shared/common/pagination');
+const { mapPaginated, mapProfessional } = require('../../shared/common/repositoryMappers');
 
 exports.create = async (data) => mapProfessional(await Professional.create(data));
 

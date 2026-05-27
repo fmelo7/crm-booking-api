@@ -1,12 +1,12 @@
-const { createId, query } = require('../../config/postgres');
-const { createPagination } = require('../common/postgresPagination');
-const { normalizePagination } = require('../common/pagination');
+const { createId, query } = require('../../../src/config/postgres');
+const { createPagination } = require('../../shared/common/postgresPagination');
+const { normalizePagination } = require('../../shared/common/pagination');
 const {
   mapAppointment: mapStandardAppointment,
   mapCustomer,
   mapProfessional,
   mapService,
-} = require('../common/repositoryMappers');
+} = require('../../shared/common/repositoryMappers');
 
 const normalizeReschedules = (value) => {
   if (Array.isArray(value)) return value;

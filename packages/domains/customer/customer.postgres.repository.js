@@ -1,7 +1,7 @@
-const { createId, query } = require('../../config/postgres');
-const { createPagination } = require('../common/postgresPagination');
-const { normalizePagination } = require('../common/pagination');
-const { mapCustomer } = require('../common/repositoryMappers');
+const { createId, query } = require('../../../src/config/postgres');
+const { createPagination } = require('../../shared/common/postgresPagination');
+const { normalizePagination } = require('../../shared/common/pagination');
+const { mapCustomer } = require('../../shared/common/repositoryMappers');
 
 const buildSearchWhere = (search) => {
   if (!search) return { where: '', values: [] };

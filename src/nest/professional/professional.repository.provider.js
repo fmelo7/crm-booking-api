@@ -1,4 +1,4 @@
-const professionalRepository = require('../../modules/professional/professional.repository');
+const professionalRepository = require('../../../packages/domains/professional/professional.repository');
 const { createRepositoryProvider } = require('../common/repositoryProvider');
 
 const ProfessionalRepositoryProvider = createRepositoryProvider(professionalRepository, [

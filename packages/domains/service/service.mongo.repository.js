@@ -1,6 +1,6 @@
 const Service = require('./service.model');
-const { paginate } = require('../common/pagination');
-const { mapPaginated, mapService } = require('../common/repositoryMappers');
+const { paginate } = require('../../shared/common/pagination');
+const { mapPaginated, mapService } = require('../../shared/common/repositoryMappers');
 
 exports.create = async (data) => mapService(await Service.create(data));
 

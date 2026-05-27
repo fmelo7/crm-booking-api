@@ -1,6 +1,6 @@
 const { z } = require('zod');
-const { objectId } = require('../common/objectId');
-const { idParamSchema } = require('../common/validation');
+const { objectId } = require('../../shared/common/objectId');
+const { idParamSchema } = require('../../shared/common/validation');
 
 const paginationSchema = {
   page: z.coerce.number().int().min(1).optional(),

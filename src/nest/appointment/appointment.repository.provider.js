@@ -1,4 +1,4 @@
-const appointmentRepository = require('../../modules/appointment/appointment.repository');
+const appointmentRepository = require('../../../packages/domains/appointment/appointment.repository');
 const { createRepositoryProvider } = require('../common/repositoryProvider');
 
 const AppointmentRepositoryProvider = createRepositoryProvider(appointmentRepository, [

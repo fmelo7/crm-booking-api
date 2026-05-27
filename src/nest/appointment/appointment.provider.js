@@ -3,7 +3,7 @@ const CustomerRepositoryProvider = require('../customer/customer.repository.prov
 const ProfessionalRepositoryProvider = require('../professional/professional.repository.provider');
 const ServiceRepositoryProvider = require('../service/service.repository.provider');
 const { defineInjectable } = require('../common/injection');
-const { isValidObjectId } = require('../../modules/common/objectId');
+const { isValidObjectId } = require('../../../packages/shared/common/objectId');
 const {
   buildAvailabilityWindow,
   buildAvailableSlots,
@@ -11,7 +11,7 @@ const {
   calculateEndAt,
   ensureScheduled,
   parseStartAt,
-} = require('../../modules/appointment/appointment.rules');
+} = require('../../../packages/domains/appointment/appointment.rules');
 
 class AppointmentProvider {
   constructor(

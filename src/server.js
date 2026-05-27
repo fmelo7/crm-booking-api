@@ -2,7 +2,7 @@
 
 require('dotenv').config();
 
-const { getDatabaseProvider } = require('./modules/common/databaseProvider');
+const { getDatabaseProvider } = require('../packages/shared/common/databaseProvider');
 const createNestApp = require('./nest/createNestApp');
 const { connectDatabase, maskDatabaseUri } = require('./config/database');
 const { getMaskedEnv, isEnvDebugEnabled } = require('./config/envDebug');

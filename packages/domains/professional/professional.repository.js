@@ -1,3 +1,3 @@
-const { getRepositoryProvider } = require('../common/databaseProvider');
+const { getRepositoryProvider } = require('../../shared/common/databaseProvider');
 
 module.exports = require(`./professional.${getRepositoryProvider()}.repository`);

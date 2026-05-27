@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const modulesDir = path.join(__dirname, 'modules');
+const domainsDir = path.join(__dirname, '../packages/domains');
 
 const findSwaggerFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
   .flatMap((entry) => {
@@ -14,7 +14,7 @@ const findSwaggerFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
     return entry.isFile() && entry.name.endsWith('.swagger.js') ? [fullPath] : [];
   });
 
-const swaggerModules = findSwaggerFiles(modulesDir)
+const swaggerModules = findSwaggerFiles(domainsDir)
   .sort()
   .map((file) => require(file));
 
@@ -36,7 +36,7 @@ const swaggerSpec = {
   info: {
     title: 'CRM Booking API',
     version: '1.0.0',
-    description: 'API de agendamento CRM com Express e MongoDB',
+    description: 'API de agendamento CRM com NestJS e suporte a MongoDB ou PostgreSQL',
   },
   servers: [
     {

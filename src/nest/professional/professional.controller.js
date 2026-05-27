@@ -15,8 +15,8 @@ const ProfessionalProvider = require('./professional.provider');
 const {
   createProfessionalSchema,
   listProfessionalSchema,
-} = require('../../modules/professional/professional.validation');
-const { idParamSchema } = require('../../modules/common/validation');
+} = require('../../../packages/domains/professional/professional.validation');
+const { idParamSchema } = require('../../../packages/shared/common/validation');
 const {
   parseBody,
   parseIdParam,

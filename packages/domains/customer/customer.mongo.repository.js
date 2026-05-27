@@ -1,6 +1,6 @@
 const Customer = require('./customer.model');
-const { paginate } = require('../common/pagination');
-const { mapCustomer, mapPaginated } = require('../common/repositoryMappers');
+const { paginate } = require('../../shared/common/pagination');
+const { mapCustomer, mapPaginated } = require('../../shared/common/repositoryMappers');
 
 exports.create = async (data) => mapCustomer(await Customer.create(data));
 

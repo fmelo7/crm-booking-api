@@ -1,4 +1,4 @@
-const { getDatabaseProvider } = require('./modules/common/databaseProvider');
+const { getDatabaseProvider } = require('../packages/shared/common/databaseProvider');
 const { getPostgresUri } = require('./config/postgres');
 const { getMaskedEnv, isEnvDebugEnabled, maskValue } = require('./config/envDebug');
 

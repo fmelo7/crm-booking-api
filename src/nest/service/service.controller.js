@@ -15,8 +15,8 @@ const ServiceProvider = require('./service.provider');
 const {
   createServiceSchema,
   listServiceSchema,
-} = require('../../modules/service/service.validation');
-const { idParamSchema } = require('../../modules/common/validation');
+} = require('../../../packages/domains/service/service.validation');
+const { idParamSchema } = require('../../../packages/shared/common/validation');
 const {
   parseBody,
   parseIdParam,

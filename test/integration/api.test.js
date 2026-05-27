@@ -5,10 +5,10 @@ const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const createNestApp = require('../../src/nest/createNestApp');
-const Customer = require('../../src/modules/customer/customer.model');
-const Service = require('../../src/modules/service/service.model');
-const Professional = require('../../src/modules/professional/professional.model');
-const Appointment = require('../../src/modules/appointment/appointment.model');
+const Customer = require('../../packages/domains/customer/customer.model');
+const Service = require('../../packages/domains/service/service.model');
+const Professional = require('../../packages/domains/professional/professional.model');
+const Appointment = require('../../packages/domains/appointment/appointment.model');
 
 let app;
 let mongo;

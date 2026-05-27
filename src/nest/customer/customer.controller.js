@@ -15,8 +15,8 @@ const CustomerProvider = require('./customer.provider');
 const {
   createCustomerSchema,
   listCustomerSchema,
-} = require('../../modules/customer/customer.validation');
-const { idParamSchema } = require('../../modules/common/validation');
+} = require('../../../packages/domains/customer/customer.validation');
+const { idParamSchema } = require('../../../packages/shared/common/validation');
 const {
   parseBody,
   parseIdParam,

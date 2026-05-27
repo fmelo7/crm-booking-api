@@ -1,6 +1,6 @@
 const Appointment = require('./appointment.model');
-const { paginate } = require('../common/pagination');
-const { mapAppointment, mapPaginated } = require('../common/repositoryMappers');
+const { paginate } = require('../../shared/common/pagination');
+const { mapAppointment, mapPaginated } = require('../../shared/common/repositoryMappers');
 
 exports.create = async (data) => mapAppointment(await Appointment.create(data));
 
