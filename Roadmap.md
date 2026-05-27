@@ -220,6 +220,8 @@ Evitar no início:
 
 **8. Extrair services de suporte**
 
+Status: concluído na primeira versão de boot separado.
+
 Depois que appointments-service estiver estável:
 
 1. `customers-service`
@@ -235,6 +237,26 @@ Cada serviço deve possuir:
 - logs e métricas;
 - contratos públicos;
 - eventos de alteração relevantes.
+
+Implementado:
+
+- `apps/customers-service` criado com boot HTTP próprio, health e rotas de customers.
+- `apps/services-service` criado com boot HTTP próprio, health e rotas de services.
+- `apps/professionals-service` criado com boot HTTP próprio, health e rotas de professionals.
+- scripts `start:*` e `dev:*` adicionados para os três serviços.
+- portas dedicadas documentadas:
+  - `CUSTOMERS_SERVICE_PORT=3002`;
+  - `SERVICES_SERVICE_PORT=3003`;
+  - `PROFESSIONALS_SERVICE_PORT=3004`.
+- testes garantem que cada serviço expõe health, expõe seu domínio e não expõe rotas de outros domínios.
+
+Ainda pendente para uma extração madura:
+
+- banco/schema próprio por serviço;
+- contratos públicos específicos de customers/services/professionals;
+- eventos de alteração por serviço;
+- gateway/proxy para esses serviços;
+- redução da reutilização transitória de providers internos do monólito.
 
 **9. Infraestrutura**
 

@@ -49,6 +49,9 @@ Variáveis:
 | `PORT` | Não | Porta HTTP. Padrão: `3000`. |
 | `APPOINTMENTS_SERVICE_PORT` | Não | Porta HTTP do serviço de appointments. Padrão: `3001`. |
 | `APPOINTMENTS_SERVICE_URL` | Não | URL interna do serviço de appointments. Quando definida, o gateway encaminha `/api/appointments/*` para ela. |
+| `CUSTOMERS_SERVICE_PORT` | Não | Porta HTTP do serviço de customers. Padrão: `3002`. |
+| `SERVICES_SERVICE_PORT` | Não | Porta HTTP do serviço de services. Padrão: `3003`. |
+| `PROFESSIONALS_SERVICE_PORT` | Não | Porta HTTP do serviço de professionals. Padrão: `3004`. |
 | `DATABASE_PROVIDER` | Não | Banco usado pela aplicação: `mongodb` ou `postgres`. Padrão: `mongodb`. |
 | `MONGODB_URI` | Não | URI do MongoDB. Padrão: `mongodb://127.0.0.1:27017/crm-booking-api`. |
 | `POSTGRES_URI` | Não | URI do PostgreSQL. Usada quando `DATABASE_PROVIDER=postgres`. |
@@ -97,6 +100,12 @@ Serviço de appointments separado:
 ```bash
 npm run start:appointments
 npm run dev:appointments
+npm run start:customers
+npm run dev:customers
+npm run start:services
+npm run dev:services
+npm run start:professionals
+npm run dev:professionals
 ```
 
 Para fazer o gateway encaminhar appointments para o serviço separado:
@@ -333,6 +342,9 @@ apps/
     server.js
     createAppointmentsServiceApp.js
     src/
+  customers-service/
+  services-service/
+  professionals-service/
 packages/
   contracts/
   domains/
@@ -378,6 +390,9 @@ Responsabilidades:
 - `apps/api/serviceProxy.js`: proxy configurável do gateway para serviços internos, começando por appointments.
 - `apps/frontend/public`: frontend estático servido pela API.
 - `apps/appointments-service`: primeiro boot separado do domínio de appointments.
+- `apps/customers-service`: primeiro boot separado do domínio de customers.
+- `apps/services-service`: primeiro boot separado do domínio de services.
+- `apps/professionals-service`: primeiro boot separado do domínio de professionals.
 - `packages/contracts`: contratos compartilháveis entre app, frontend e futuros serviços.
 - `packages/domains`: pacotes internos por domínio com models, repositories, validações, regras e Swagger.
 - `packages/domains/appointment/rules`: regras puras de agenda sem dependência de banco.
