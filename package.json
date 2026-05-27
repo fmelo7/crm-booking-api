@@ -12,9 +12,11 @@
   "scripts": {
     "start": "node apps/api/server.js",
     "start:api": "node apps/api/server.js",
+    "start:appointments": "node apps/appointments-service/server.js",
     "start:local": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config apps/api/server.js",
     "dev": "nodemon apps/api/server.js",
     "dev:api": "nodemon apps/api/server.js",
+    "dev:appointments": "nodemon apps/appointments-service/server.js",
     "dev:local": "DOTENV_CONFIG_PATH=.env.local node -r dotenv/config ./node_modules/.bin/nodemon apps/api/server.js",
     "test": "NODE_ENV=test node --test test/integration/*.test.js test/nest/*.test.js",
     "test:integration": "NODE_ENV=test node --test test/integration/*.test.js",

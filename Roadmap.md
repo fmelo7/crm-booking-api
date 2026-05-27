@@ -132,6 +132,8 @@ Implementado:
 
 **6. Extrair primeiro: appointments-service**
 
+Status: concluído na primeira versão de boot separado.
+
 Começar por appointments porque concentra as regras mais sensíveis:
 
 - disponibilidade;
@@ -164,6 +166,24 @@ Critério de pronto:
 - publica eventos de domínio;
 - não importa provider/controller/repository de `apps/api`;
 - usa apenas `packages/contracts` e utilitários realmente neutros.
+
+Implementado:
+
+- `apps/appointments-service/server.js` criado como processo HTTP próprio.
+- `apps/appointments-service/createAppointmentsServiceApp.js` criado como factory NestJS própria.
+- `apps/appointments-service/src/app.module.js` importa apenas appointments e health.
+- scripts `start:appointments` e `dev:appointments` adicionados.
+- `APPOINTMENTS_SERVICE_PORT` documentado, com padrão `3001`.
+- serviço expõe `/api/health` e `/api/appointments`.
+- serviço não expõe rotas de customers, services ou professionals.
+- testes próprios garantem health, rota de appointments e ausência de customers.
+
+Ainda pendente para os próximos itens:
+
+- mover o tráfego real do gateway para esse serviço;
+- publicar eventos de domínio;
+- separar banco/schema de appointments;
+- reduzir reutilização transitória de providers internos do monólito.
 
 **7. Comunicação entre serviços**
 
@@ -249,7 +269,7 @@ Serviços internos também devem validar chamadas internas:
 1. Formalizar contratos em `packages/contracts`. Concluído na primeira versão.
 2. Separar domínio puro de infraestrutura em `packages/domains/appointment`. Concluído para appointments na primeira versão.
 3. Transformar `apps/api` em gateway de segurança/roteamento. Concluído na primeira versão.
-4. Criar boot real para `apps/appointments-service`.
+4. Criar boot real para `apps/appointments-service`. Concluído na primeira versão.
 5. Mover fluxo de appointments para o serviço novo.
 6. Fazer gateway chamar appointments-service.
 7. Adicionar eventos de domínio.
