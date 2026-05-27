@@ -27,3 +27,16 @@ Observações:
 - Cada processo define `SERVICE_NAME` e expõe esse nome em logs e `/api/health`.
 - Toda requisição recebe `x-request-id` e `x-trace-id`; o gateway propaga esses headers para serviços internos.
 - Quando um cliente envia `traceparent`, o trace id W3C é reaproveitado como `x-trace-id`.
+
+## CI/CD independente
+
+O guia para release independente esta em `infra/independent-releases.md`.
+
+Templates copiaveis para os futuros repos:
+
+- `infra/templates/github-actions/node-nest-service-ci.yml`
+- `infra/templates/github-actions/node-nest-service-release.yml`
+- `infra/templates/github-actions/frontend-ci.yml`
+- `infra/templates/release-checklist.md`
+
+Esses arquivos devem ser copiados para cada repositorio novo quando `appointments-service`, `api-gateway`, `frontend` e os demais servicos forem extraidos fisicamente.

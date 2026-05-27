@@ -38,25 +38,82 @@ Esse estado ainda e um monorepo modular. O proximo passo nao e aumentar a lib co
 
 Criar repositorios separados:
 
-- `serv365-frontend`
-- `serv365-api-gateway`
-- `serv365-appointments-service`
-- `serv365-customers-service`
-- `serv365-services-service`
-- `serv365-professionals-service`
-- `serv365-contracts`
-- `serv365-infra`
+- `frontend`
+- `api-gateway`
+- `appointments-service`
+- `customers-service`
+- `services-service`
+- `professionals-service`
+- `contracts`
+- `infra`
 
-O repositorio `serv365-contracts` deve ser pequeno e estavel. Ele pode conter OpenAPI specs, JSON Schemas, nomes de eventos, exemplos de payload e clientes gerados, mas nao deve conter regra de negocio, repositories, models de banco, modules Nest ou providers internos.
+O repositorio `contracts` deve ser pequeno e estavel. Ele pode conter OpenAPI specs, JSON Schemas, nomes de eventos, exemplos de payload e clientes gerados, mas nao deve conter regra de negocio, repositories, models de banco, modules Nest ou providers internos.
 
-O repositorio `serv365-infra` deve concentrar compose local, manifests, IaC, observabilidade, secrets templates, pipelines compartilhados e documentacao operacional. Ele nao deve conter regra de negocio dos servicos.
+O repositorio `infra` deve concentrar compose local, manifests, IaC, observabilidade, secrets templates, pipelines compartilhados e documentacao operacional. Ele nao deve conter regra de negocio dos servicos.
 
-**3. Padrao minimo de cada projeto Nest**
+**3. Como separar fisicamente cada app**
+
+Status: proximo passo pratico.
+
+Nao criar `git init` dentro de `apps/*` no monorepo atual. Isso criaria repositorios aninhados e deixaria o versionamento confuso. Criar cada projeto novo como diretorio irmao do repositorio atual.
+
+Estrutura local recomendada:
+
+```text
+/Users/francisco/
+  crm-booking-api/          # repo atual, base de extracao
+  appointments-service/     # novo repo independente
+  api-gateway/              # novo repo independente
+  frontend/                 # novo repo independente
+  customers-service/        # novo repo independente
+  services-service/         # novo repo independente
+  professionals-service/    # novo repo independente
+  contracts/                # contratos versionados
+  infra/                    # infraestrutura operacional
+```
+
+Passo a passo para cada backend Nest:
+
+1. Criar o diretorio fora do monorepo atual.
+2. Entrar no diretorio novo.
+3. Inicializar o projeto Node/Nest.
+4. Instalar dependencias necessarias.
+5. Copiar do monorepo apenas o codigo do dominio daquele servico.
+6. Copiar ou recriar health, config, observabilidade, filtros de erro e testes.
+7. Remover qualquer import para `../crm-booking-api`, `src/nest/*`, `apps/*` ou `packages/domains/*`.
+8. Criar `.env.example`, `Dockerfile`, `README.md` e workflow de CI.
+9. Rodar `npm test` e `npm run build`.
+10. Inicializar o Git no diretorio novo.
+11. Fazer o primeiro commit.
+12. Criar o repositorio remoto e enviar o codigo.
+
+Comandos base, ajustando o nome do app:
+
+```bash
+cd /Users/francisco
+mkdir appointments-service
+cd appointments-service
+npm init -y
+git init
+```
+
+Se for usar o Nest CLI para gerar a base, criar o projeto diretamente fora do monorepo:
+
+```bash
+cd /Users/francisco
+npx @nestjs/cli new appointments-service
+cd appointments-service
+git init
+```
+
+Observacao: `git init` deve acontecer no novo diretorio independente, nao dentro de `crm-booking-api/apps/appointments-service`.
+
+**4. Padrao minimo de cada projeto Nest**
 
 Cada backend deve ser um projeto Node/Nest proprio:
 
 ```text
-serv365-appointments-service/
+appointments-service/
   src/
     main.ts
     app.module.ts
@@ -86,7 +143,7 @@ Cada projeto deve ter:
 - README com variaveis, portas, endpoints e eventos;
 - pipeline independente de build, test e deploy.
 
-**4. Contratos antes da separacao fisica**
+**5. Contratos antes da separacao fisica**
 
 Status: proximo passo recomendado.
 
@@ -102,12 +159,12 @@ Antes de cortar repositorios, congelar contratos publicos:
 
 Saida esperada:
 
-- criar ou consolidar `serv365-contracts`;
+- criar ou consolidar `contracts`;
 - publicar contratos por versao;
 - CI validando breaking changes;
 - gateway e servicos usando contratos como referencia, nao como acesso a codigo interno.
 
-**5. Extrair primeiro o appointments-service**
+**6. Extrair primeiro o appointments-service**
 
 Status: primeiro corte real.
 
@@ -123,7 +180,7 @@ Appointments deve ser o primeiro repositorio separado porque concentra o fluxo m
 
 Passos:
 
-1. Criar repo `serv365-appointments-service`.
+1. Criar repo `appointments-service`.
 2. Copiar somente codigo necessario de appointments, health, configuracao, observabilidade e infraestrutura propria.
 3. Remover imports de `src/nest/*`, `apps/*` e `packages/domains/*` do monorepo.
 4. Manter apenas contratos publicos ou copiar regra de dominio para dentro do servico.
@@ -143,11 +200,11 @@ Critério de pronto:
 - gateway chama somente via API interna;
 - nenhuma dependencia de repository/model/provider do monorepo.
 
-**6. Extrair api-gateway**
+**7. Extrair api-gateway**
 
 Status: depois do primeiro servico separado estar estavel.
 
-Criar repo `serv365-api-gateway`.
+Criar repo `api-gateway`.
 
 Responsabilidades:
 
@@ -171,11 +228,11 @@ Critério de pronto:
 - deploy independente;
 - configuracao por URL interna de cada servico.
 
-**7. Extrair frontend**
+**8. Extrair frontend**
 
 Status: pode acontecer em paralelo apos contratos externos estabilizarem.
 
-Criar repo `serv365-frontend`.
+Criar repo `frontend`.
 
 Responsabilidades:
 
@@ -188,15 +245,15 @@ Responsabilidades:
 
 O frontend nao chama microservicos diretamente. Toda chamada externa passa pelo gateway.
 
-**8. Extrair customers, services e professionals**
+**9. Extrair customers, services e professionals**
 
 Status: depois de appointments e gateway definirem o molde.
 
 Ordem sugerida:
 
-1. `serv365-customers-service`
-2. `serv365-services-service`
-3. `serv365-professionals-service`
+1. `customers-service`
+2. `services-service`
+3. `professionals-service`
 
 Para cada servico:
 
@@ -219,7 +276,7 @@ Critério de pronto:
 - observabilidade propria;
 - integracao apenas por API/evento.
 
-**9. Dados e bancos por servico**
+**10. Dados e bancos por servico**
 
 Status: obrigatorio antes de considerar microservico maduro.
 
@@ -241,7 +298,7 @@ Passos:
 5. Adicionar health/readiness por dependencia.
 6. Remover dependencias de banco compartilhado.
 
-**10. Comunicacao entre servicos**
+**11. Comunicacao entre servicos**
 
 Status: evoluir gradualmente.
 
@@ -266,7 +323,7 @@ Destino:
 - consumidores mantem projecoes locais quando precisarem consultar rapido;
 - contratos de eventos sao versionados.
 
-**11. Seguranca**
+**12. Seguranca**
 
 Status: primeira camada existe; precisa amadurecer por repo.
 
@@ -281,7 +338,7 @@ Destino:
 
 Cada repo deve ter `.env.example` proprio sem segredos reais.
 
-**12. Observabilidade**
+**13. Observabilidade**
 
 Status: primeira camada existe no monorepo.
 
@@ -294,11 +351,11 @@ Destino por repo:
 - dashboards por servico;
 - alertas por erro, latencia, saturacao e indisponibilidade.
 
-O `serv365-infra` deve conter a stack local ou manifests para collector, logs, metricas e tracing.
+O `infra` deve conter a stack local ou manifests para collector, logs, metricas e tracing.
 
-**13. CI/CD e release independente**
+**14. CI/CD e release independente**
 
-Status: criar por repositorio.
+Status: concluido na primeira versao como kit de templates para os repositorios independentes.
 
 Cada repo deve ter:
 
@@ -312,27 +369,49 @@ Cada repo deve ter:
 
 O deploy de um servico nao deve exigir deploy dos outros, exceto quando houver breaking change planejada e versionada.
 
-**14. Ordem operacional recomendada**
+Implementado:
+
+- `infra/independent-releases.md` com o processo minimo de CI/CD por repositorio;
+- template de CI para backends Nest em `infra/templates/github-actions/node-nest-service-ci.yml`;
+- template de release de imagem Docker em `infra/templates/github-actions/node-nest-service-release.yml`;
+- template de CI para frontend em `infra/templates/github-actions/frontend-ci.yml`;
+- checklist de release e rollback em `infra/templates/release-checklist.md`;
+- `infra/README.md` aponta para os templates copiaveis.
+
+Ainda pendente para quando os repositorios forem criados:
+
+- copiar os templates para cada repo novo;
+- configurar secrets e provedor de deploy de cada app;
+- publicar imagens em registry real;
+- ativar deploy independente por ambiente;
+- testar rollback real por servico.
+
+**15. Ordem operacional recomendada**
 
 1. Congelar contratos atuais em formato publicavel.
-2. Criar template de projeto Nest independente.
-3. Criar `serv365-contracts`.
-4. Criar `serv365-appointments-service`.
-5. Migrar appointments para repo proprio e banco/schema proprio.
-6. Fazer gateway do monorepo chamar o appointments externo.
-7. Criar `serv365-api-gateway`.
-8. Migrar gateway para repo proprio.
-9. Criar `serv365-frontend`.
-10. Migrar frontend para repo proprio.
-11. Extrair `customers-service`.
-12. Extrair `services-service`.
-13. Extrair `professionals-service`.
-14. Criar `serv365-infra` como fonte operacional.
-15. Adicionar event bus e eventos versionados.
-16. Adicionar OpenTelemetry, metricas, dashboards e alertas.
-17. Remover do monorepo qualquer codigo que ja tenha dono em repo separado.
+2. Criar `contracts` fora do monorepo atual.
+3. Publicar os contratos iniciais de appointments.
+4. Criar template de projeto Nest independente.
+5. Criar `appointments-service` fora do monorepo atual.
+6. Rodar `npm init` ou Nest CLI no novo diretorio.
+7. Migrar appointments para o novo repo.
+8. Criar banco/schema proprio de appointments.
+9. Criar CI, Dockerfile e README do `appointments-service`.
+10. Fazer gateway do monorepo chamar o appointments externo.
+11. Remover fallback local de appointments quando validado.
+12. Criar `api-gateway` fora do monorepo atual.
+13. Migrar gateway para repo proprio.
+14. Criar `frontend` fora do monorepo atual.
+15. Migrar frontend para repo proprio.
+16. Extrair `customers-service`.
+17. Extrair `services-service`.
+18. Extrair `professionals-service`.
+19. Criar `infra` como fonte operacional.
+20. Adicionar event bus e eventos versionados.
+21. Adicionar OpenTelemetry, metricas, dashboards e alertas.
+22. Remover do monorepo qualquer codigo que ja tenha dono em repo separado.
 
-**15. Criterio de conclusao**
+**16. Criterio de conclusao**
 
 O plano esta concluido quando:
 
