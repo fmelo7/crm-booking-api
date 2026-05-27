@@ -99,11 +99,13 @@ test('gateway proxies appointment routes to appointments service when configured
   const response = await request(expressApp)
     .get('/api/appointments?status=scheduled')
     .set('authorization', 'Bearer test-token')
+    .set('x-trace-id', 'trace-gateway-test')
     .expect(200);
 
   assert.equal(proxiedRequest.url, 'http://appointments-service:3001/api/appointments?status=scheduled');
   assert.equal(proxiedRequest.options.method, 'GET');
   assert.equal(proxiedRequest.options.headers['x-request-id'], response.headers['x-request-id']);
+  assert.equal(proxiedRequest.options.headers['x-trace-id'], 'trace-gateway-test');
   assert.equal(proxiedRequest.options.headers['x-internal-token'], 'internal-test-token');
   assert.equal(response.headers['x-gateway-target'], 'appointments-service');
   assert.deepEqual(response.body, { data: [{ id: 'appointment-id' }] });

@@ -1,13 +1,32 @@
 const crypto = require('crypto');
 
+const getServiceName = () =>
+  (process.env.SERVICE_NAME || process.env.npm_package_name || 'serv365-api').trim();
+
+const getTraceIdFromTraceparent = (traceparent) => {
+  const [, traceId] = String(traceparent || '').split('-');
+
+  if (/^[a-f0-9]{32}$/i.test(traceId || '')) {
+    return traceId;
+  }
+
+  return null;
+};
+
+const getTraceIdFromRequest = (req) =>
+  req.get('x-trace-id') ||
+  getTraceIdFromTraceparent(req.get('traceparent')) ||
+  crypto.randomUUID();
+
 const log = (level, message, metadata = {}) => {
+  const { service, ...rest } = metadata;
   const entry = {
     timestamp: new Date().toISOString(),
     level,
-    service: 'serv365-api',
+    service: service || getServiceName(),
     environment: process.env.NODE_ENV || 'development',
     message,
-    ...metadata,
+    ...rest,
   };
 
   const output = JSON.stringify(entry);
@@ -23,9 +42,12 @@ const log = (level, message, metadata = {}) => {
 const requestLogger = (req, res, next) => {
   const startedAt = process.hrtime.bigint();
   const requestId = req.get('x-request-id') || crypto.randomUUID();
+  const traceId = getTraceIdFromRequest(req);
 
   req.requestId = requestId;
+  req.traceId = traceId;
   res.setHeader('x-request-id', requestId);
+  res.setHeader('x-trace-id', traceId);
 
   res.on('finish', () => {
     if (process.env.NODE_ENV === 'test') return;
@@ -36,6 +58,7 @@ const requestLogger = (req, res, next) => {
 
     log(level, 'HTTP request completed', {
       requestId,
+      traceId,
       http: {
         method: req.method,
         path: req.originalUrl,
@@ -53,6 +76,8 @@ const requestLogger = (req, res, next) => {
 };
 
 module.exports = {
+  getServiceName,
+  getTraceIdFromRequest,
   log,
   requestLogger,
 };

@@ -17,6 +17,7 @@ services:
       dockerfile: apps/api/Dockerfile
     environment:
       NODE_ENV: production
+      SERVICE_NAME: api-gateway
       PORT: 3000
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
@@ -44,6 +45,7 @@ services:
       dockerfile: apps/appointments-service/Dockerfile
     environment:
       NODE_ENV: production
+      SERVICE_NAME: appointments-service
       APPOINTMENTS_SERVICE_PORT: 3001
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
@@ -67,6 +69,7 @@ services:
       dockerfile: apps/customers-service/Dockerfile
     environment:
       NODE_ENV: production
+      SERVICE_NAME: customers-service
       CUSTOMERS_SERVICE_PORT: 3002
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
@@ -90,6 +93,7 @@ services:
       dockerfile: apps/services-service/Dockerfile
     environment:
       NODE_ENV: production
+      SERVICE_NAME: services-service
       SERVICES_SERVICE_PORT: 3003
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api
@@ -113,6 +117,7 @@ services:
       dockerfile: apps/professionals-service/Dockerfile
     environment:
       NODE_ENV: production
+      SERVICE_NAME: professionals-service
       PROFESSIONALS_SERVICE_PORT: 3004
       DATABASE_PROVIDER: mongodb
       MONGODB_URI: mongodb://mongo:27017/crm-booking-api

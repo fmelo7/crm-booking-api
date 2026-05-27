@@ -1,3 +1,5 @@
+const { log } = require('./logger');
+
 const sendError = (res, err) => {
   const status = err.status || 500;
   const message = status >= 500 ? 'Erro interno do servidor' : err.message;
@@ -20,14 +22,9 @@ const errorHandler = (err, req, res, next) => {
     return next(err);
   }
 
-  const log = {
-    timestamp: new Date().toISOString(),
-    level: 'error',
-    service: 'serv365-api',
-    environment: process.env.NODE_ENV || 'development',
+  const metadata = {
     requestId: req.requestId,
-
-    message: err.message || 'Erro interno',
+    traceId: req.traceId,
 
     error: {
       message: err.message,
@@ -48,7 +45,7 @@ const errorHandler = (err, req, res, next) => {
   };
 
   if (process.env.NODE_ENV !== 'test') {
-    console.error(JSON.stringify(log));
+    log('error', err.message || 'Erro interno', metadata);
   }
 
   return sendError(res, err);

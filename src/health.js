@@ -1,6 +1,7 @@
 const { getDatabaseProvider } = require('../packages/shared/common/databaseProvider');
 const { getPostgresUri } = require('./config/postgres');
 const { getMaskedEnv, isEnvDebugEnabled, maskValue } = require('./config/envDebug');
+const { getServiceName } = require('./middlewares/logger');
 
 const buildHealthResponse = (req, dbConnected) => {
   const databaseProvider = getDatabaseProvider();
@@ -22,7 +23,9 @@ const buildHealthResponse = (req, dbConnected) => {
     } : undefined,
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
+    service: getServiceName(),
     requestId: req.requestId,
+    traceId: req.traceId,
   };
 };
 

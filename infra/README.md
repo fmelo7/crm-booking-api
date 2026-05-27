@@ -24,3 +24,6 @@ Observações:
 - O gateway encaminha `/api/appointments/*` para `appointments-service` via `APPOINTMENTS_SERVICE_URL`.
 - Serviços internos exigem `x-internal-token` quando `INTERNAL_SERVICE_TOKEN` está configurado.
 - Logs continuam em JSON no stdout/stderr, prontos para coleta por Docker, ELK/OpenSearch ou outro agente.
+- Cada processo define `SERVICE_NAME` e expõe esse nome em logs e `/api/health`.
+- Toda requisição recebe `x-request-id` e `x-trace-id`; o gateway propaga esses headers para serviços internos.
+- Quando um cliente envia `traceparent`, o trace id W3C é reaproveitado como `x-trace-id`.

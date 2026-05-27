@@ -52,6 +52,10 @@ const createGatewayContext = (req, res, next) => {
       subject: null,
       scopes: [],
     },
+    observability: {
+      requestId: req.requestId,
+      traceId: req.traceId,
+    },
     route: {
       public: isPublicPath(path),
       target: path.startsWith('/api') ? 'api' : 'frontend',
@@ -92,6 +96,7 @@ const gatewayAuth = (req, res, next) => {
     if (process.env.NODE_ENV !== 'test') {
       log('warn', 'Gateway request rejected', {
         requestId: req.requestId,
+        traceId: req.traceId,
         gateway: {
           authMode: mode,
           reason: token ? 'invalid_token' : 'missing_token',

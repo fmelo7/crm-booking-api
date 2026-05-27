@@ -381,7 +381,7 @@ Checklist atual:
 10. Mover fluxo de appointments para o serviço novo de forma definitiva.
 11. Adicionar eventos de domínio.
 12. Separar banco/schema de appointments.
-13. Adicionar observabilidade distribuída.
+13. Adicionar observabilidade distribuída. Concluído na primeira versão.
 14. Reduzir reutilização transitória de providers internos do monólito.
 15. Só então amadurecer customers, services e professionals com banco, contratos e eventos próprios.
 
@@ -392,7 +392,30 @@ Implementado para sustentar a ordem:
 - referência antiga a `npm run test:legacy` removida do workflow.
 - testes de arquitetura passam a proteger os limites enquanto os próximos itens avançam.
 
-**13. Meta final**
+**13. Observabilidade distribuída**
+
+Status: concluído na primeira versão.
+
+Primeira camada implementada:
+
+- logs estruturados passam a identificar o serviço por `SERVICE_NAME`;
+- `x-request-id` continua identificando a requisição HTTP específica;
+- `x-trace-id` passa a correlacionar a jornada distribuída entre gateway e serviços;
+- `traceparent` recebido de clientes/agentes é reaproveitado para gerar o `traceId`;
+- `/api/health` expõe `service`, `requestId` e `traceId`;
+- gateway propaga `x-request-id`, `x-trace-id` e `traceparent` para `appointments-service`;
+- falhas de proxy e rejeições do gateway incluem `traceId` nos logs;
+- `docker-compose.yml` define `SERVICE_NAME` para gateway e serviços;
+- documentação de infra registra os headers de correlação.
+
+Ainda pendente para observabilidade madura:
+
+- exportar spans OpenTelemetry;
+- adicionar métricas Prometheus por serviço;
+- montar stack local de ELK/OpenSearch ou OpenTelemetry Collector;
+- alertas por erro, latência e indisponibilidade.
+
+**14. Meta final**
 
 Cada microserviço deve ter vida livre:
 

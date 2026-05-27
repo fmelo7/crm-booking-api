@@ -31,6 +31,12 @@ const buildHeaders = (req) => {
   headers['x-forwarded-host'] = req.get('host') || '';
   headers['x-forwarded-proto'] = req.protocol;
   headers['x-request-id'] = req.requestId;
+  headers['x-trace-id'] = req.traceId;
+
+  const traceparent = req.get('traceparent');
+  if (traceparent) {
+    headers.traceparent = traceparent;
+  }
 
   if (req.gateway?.auth?.subject) {
     headers['x-authenticated-subject'] = req.gateway.auth.subject;
@@ -81,6 +87,7 @@ const createAppointmentsServiceProxy = ({
     if (process.env.NODE_ENV !== 'test') {
       log('error', 'Appointments service proxy failed', {
         requestId: req.requestId,
+        traceId: req.traceId,
         gateway: {
           target: 'appointments-service',
           upstreamUrl,
