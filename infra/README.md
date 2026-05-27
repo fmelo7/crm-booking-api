@@ -43,3 +43,9 @@ Templates copiaveis para os futuros repos:
 - `infra/templates/release-checklist.md`
 
 Esses arquivos devem ser copiados para cada repositorio novo quando `appointments-service`, `api-gateway`, `frontend` e os demais servicos forem extraidos fisicamente.
+
+## Extração para repos
+
+O runbook da migração para repos independentes está em `infra/extraction-runbook.md`.
+
+Ele acompanha a ordem operacional do roadmap e registra gates de saída para contratos, template Nest, `appointments-service`, `api-gateway`, frontend, serviços de suporte e infra.

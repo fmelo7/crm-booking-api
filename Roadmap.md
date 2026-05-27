@@ -388,6 +388,8 @@ Ainda pendente para quando os repositorios forem criados:
 
 **15. Ordem operacional recomendada**
 
+Status: concluido na primeira versao como runbook operacional.
+
 1. Congelar contratos atuais em formato publicavel.
 2. Criar `contracts` fora do monorepo atual.
 3. Publicar os contratos iniciais de appointments.
@@ -410,6 +412,21 @@ Ainda pendente para quando os repositorios forem criados:
 20. Adicionar event bus e eventos versionados.
 21. Adicionar OpenTelemetry, metricas, dashboards e alertas.
 22. Remover do monorepo qualquer codigo que ja tenha dono em repo separado.
+
+Implementado:
+
+- `infra/extraction-runbook.md` criado como trilho de execucao da migracao;
+- contrato HTTP inicial de appointments congelado em `packages/contracts/public/appointments.openapi.json`;
+- eventos de appointments congelados em `packages/contracts/public/appointment-events.schema.json`;
+- `packages/contracts/README.md` aponta os artefatos publicaveis;
+- `infra/README.md` aponta o runbook de extracao.
+
+Ainda pendente:
+
+- criar repo `contracts` fora do monorepo atual;
+- copiar os contratos publicaveis para esse repo;
+- criar template Nest independente fora do monorepo;
+- iniciar o corte real do `appointments-service`.
 
 **16. Criterio de conclusao**
 
