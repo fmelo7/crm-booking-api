@@ -4,12 +4,12 @@ Este roadmap transforma os seeds em repositorios com codigo real, sem dependenci
 
 ## Status
 
-Status atual: fase 1 concluida.
+Status atual: fase 2 concluida.
 
 | Fase | Status | Saida esperada |
 | --- | --- | --- |
 | 1. Manifesto de extracao | Concluida | `infra/source-extraction-manifest.json` validado em teste |
-| 2. Runtime comum minimo | Pendente | Cada seed backend possui `src/common`, `src/config`, `src/observability` e health local |
+| 2. Runtime comum minimo | Concluida | Cada seed backend possui `src/common`, `src/config`, `src/observability` e health local |
 | 3. Contratos como pacote independente | Pendente | Seeds consomem contratos via copia versionada ou package externo, sem `../../packages` |
 | 4. Api gateway real | Pendente | `api-gateway` roda com gateway/proxy/auth/metrics sem importar `src` do monorepo |
 | 5. Primeiro dominio real: appointments | Pendente | `appointments-service` roda controller/provider/repository do proprio dominio |
@@ -56,6 +56,14 @@ Saida esperada:
 
 - cada backend tem health e metrics locais;
 - nenhum backend importa `../../src/*`.
+
+Status: concluida.
+
+Evidencias:
+
+- runtime copiado para `api-gateway`, `appointments-service`, `customers-service`, `services-service` e `professionals-service`;
+- imports de `src/health.js` e `src/config/database.js` foram reescritos para `src/shared/common`;
+- `test/nest/source-extraction-roadmap.test.js` valida presenca do runtime nos seeds e bloqueia imports para `../../src` ou `../../packages`.
 
 ## Fase 3: contratos
 

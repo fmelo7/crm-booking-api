@@ -17,10 +17,21 @@ const domainNames = ['appointment', 'customer', 'service', 'professional'];
 
 const pathExists = (relativePath) => fs.existsSync(path.join(rootDir, relativePath));
 
-test('source extraction roadmap is present and tracks phase 1', () => {
+const walkJsFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
+  .flatMap((entry) => {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      return walkJsFiles(fullPath);
+    }
+
+    return entry.isFile() && entry.name.endsWith('.js') ? [fullPath] : [];
+  });
+
+test('source extraction roadmap is present and tracks phase 2', () => {
   const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
 
-  assert.match(roadmap, /Status atual: fase 1 concluida/);
+  assert.match(roadmap, /Status atual: fase 2 concluida/);
   assert.match(roadmap, /infra\/source-extraction-manifest\.json/);
   assert.match(roadmap, /Runtime comum minimo/);
   assert.match(roadmap, /Primeiro dominio real: appointments/);
@@ -93,6 +104,58 @@ test('backend service manifests include runtime, health, observability and share
     return required
       .filter((item) => !copied.includes(item))
       .map((item) => `${repo} is missing ${item}`);
+  });
+
+  assert.deepEqual(violations, []);
+});
+
+test('backend seeds contain local runtime copied in phase 2', () => {
+  const backendRepos = [
+    'api-gateway',
+    ...serviceRepos,
+  ];
+  const required = [
+    'src/common/internalServiceAuth.js',
+    'src/config/database.js',
+    'src/config/postgres.js',
+    'src/config/serviceDatabase.js',
+    'src/health.js',
+    'src/middlewares/logger.js',
+    'src/middlewares/security.js',
+    'src/nest/common/module.js',
+    'src/nest/health/health.controller.js',
+    'src/observability/metrics.js',
+    'src/shared/common/databaseProvider.js',
+  ];
+
+  const missing = backendRepos.flatMap((repo) =>
+    required
+      .filter((file) => !pathExists(path.join('infra/repository-seeds', repo, file)))
+      .map((file) => `${repo} missing ${file}`)
+  );
+
+  assert.deepEqual(missing, []);
+});
+
+test('phase 2 runtime copied into seeds does not import monorepo src or packages', () => {
+  const backendRepos = [
+    'api-gateway',
+    ...serviceRepos,
+  ];
+  const violations = backendRepos.flatMap((repo) => {
+    const srcDir = path.join(rootDir, 'infra/repository-seeds', repo, 'src');
+    const files = walkJsFiles(srcDir);
+
+    return files.flatMap((file) => {
+      const content = fs.readFileSync(file, 'utf8');
+      return [
+        /\.\.\/\.\.\/src\//,
+        /\.\.\/\.\.\/packages\//,
+        /require\(['"].*packages\//,
+      ]
+        .filter((pattern) => pattern.test(content))
+        .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);
+    });
   });
 
   assert.deepEqual(violations, []);

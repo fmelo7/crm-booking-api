@@ -14,12 +14,14 @@
       "copy": [
         { "from": "apps/api", "to": "src/app" },
         { "from": "apps/common/internalServiceAuth.js", "to": "src/common/internalServiceAuth.js" },
+        { "from": "src/config", "to": "src/config" },
         { "from": "src/configureBaseApp.js", "to": "src/configureBaseApp.js" },
         { "from": "src/health.js", "to": "src/health.js" },
         { "from": "src/middlewares", "to": "src/middlewares" },
         { "from": "src/nest/common", "to": "src/nest/common" },
         { "from": "src/nest/health", "to": "src/nest/health" },
-        { "from": "src/observability", "to": "src/observability" }
+        { "from": "src/observability", "to": "src/observability" },
+        { "from": "packages/shared/common", "to": "src/shared/common" }
       ]
     },
     "appointments-service": {
