@@ -33,6 +33,7 @@ Observações:
 - O padrao minimo de logs, traces, metricas, dashboards e alertas esta em `observability.md`.
 - O padrao de CI/CD, deploy independente e rollback esta em `deployment-and-rollback.md`.
 - A decisao para arquivar ou manter o monorepo esta em `monorepo-retirement.md`.
+- O roadmap para mover codigo real de `src`, `apps` e `packages` para os seeds esta em `source-extraction-roadmap.md`.
 - Quando um cliente envia `traceparent`, o trace id W3C é reaproveitado como `x-trace-id`.
 
 ## CI/CD independente
