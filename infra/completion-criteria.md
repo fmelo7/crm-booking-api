@@ -64,16 +64,16 @@ Evidencias locais em 2026-05-28:
 
 | Repo | `npm ci` | `npm test` | `npm run build` | `docker build .` | Observacao |
 | --- | --- | --- | --- | --- | --- |
-| frontend | Passou | Passou | Passou | Passou | Imagem `crm-booking-frontend:gate-2` |
-| api-gateway | Passou | Passou | Passou | Passou | Imagem `crm-booking-api-gateway:gate-2` |
-| appointments-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-appointments-service:gate-2` |
-| customers-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-customers-service:gate-2` |
-| services-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-services-service:gate-2` |
-| professionals-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-professionals-service:gate-2` |
+| frontend | Passou | Passou | Passou | Passou | Imagem `crm-booking-frontend:phase-8` |
+| api-gateway | Passou | Passou | Passou | Passou | Imagem `crm-booking-api-gateway:phase-8` |
+| appointments-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-appointments-service:phase-8` |
+| customers-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-customers-service:phase-8` |
+| services-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-services-service:phase-8` |
+| professionals-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-professionals-service:phase-8` |
 | contracts | Passou | Passou | Passou | N/A | Repo de contratos nao gera imagem Docker |
 | infra | Passou | Passou | Passou | N/A | Repo operacional nao gera imagem Docker |
 
-Observacao: a validacao local rodou com Node `v24.5.0` e npm `11.5.1`; os repos declaram engine `node: 20.x`, portanto o npm emitiu `EBADENGINE` como aviso, sem falhar os comandos. CI remoto, badges e logs do provedor seguem pendentes ate publicacao dos repos remotos.
+Observacao: a validacao local da fase 8 rodou com Node `v24.5.0` e npm `11.5.1`; os repos declaram engine `node: 20.x`, portanto o npm emitiu `EBADENGINE` como aviso, sem falhar os comandos. CI remoto, badges e logs do provedor seguem pendentes ate publicacao dos repos remotos.
 
 ### 3. Contratos publicos
 

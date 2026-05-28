@@ -28,16 +28,17 @@ const walkJsFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
     return entry.isFile() && entry.name.endsWith('.js') ? [fullPath] : [];
   });
 
-test('source extraction roadmap is present and tracks phase 7', () => {
+test('source extraction roadmap is present and tracks phase 8', () => {
   const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
 
-  assert.match(roadmap, /Status atual: fase 7 concluida/);
+  assert.match(roadmap, /Status atual: fase 8 concluida/);
   assert.match(roadmap, /infra\/source-extraction-manifest\.json/);
   assert.match(roadmap, /Runtime comum minimo/);
   assert.match(roadmap, /Contratos como pacote independente/);
   assert.match(roadmap, /Primeiro dominio real: appointments/);
   assert.match(roadmap, /Servicos de suporte reais/);
   assert.match(roadmap, /Frontend real/);
+  assert.match(roadmap, /Limpeza de imports e smoke externo/);
 });
 
 test('api-gateway seed contains real standalone gateway runtime', () => {
@@ -285,6 +286,41 @@ test('frontend seed calls only gateway api paths', () => {
 
   assert.deepEqual(directFetchViolations, []);
   assert.deepEqual(apiPathViolations, []);
+});
+
+test('phase 8 final validation evidence is documented', () => {
+  const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
+  const completionCriteria = fs.readFileSync(path.join(rootDir, 'infra/completion-criteria.md'), 'utf8');
+  const dockerRepos = [
+    'frontend',
+    'api-gateway',
+    'appointments-service',
+    'customers-service',
+    'services-service',
+    'professionals-service',
+  ];
+  const packageRepos = [
+    'contracts',
+    ...dockerRepos,
+    'infra',
+  ];
+  const missingCommands = ['npm ci', 'npm test', 'npm run build', 'docker build .']
+    .filter((command) => !roadmap.includes(command));
+  const missingDockerfiles = dockerRepos
+    .filter((repo) => !fs.existsSync(path.join(rootDir, 'infra/repository-seeds', repo, 'Dockerfile')))
+    .map((repo) => `${repo} missing Dockerfile`);
+  const missingPackages = packageRepos
+    .filter((repo) => !fs.existsSync(path.join(rootDir, 'infra/repository-seeds', repo, 'package-lock.json')))
+    .map((repo) => `${repo} missing package-lock.json`);
+  const missingImageEvidence = dockerRepos
+    .filter((repo) => !completionCriteria.includes(`crm-booking-${repo}:phase-8`))
+    .map((repo) => `${repo} missing phase-8 image evidence`);
+
+  assert.deepEqual(missingCommands, []);
+  assert.deepEqual(missingDockerfiles, []);
+  assert.deepEqual(missingPackages, []);
+  assert.deepEqual(missingImageEvidence, []);
+  assert.match(completionCriteria, /Status atual: em migracao/);
 });
 
 test('source extraction manifest covers every repository seed', () => {

@@ -4,7 +4,7 @@ Este roadmap transforma os seeds em repositorios com codigo real, sem dependenci
 
 ## Status
 
-Status atual: fase 7 concluida.
+Status atual: fase 8 concluida.
 
 | Fase | Status | Saida esperada |
 | --- | --- | --- |
@@ -15,7 +15,7 @@ Status atual: fase 7 concluida.
 | 5. Primeiro dominio real: appointments | Concluida | `appointments-service` roda controller/provider/repository do proprio dominio |
 | 6. Servicos de suporte reais | Concluida | `customers`, `services`, `professionals` rodam isolados |
 | 7. Frontend real | Concluida | `frontend` serve assets reais e chama somente gateway |
-| 8. Limpeza de imports e smoke externo | Pendente | `npm ci`, `npm test`, `npm run build` e `docker build .` passam dentro de cada seed |
+| 8. Limpeza de imports e smoke externo | Concluida | `npm ci`, `npm test`, `npm run build` e `docker build .` passam dentro de cada seed |
 
 ## Principios
 
@@ -194,3 +194,14 @@ docker build .
 ```
 
 Atualizar `infra/completion-criteria.md` somente depois que cada repo passar isolado.
+
+Status: concluida.
+
+Evidencias em 2026-05-28:
+
+- `npm ci` passou em `contracts`, `api-gateway`, `appointments-service`, `customers-service`, `services-service`, `professionals-service`, `frontend` e `infra`;
+- `npm test` passou em todos os seeds com `package.json`;
+- `npm run build` passou em todos os seeds com `package.json`;
+- `docker build .` passou em `frontend`, `api-gateway`, `appointments-service`, `customers-service`, `services-service` e `professionals-service`;
+- imagens locais geradas com tag `crm-booking-<repo>:phase-8`;
+- `contracts` e `infra` permanecem sem imagem Docker por desenho, pois nao possuem runtime de app/container.
