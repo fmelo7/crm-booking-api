@@ -241,12 +241,12 @@ Validacao local: `npm test` passou em 2026-05-28; dashboards/alertas estao espec
 
 Cada repo deve ter:
 
-- [ ] CI em pull request;
-- [ ] release por tag ou fluxo equivalente;
-- [ ] imagem Docker versionada;
-- [ ] deploy independente;
-- [ ] rollback documentado;
-- [ ] secrets fora do codigo.
+- [x] CI em pull request;
+- [x] release por tag ou fluxo equivalente;
+- [x] imagem Docker versionada;
+- [x] deploy independente;
+- [x] rollback documentado;
+- [x] secrets fora do codigo.
 
 Evidencias:
 
@@ -255,18 +255,31 @@ Evidencias:
 - checklist de release preenchido;
 - procedimento de rollback testado.
 
+Evidencias locais em 2026-05-28:
+
+| Regra | Evidencia |
+| --- | --- |
+| CI em PR | Todos os seeds em `infra/repository-seeds/*` possuem `.github/workflows/ci.yml` com `pull_request`, `npm ci`, `npm test` e `npm run build` |
+| Release por tag | Todos os seeds possuem `.github/workflows/release.yml` acionado por tag `v*.*.*` ou `workflow_dispatch` |
+| Imagem Docker versionada | `frontend`, `api-gateway` e microservicos publicam `ghcr.io/${{ github.repository }}` com tag semantica e SHA |
+| Deploy independente | Workflows de release chamam hook de deploy por repo quando secrets do provedor estiverem configurados |
+| Rollback documentado | Todos os seeds possuem `.github/workflows/rollback.yml`; procedimento operacional em `infra/deployment-and-rollback.md` |
+| Secrets fora do codigo | Workflows referenciam `secrets.*`; `.env.example` nao contem tokens reais de deploy/rollback |
+
+Validacao local: `npm test` passou em 2026-05-28; `test/nest/cicd-rollback.test.js` bloqueia ausencia de CI, release, rollback, imagem versionada e documentacao de secrets.
+
 ## Matriz de acompanhamento
 
 | App | Repo | CI | Docker | Banco proprio | Contratos | Observabilidade | Deploy independente |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| frontend | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
-| api-gateway | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
-| appointments-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
-| customers-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
-| services-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
-| professionals-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
-| contracts | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | v1.0.0 local | N/A | Pendente |
-| infra | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | N/A | Pendente | Pendente |
+| frontend | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Workflow local |
+| api-gateway | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Workflow local |
+| appointments-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Workflow local |
+| customers-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Workflow local |
+| services-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Workflow local |
+| professionals-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Workflow local |
+| contracts | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | v1.0.0 local | N/A | Workflow local |
+| infra | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | N/A | Pendente | Workflow local |
 
 ## Regra para aposentar o monorepo
 

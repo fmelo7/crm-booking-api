@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Validate infra release
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Apply infra hook
+        if: ${{ secrets.INFRA_DEPLOY_WEBHOOK_URL != '' }}
+        run: |
+          curl -fsS -X POST "${{ secrets.INFRA_DEPLOY_WEBHOOK_URL }}" \
+            -H "authorization: Bearer ${{ secrets.INFRA_DEPLOY_WEBHOOK_TOKEN }}" \
+            -H "content-type: application/json" \
+            -d '{"repository":"infra","ref":"${{ github.ref_name }}","sha":"${{ github.sha }}"}'

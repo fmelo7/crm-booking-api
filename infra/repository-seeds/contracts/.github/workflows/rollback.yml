@@ -1,0 +1,27 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Previous contracts tag to restore for consumers
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    name: Mark previous contracts version active
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Call rollback hook
+        if: ${{ secrets.ROLLBACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -fsS -X POST "${{ secrets.ROLLBACK_WEBHOOK_URL }}" \
+            -H "authorization: Bearer ${{ secrets.ROLLBACK_WEBHOOK_TOKEN }}" \
+            -H "content-type: application/json" \
+            -d '{"package":"contracts","release":"${{ inputs.release_tag }}","sha":"${{ github.sha }}"}'

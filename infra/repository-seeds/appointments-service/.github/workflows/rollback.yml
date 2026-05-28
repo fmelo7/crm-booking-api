@@ -1,0 +1,27 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Previous image tag to redeploy
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    name: Redeploy previous image
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Call rollback hook
+        if: ${{ secrets.ROLLBACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -fsS -X POST "${{ secrets.ROLLBACK_WEBHOOK_URL }}" \
+            -H "authorization: Bearer ${{ secrets.ROLLBACK_WEBHOOK_TOKEN }}" \
+            -H "content-type: application/json" \
+            -d '{"image":"ghcr.io/${{ github.repository }}:${{ inputs.image_tag }}","sha":"${{ github.sha }}"}'

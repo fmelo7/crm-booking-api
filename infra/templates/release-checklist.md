@@ -35,3 +35,4 @@ Use este checklist antes de publicar uma nova versao de qualquer app.
 - Reverter variaveis quando necessario.
 - Executar migracao reversa ou plano de mitigacao, se existir.
 - Confirmar health check e logs depois do rollback.
+- Registrar evidencia do workflow `Rollback` em staging antes de usar em producao.

@@ -31,6 +31,7 @@ Observações:
 - Toda requisição recebe `x-request-id` e `x-trace-id`; o gateway propaga esses headers para serviços internos.
 - O fluxo permitido entre frontend, gateway, microservicos e eventos esta em `service-communication.md`.
 - O padrao minimo de logs, traces, metricas, dashboards e alertas esta em `observability.md`.
+- O padrao de CI/CD, deploy independente e rollback esta em `deployment-and-rollback.md`.
 - Quando um cliente envia `traceparent`, o trace id W3C é reaproveitado como `x-trace-id`.
 
 ## CI/CD independente

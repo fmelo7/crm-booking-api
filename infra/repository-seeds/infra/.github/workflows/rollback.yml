@@ -1,0 +1,27 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Previous infra tag to reapply
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    name: Reapply previous infra version
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Call rollback hook
+        if: ${{ secrets.INFRA_ROLLBACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -fsS -X POST "${{ secrets.INFRA_ROLLBACK_WEBHOOK_URL }}" \
+            -H "authorization: Bearer ${{ secrets.INFRA_ROLLBACK_WEBHOOK_TOKEN }}" \
+            -H "content-type: application/json" \
+            -d '{"repository":"infra","release":"${{ inputs.release_tag }}","sha":"${{ github.sha }}"}'
