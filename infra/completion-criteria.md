@@ -6,9 +6,9 @@ O objetivo nao e apenas ter varios diretorios ou containers. O objetivo e que ca
 
 ## Status global
 
-Status atual: em migracao.
+Status atual: em migracao, com gates locais documentados.
 
-O monorepo atual ainda e necessario para buildar, testar e publicar os apps. Portanto, a migracao ainda nao esta concluida.
+O monorepo atual ainda e necessario para consolidar evidencias, testar os gates documentais e publicar os repos remotos. Portanto, a migracao ainda nao esta concluida.
 
 ## Gates obrigatorios
 
@@ -293,4 +293,19 @@ O monorepo atual so pode ser aposentado quando:
 - deploy e rollback independente tiverem sido testados;
 - observabilidade permitir rastrear uma chamada do frontend ao servico dono do dado.
 
-Enquanto qualquer item critico estiver pendente, este repo continua sendo a base de migracao.
+Decisao atual em 2026-05-28: nao aposentar ainda.
+
+| Criterio final | Status atual | Evidencia pendente |
+| --- | --- | --- |
+| Repositorios remotos criados | Bloqueado | URLs remotas ainda marcadas como `Pendente` |
+| CI remoto verde | Bloqueado | Logs/badges remotos ainda pendentes |
+| Apps buildam/testam fora deste repo | Parcial | Validacao local passou; execucao remota por repo ainda pendente |
+| Gateway e frontend nao dependem deste repo | Parcial | Seeds/workflows locais prontos; corte remoto ainda pendente |
+| Bancos/schemas proprios em uso | Parcial | Configuracao e testes locais prontos; ambiente real ainda pendente |
+| Contratos publicados | Parcial | Tag local existe; release remota ainda pendente |
+| Deploy e rollback independentes testados | Parcial | Workflows locais prontos; execucao em staging/producao ainda pendente |
+| Observabilidade fim a fim | Parcial | Padrao local pronto; dashboard/alerta/trace em provedor ainda pendentes |
+
+Enquanto qualquer item critico estiver `Bloqueado`, `Parcial` ou `Pendente`, este repo continua sendo a base de migracao.
+
+Runbook operacional: `infra/monorepo-retirement.md`.
