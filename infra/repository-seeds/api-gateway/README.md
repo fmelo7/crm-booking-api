@@ -14,6 +14,15 @@ Repositorio independente do gateway HTTP externo do CRM Booking.
 
 Base inicial: `crm-booking-api/apps/api`.
 
+## Runtime atual
+
+O seed ja contem o gateway HTTP real em `src/app`:
+
+- `gateway.js`: contexto de gateway e auth bearer;
+- `serviceProxy.js`: roteamento para microservicos internos;
+- `app.js`: app Express com health, metrics, rate limit, auth e proxies;
+- `server.js`: entrypoint HTTP.
+
 ## Comandos esperados
 
 ```bash
@@ -23,7 +32,7 @@ npm run build
 docker build .
 ```
 
-Esses comandos serao habilitados nos proximos gates de build, teste e Docker.
+Esses comandos validam o gateway sem depender do monorepo.
 
 ## Evidencias do gate 1
 

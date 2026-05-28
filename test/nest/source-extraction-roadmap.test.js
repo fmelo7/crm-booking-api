@@ -28,14 +28,56 @@ const walkJsFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
     return entry.isFile() && entry.name.endsWith('.js') ? [fullPath] : [];
   });
 
-test('source extraction roadmap is present and tracks phase 3', () => {
+test('source extraction roadmap is present and tracks phase 4', () => {
   const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
 
-  assert.match(roadmap, /Status atual: fase 3 concluida/);
+  assert.match(roadmap, /Status atual: fase 4 concluida/);
   assert.match(roadmap, /infra\/source-extraction-manifest\.json/);
   assert.match(roadmap, /Runtime comum minimo/);
   assert.match(roadmap, /Contratos como pacote independente/);
   assert.match(roadmap, /Primeiro dominio real: appointments/);
+});
+
+test('api-gateway seed contains real standalone gateway runtime', () => {
+  const gatewayDir = path.join(rootDir, 'infra/repository-seeds/api-gateway');
+  const required = [
+    'src/app/app.js',
+    'src/app/gateway.js',
+    'src/app/serviceProxy.js',
+    'src/app/server.js',
+    'src/app/index.js',
+  ];
+  const missing = required
+    .filter((file) => !fs.existsSync(path.join(gatewayDir, file)));
+  const packageJson = JSON.parse(fs.readFileSync(path.join(gatewayDir, 'package.json'), 'utf8'));
+  const dockerfile = fs.readFileSync(path.join(gatewayDir, 'Dockerfile'), 'utf8');
+  const appFactory = require('../../infra/repository-seeds/api-gateway/src/app');
+
+  assert.deepEqual(missing, []);
+  assert.equal(packageJson.scripts.start, 'node src/app/server.js');
+  assert.equal(typeof packageJson.dependencies.express, 'string');
+  assert.equal(typeof packageJson.dependencies.dotenv, 'string');
+  assert.match(dockerfile, /CMD \["node", "src\/app\/server\.js"\]/);
+  assert.equal(typeof appFactory, 'function');
+});
+
+test('api-gateway seed runtime does not import monorepo or domain code', () => {
+  const gatewaySrc = path.join(rootDir, 'infra/repository-seeds/api-gateway/src');
+  const files = walkJsFiles(gatewaySrc);
+  const violations = files.flatMap((file) => {
+    const content = fs.readFileSync(file, 'utf8');
+    return [
+      /\.\.\/\.\.\/src\//,
+      /\.\.\/\.\.\/packages\//,
+      /src\/nest\/(appointment|customer|service|professional)/,
+      /repository\.provider/,
+      /packages\/domains/,
+    ]
+      .filter((pattern) => pattern.test(content))
+      .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);
+  });
+
+  assert.deepEqual(violations, []);
 });
 
 test('source extraction manifest covers every repository seed', () => {

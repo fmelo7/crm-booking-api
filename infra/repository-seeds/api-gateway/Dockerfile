@@ -8,4 +8,6 @@ RUN npm ci --omit=dev
 COPY . .
 RUN npm run build
 
-CMD ["node", "-e", "console.log(process.env.SERVICE_NAME || require('./package.json').name)"]
+EXPOSE 3000
+
+CMD ["node", "src/app/server.js"]

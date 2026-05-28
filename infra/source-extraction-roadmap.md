@@ -4,14 +4,14 @@ Este roadmap transforma os seeds em repositorios com codigo real, sem dependenci
 
 ## Status
 
-Status atual: fase 3 concluida.
+Status atual: fase 4 concluida.
 
 | Fase | Status | Saida esperada |
 | --- | --- | --- |
 | 1. Manifesto de extracao | Concluida | `infra/source-extraction-manifest.json` validado em teste |
 | 2. Runtime comum minimo | Concluida | Cada seed backend possui `src/common`, `src/config`, `src/observability` e health local |
 | 3. Contratos como pacote independente | Concluida | Seeds consomem contratos via copia versionada local, sem `../../packages` |
-| 4. Api gateway real | Pendente | `api-gateway` roda com gateway/proxy/auth/metrics sem importar `src` do monorepo |
+| 4. Api gateway real | Concluida | `api-gateway` roda com gateway/proxy/auth/metrics sem importar `src` do monorepo |
 | 5. Primeiro dominio real: appointments | Pendente | `appointments-service` roda controller/provider/repository do proprio dominio |
 | 6. Servicos de suporte reais | Pendente | `customers`, `services`, `professionals` rodam isolados |
 | 7. Frontend real | Pendente | `frontend` serve assets reais e chama somente gateway |
@@ -102,6 +102,15 @@ Gate:
 
 - gateway nao importa modules Nest dos dominios;
 - proxy para `appointments`, `customers`, `services`, `professionals` funciona por URL interna.
+
+Status: concluida.
+
+Evidencias:
+
+- `infra/repository-seeds/api-gateway/src/app` contem app Express real com health, metrics, auth e proxies;
+- `npm test` e `npm run build` passam no seed `api-gateway`;
+- Dockerfile sobe `node src/app/server.js`;
+- testes bloqueiam imports para `../../src`, `../../packages` e codigo de dominio.
 
 ## Fase 5: appointments-service
 
