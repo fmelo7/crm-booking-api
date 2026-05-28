@@ -29,6 +29,7 @@ Observações:
 - Logs continuam em JSON no stdout/stderr, prontos para coleta por Docker, ELK/OpenSearch ou outro agente.
 - Cada processo define `SERVICE_NAME` e expõe esse nome em logs e `/api/health`.
 - Toda requisição recebe `x-request-id` e `x-trace-id`; o gateway propaga esses headers para serviços internos.
+- O fluxo permitido entre frontend, gateway, microservicos e eventos esta em `service-communication.md`.
 - Quando um cliente envia `traceparent`, o trace id W3C é reaproveitado como `x-trace-id`.
 
 ## CI/CD independente

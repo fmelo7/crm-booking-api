@@ -31,6 +31,8 @@ const assertFilesDoNotContain = (files, patterns, message) => {
   assert.deepEqual(violations, [], message);
 };
 
+const readJson = (file) => JSON.parse(read(file));
+
 test('contracts do not import runtime, database or domain implementation code', () => {
   const files = walkFiles(path.join(rootDir, 'packages/contracts'));
 
@@ -217,4 +219,79 @@ test('service providers keep cross-domain repositories behind module composition
     /require\(['"].*\.\.\/service\/service\.repository\.provider['"]\)/,
     /require\(['"].*\.\.\/professional\/professional\.repository\.provider['"]\)/,
   ], 'providers must not import repositories from other domains directly');
+});
+
+test('frontend calls only gateway api paths', () => {
+  const frontendFiles = [
+    path.join(rootDir, 'apps/frontend/public/app.js'),
+    path.join(rootDir, 'public/app.js'),
+  ].filter(fs.existsSync);
+
+  const violations = frontendFiles.flatMap((file) => {
+    const content = read(file);
+    const fetchCalls = [...content.matchAll(/fetch\(([^,)]+)/g)].map((match) => match[1].trim());
+    const absoluteBackendUrls = [...content.matchAll(/https?:\/\/(?!cdnjs\.cloudflare\.com)[^'"`]+/g)]
+      .map((match) => match[0]);
+
+    return [
+      ...fetchCalls
+        .filter((argument) => argument.startsWith('"') || argument.startsWith("'") || argument.startsWith('`'))
+        .filter((argument) => !/^['"`]\/api\//.test(argument))
+        .map((argument) => `${relative(file)} fetches ${argument}`),
+      ...absoluteBackendUrls.map((url) => `${relative(file)} embeds ${url}`),
+    ];
+  });
+
+  assert.deepEqual(violations, [], 'frontend must call relative /api paths through the gateway');
+});
+
+test('gateway runtime does not import domain implementation modules', () => {
+  const gatewayFiles = [
+    path.join(rootDir, 'apps/api/gateway.js'),
+    path.join(rootDir, 'apps/api/serviceProxy.js'),
+  ];
+
+  assertFilesDoNotContain(gatewayFiles, [
+    /require\(['"].*packages\/domains\//,
+    /require\(['"].*src\/nest\/(appointment|customer|service|professional)\//,
+    /require\(['"].*repository\.provider/,
+  ], 'gateway must route and enforce policies without importing domain business code');
+});
+
+test('domain event schemas are versioned', () => {
+  const files = [
+    'appointment-events.schema.json',
+    'customer-events.schema.json',
+    'service-events.schema.json',
+    'professional-events.schema.json',
+  ].map((file) => path.join(rootDir, 'packages/contracts/public', file));
+
+  const violations = files.flatMap((file) => {
+    const schema = readJson(file);
+    const metadata = schema.definitions?.EventMetadata || schema.$defs?.EventMetadata;
+    const required = metadata?.required || [];
+    const version = metadata?.properties?.version;
+
+    return required.includes('version') && version
+      ? []
+      : [`${relative(file)} is missing required baseEvent.version`];
+  });
+
+  assert.deepEqual(violations, [], 'events must carry a required version field');
+});
+
+test('internal service urls are owned by gateway configuration', () => {
+  const serviceFiles = [
+    ...walkFiles(path.join(rootDir, 'apps/appointments-service')),
+    ...walkFiles(path.join(rootDir, 'apps/customers-service')),
+    ...walkFiles(path.join(rootDir, 'apps/services-service')),
+    ...walkFiles(path.join(rootDir, 'apps/professionals-service')),
+  ];
+
+  assertFilesDoNotContain(serviceFiles, [
+    /CUSTOMERS_SERVICE_URL/,
+    /SERVICES_SERVICE_URL/,
+    /PROFESSIONALS_SERVICE_URL/,
+    /APPOINTMENTS_SERVICE_URL/,
+  ], 'microservices must not depend on each other through mandatory service URLs');
 });

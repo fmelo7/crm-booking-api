@@ -4,7 +4,7 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger');
 const { createGatewayContext, gatewayAuth } = require('../apps/api/gateway');
-const { createAppointmentsServiceProxy } = require('../apps/api/serviceProxy');
+const { createConfiguredServiceProxies } = require('../apps/api/serviceProxy');
 const { securityHeaders, cors, createRateLimiter } = require('./middlewares/security');
 const { notFound, errorHandler } = require('./middlewares/error');
 const { requestLogger } = require('./middlewares/logger');
@@ -42,7 +42,9 @@ const configureBaseApp = (app) => {
 
   app.use('/api', createRateLimiter());
   app.use('/api', gatewayAuth);
-  app.use('/api/appointments', createAppointmentsServiceProxy());
+  createConfiguredServiceProxies().forEach(({ routePrefix, proxy }) => {
+    app.use(routePrefix, proxy);
+  });
 
   return app;
 };

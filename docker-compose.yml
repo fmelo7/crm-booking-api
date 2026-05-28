@@ -26,6 +26,9 @@ services:
       SERVICE_NAME: api-gateway
       PORT: ${PORT:-3000}
       APPOINTMENTS_SERVICE_URL: http://appointments-service:3001
+      CUSTOMERS_SERVICE_URL: http://customers-service:3002
+      SERVICES_SERVICE_URL: http://services-service:3003
+      PROFESSIONALS_SERVICE_URL: http://professionals-service:3004
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
       GATEWAY_AUTH_MODE: ${GATEWAY_AUTH_MODE:-disabled}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
@@ -34,6 +37,12 @@ services:
       - "3000:3000"
     depends_on:
       appointments-service:
+        condition: service_started
+      customers-service:
+        condition: service_started
+      services-service:
+        condition: service_started
+      professionals-service:
         condition: service_started
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]

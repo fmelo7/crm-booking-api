@@ -50,8 +50,11 @@ Variáveis:
 | `APPOINTMENTS_SERVICE_PORT` | Não | Porta HTTP do serviço de appointments. Padrão: `3001`. |
 | `APPOINTMENTS_SERVICE_URL` | Não | URL interna do serviço de appointments. Quando definida, o gateway encaminha `/api/appointments/*` para ela. |
 | `CUSTOMERS_SERVICE_PORT` | Não | Porta HTTP do serviço de customers. Padrão: `3002`. |
+| `CUSTOMERS_SERVICE_URL` | Não | URL interna do serviço de customers. Quando definida, o gateway encaminha `/api/customers/*` para ela. |
 | `SERVICES_SERVICE_PORT` | Não | Porta HTTP do serviço de services. Padrão: `3003`. |
+| `SERVICES_SERVICE_URL` | Não | URL interna do serviço de services. Quando definida, o gateway encaminha `/api/services/*` para ela. |
 | `PROFESSIONALS_SERVICE_PORT` | Não | Porta HTTP do serviço de professionals. Padrão: `3004`. |
+| `PROFESSIONALS_SERVICE_URL` | Não | URL interna do serviço de professionals. Quando definida, o gateway encaminha `/api/professionals/*` para ela. |
 | `DATABASE_PROVIDER` | Não | Banco usado pela aplicação: `mongodb` ou `postgres`. Padrão: `mongodb`. |
 | `MONGODB_URI` | Não | URI do MongoDB. Padrão: `mongodb://127.0.0.1:27017/crm-booking-api`. |
 | `APPOINTMENTS_MONGODB_URI` | Não | URI MongoDB própria do `appointments-service`. |
@@ -74,6 +77,9 @@ Variáveis:
 | `GATEWAY_PUBLIC_PATHS` | Não | Prefixos públicos extras, separados por vírgula. Padrões: `/`, `/api/health`, `/api-docs`. |
 | `INTERNAL_SERVICE_TOKEN` | Não | Token exigido pelos serviços internos em `x-internal-token` quando configurado. |
 | `APPOINTMENTS_SERVICE_INTERNAL_TOKEN` | Não | Token específico enviado pelo gateway ao appointments-service. Usa `INTERNAL_SERVICE_TOKEN` como fallback. |
+| `CUSTOMERS_SERVICE_INTERNAL_TOKEN` | Não | Token específico enviado pelo gateway ao customers-service. Usa `INTERNAL_SERVICE_TOKEN` como fallback. |
+| `SERVICES_SERVICE_INTERNAL_TOKEN` | Não | Token específico enviado pelo gateway ao services-service. Usa `INTERNAL_SERVICE_TOKEN` como fallback. |
+| `PROFESSIONALS_SERVICE_INTERNAL_TOKEN` | Não | Token específico enviado pelo gateway ao professionals-service. Usa `INTERNAL_SERVICE_TOKEN` como fallback. |
 | `INTERNAL_SERVICE_PUBLIC_PATHS` | Não | Prefixos públicos extras dos serviços internos. Padrão: `/api/health`. |
 | `DATABASE_CONNECT_RETRIES` | Não | Tentativas de conexão com o banco antes de marcar a API como degradada. Padrão: `10`. |
 | `DATABASE_CONNECT_RETRY_MS` | Não | Intervalo entre tentativas de conexão em milissegundos. Padrão: `3000`. |

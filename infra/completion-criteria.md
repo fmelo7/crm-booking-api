@@ -179,17 +179,31 @@ frontend -> api-gateway -> microservicos -> bancos proprios
 
 Regras:
 
-- [ ] frontend chama apenas o gateway;
-- [ ] gateway nao contem regra de negocio dos dominios;
-- [ ] servicos comunicam por API interna ou eventos;
-- [ ] eventos sao versionados;
-- [ ] nao existe chamada circular obrigatoria.
+- [x] frontend chama apenas o gateway;
+- [x] gateway nao contem regra de negocio dos dominios;
+- [x] servicos comunicam por API interna ou eventos;
+- [x] eventos sao versionados;
+- [x] nao existe chamada circular obrigatoria.
 
 Evidencias:
 
 - configuracao de URLs internas;
 - testes de integracao;
 - documentacao de eventos.
+
+Evidencias locais em 2026-05-28:
+
+| Regra | Evidencia |
+| --- | --- |
+| Frontend chama apenas gateway | `frontend calls only gateway api paths` valida fetches relativos `/api/*`; Nginx encaminha `/api/*` para `api-gateway` |
+| Gateway sem regra de negocio | `gateway runtime does not import domain implementation modules` bloqueia imports de dominios/repositories no gateway |
+| API interna ou eventos | `SERVICE_PROXY_CONFIGS` mapeia `/api/{dominio}` para URLs internas `*_SERVICE_URL`; `gateway proxies support service routes...` valida proxy de servicos de suporte |
+| Eventos versionados | `domain event schemas are versioned` valida `version` obrigatorio nos schemas `public/*-events.schema.json` |
+| Sem circularidade obrigatoria | `internal service urls are owned by gateway configuration` bloqueia `*_SERVICE_URL` nos microservicos |
+
+Documentacao: `infra/service-communication.md`.
+
+Validacao local: `npm test` passou em 2026-05-28; os testes de gateway e arquitetura fazem parte da suite padrao.
 
 ### 7. Observabilidade
 
