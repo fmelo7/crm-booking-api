@@ -28,8 +28,9 @@ Objetivo: evitar recriar bootstrap, health, logs e CI do zero para cada servico.
 - [ ] Padronizar health check.
 - [ ] Padronizar logs JSON com `service`, `requestId` e `traceId`.
 - [ ] Padronizar filtro de erros.
-- [ ] Padronizar Dockerfile.
-- [ ] Padronizar `.env.example`.
+- [x] Padronizar Dockerfile.
+- [x] Padronizar `.env.example`.
+- [x] Adicionar scripts locais de `npm ci`, `npm test` e `npm run build`.
 
 Gate de saida:
 

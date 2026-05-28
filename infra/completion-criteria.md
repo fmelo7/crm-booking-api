@@ -49,16 +49,31 @@ Evidencias locais em 2026-05-28:
 
 Cada app deve passar sozinho:
 
-- [ ] `npm ci`
-- [ ] `npm test`
-- [ ] `npm run build`
-- [ ] `docker build .`
+- [x] `npm ci`
+- [x] `npm test`
+- [x] `npm run build`
+- [x] `docker build .`
 
 Evidencias:
 
 - logs do CI;
 - badge/status do workflow;
 - imagem Docker gerada.
+
+Evidencias locais em 2026-05-28:
+
+| Repo | `npm ci` | `npm test` | `npm run build` | `docker build .` | Observacao |
+| --- | --- | --- | --- | --- | --- |
+| frontend | Passou | Passou | Passou | Passou | Imagem `crm-booking-frontend:gate-2` |
+| api-gateway | Passou | Passou | Passou | Passou | Imagem `crm-booking-api-gateway:gate-2` |
+| appointments-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-appointments-service:gate-2` |
+| customers-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-customers-service:gate-2` |
+| services-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-services-service:gate-2` |
+| professionals-service | Passou | Passou | Passou | Passou | Imagem `crm-booking-professionals-service:gate-2` |
+| contracts | Passou | Passou | Passou | N/A | Repo de contratos nao gera imagem Docker |
+| infra | Passou | Passou | Passou | N/A | Repo operacional nao gera imagem Docker |
+
+Observacao: a validacao local rodou com Node `v24.5.0` e npm `11.5.1`; os repos declaram engine `node: 20.x`, portanto o npm emitiu `EBADENGINE` como aviso, sem falhar os comandos. CI remoto, badges e logs do provedor seguem pendentes ate publicacao dos repos remotos.
 
 ### 3. Contratos publicos
 
@@ -172,14 +187,14 @@ Evidencias:
 
 | App | Repo | CI | Docker | Banco proprio | Contratos | Observabilidade | Deploy independente |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| frontend | Local criado, remoto pendente | Pendente | Pendente | N/A | Pendente | Pendente | Pendente |
-| api-gateway | Local criado, remoto pendente | Pendente | Pendente | N/A | Pendente | Pendente | Pendente |
-| appointments-service | Local criado, remoto pendente | Pendente | Pendente | Pendente | Parcial | Parcial | Pendente |
-| customers-service | Local criado, remoto pendente | Pendente | Pendente | Pendente | Pendente | Parcial | Pendente |
-| services-service | Local criado, remoto pendente | Pendente | Pendente | Pendente | Pendente | Parcial | Pendente |
-| professionals-service | Local criado, remoto pendente | Pendente | Pendente | Pendente | Pendente | Parcial | Pendente |
-| contracts | Local criado, remoto pendente | Pendente | N/A | N/A | Parcial | N/A | Pendente |
-| infra | Local criado, remoto pendente | N/A | N/A | N/A | N/A | Pendente | Pendente |
+| frontend | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
+| api-gateway | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
+| appointments-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Parcial | Parcial | Pendente |
+| customers-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Pendente | Parcial | Pendente |
+| services-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Pendente | Parcial | Pendente |
+| professionals-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Pendente | Parcial | Pendente |
+| contracts | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | Parcial | N/A | Pendente |
+| infra | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | N/A | Pendente | Pendente |
 
 ## Regra para aposentar o monorepo
 
