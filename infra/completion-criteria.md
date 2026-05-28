@@ -79,19 +79,40 @@ Observacao: a validacao local rodou com Node `v24.5.0` e npm `11.5.1`; os repos 
 
 Contratos devem estar versionados fora dos servicos:
 
-- [ ] OpenAPI do gateway externo;
-- [ ] OpenAPI interna de `appointments-service`;
-- [ ] OpenAPI interna de `customers-service`;
-- [ ] OpenAPI interna de `services-service`;
-- [ ] OpenAPI interna de `professionals-service`;
-- [ ] schemas de eventos por dominio;
-- [ ] politica de breaking changes.
+- [x] OpenAPI do gateway externo;
+- [x] OpenAPI interna de `appointments-service`;
+- [x] OpenAPI interna de `customers-service`;
+- [x] OpenAPI interna de `services-service`;
+- [x] OpenAPI interna de `professionals-service`;
+- [x] schemas de eventos por dominio;
+- [x] politica de breaking changes.
 
 Evidencias:
 
 - tags/releases do repo `contracts`;
 - validacao de contratos no CI;
 - changelog de contratos.
+
+Evidencias locais em 2026-05-28:
+
+| Evidencia | Status |
+| --- | --- |
+| OpenAPI gateway externo | `public/gateway.openapi.json` |
+| OpenAPI appointments interno | `public/appointments.openapi.json` |
+| OpenAPI customers interno | `public/customers.openapi.json` |
+| OpenAPI services interno | `public/services.openapi.json` |
+| OpenAPI professionals interno | `public/professionals.openapi.json` |
+| Eventos appointments | `public/appointment-events.schema.json` |
+| Eventos customers | `public/customer-events.schema.json` |
+| Eventos services | `public/service-events.schema.json` |
+| Eventos professionals | `public/professional-events.schema.json` |
+| Politica de breaking changes | `docs/breaking-changes.md` |
+| Changelog | `CHANGELOG.md` |
+| Validacao local | `npm test`, `npm run test:contracts` e `npm run build` passaram no repo `/Users/francisco/contracts` |
+| Tag local | `v1.0.0` |
+| Commit local | `7f3be87` |
+
+Observacao: a tag `v1.0.0` e o workflow de validacao existem localmente. Release remota, badge/status do provedor e validacao em CI remoto seguem pendentes ate publicacao do repositorio remoto.
 
 ### 4. Separacao de dados
 
@@ -189,11 +210,11 @@ Evidencias:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | frontend | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
 | api-gateway | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
-| appointments-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Parcial | Parcial | Pendente |
-| customers-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Pendente | Parcial | Pendente |
-| services-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Pendente | Parcial | Pendente |
-| professionals-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Pendente | Parcial | Pendente |
-| contracts | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | Parcial | N/A | Pendente |
+| appointments-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
+| customers-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
+| services-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
+| professionals-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
+| contracts | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | v1.0.0 local | N/A | Pendente |
 | infra | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | N/A | Pendente | Pendente |
 
 ## Regra para aposentar o monorepo

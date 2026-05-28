@@ -8,6 +8,17 @@ Repositorio independente dos contratos publicos do CRM Booking.
 - Servir como referencia entre gateway, frontend e microservicos.
 - Nao conter regra de negocio, repositories, models de banco, modules Nest ou providers internos.
 
+## Estrutura inicial
+
+- `public/gateway.openapi.json`
+- `public/appointments.openapi.json`
+- `public/customers.openapi.json`
+- `public/services.openapi.json`
+- `public/professionals.openapi.json`
+- `public/*-events.schema.json`
+- `docs/breaking-changes.md`
+- `CHANGELOG.md`
+
 ## Origem da extracao
 
 Base inicial: `crm-booking-api/packages/contracts/public`.
@@ -17,10 +28,11 @@ Base inicial: `crm-booking-api/packages/contracts/public`.
 ```bash
 npm ci
 npm test
+npm run test:contracts
 npm run build
 ```
 
-Esses comandos serao habilitados nos proximos gates de contratos e CI.
+`npm run test:contracts` valida a presenca e a estrutura minima dos contratos publicos.
 
 ## Evidencias do gate 1
 

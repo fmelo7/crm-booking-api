@@ -27,5 +27,8 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Validate contracts
+        run: npm run test:contracts
+
       - name: Build
         run: npm run build

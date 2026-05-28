@@ -10,8 +10,12 @@ Objetivo: criar uma fonte publicavel de contratos antes de mover codigo.
 - [x] Congelar eventos de appointments em `packages/contracts/public/appointment-events.schema.json`.
 - [x] Criar repo `contracts` fora do monorepo atual.
 - [x] Copiar `packages/contracts/public/*` para o novo repo.
-- [ ] Adicionar CI do repo `contracts`.
-- [ ] Definir versao inicial `v1.0.0`.
+- [x] Adicionar CI do repo `contracts`.
+- [x] Definir versao inicial `v1.0.0`.
+- [x] Adicionar OpenAPI do gateway externo.
+- [x] Adicionar OpenAPI interna dos servicos de customers, services e professionals.
+- [x] Adicionar schemas de eventos dos dominios de customers, services e professionals.
+- [x] Documentar politica de breaking changes.
 
 Gate de saida:
 
