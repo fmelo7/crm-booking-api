@@ -28,10 +28,10 @@ const walkJsFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
     return entry.isFile() && entry.name.endsWith('.js') ? [fullPath] : [];
   });
 
-test('source extraction roadmap is present and tracks phase 4', () => {
+test('source extraction roadmap is present and tracks phase 5', () => {
   const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
 
-  assert.match(roadmap, /Status atual: fase 4 concluida/);
+  assert.match(roadmap, /Status atual: fase 5 concluida/);
   assert.match(roadmap, /infra\/source-extraction-manifest\.json/);
   assert.match(roadmap, /Runtime comum minimo/);
   assert.match(roadmap, /Contratos como pacote independente/);
@@ -72,6 +72,71 @@ test('api-gateway seed runtime does not import monorepo or domain code', () => {
       /src\/nest\/(appointment|customer|service|professional)/,
       /repository\.provider/,
       /packages\/domains/,
+    ]
+      .filter((pattern) => pattern.test(content))
+      .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);
+  });
+
+  assert.deepEqual(violations, []);
+});
+
+test('appointments-service seed contains real standalone appointment runtime', () => {
+  const serviceDir = path.join(rootDir, 'infra/repository-seeds/appointments-service');
+  const required = [
+    'app.js',
+    'createAppointmentsServiceApp.js',
+    'server.js',
+    'src/app.module.js',
+    'src/nest/appointment/appointment.controller.js',
+    'src/nest/appointment/appointment.provider.js',
+    'src/nest/appointment/appointment.repository.provider.js',
+    'src/nest/appointment/appointment.standalone.module.js',
+    'src/domain/appointment/appointment.repository.js',
+    'src/domain/appointment/rules/index.js',
+    'src/domain/appointment/validation/index.js',
+    'src/domain/appointment/infrastructure/mongo/appointment.repository.js',
+    'src/domain/appointment/infrastructure/postgres/appointment.repository.js',
+  ];
+  const missing = required
+    .filter((file) => !fs.existsSync(path.join(serviceDir, file)));
+  const packageJson = JSON.parse(fs.readFileSync(path.join(serviceDir, 'package.json'), 'utf8'));
+  const dockerfile = fs.readFileSync(path.join(serviceDir, 'Dockerfile'), 'utf8');
+  const createApp = require('../../infra/repository-seeds/appointments-service/app');
+  const AppointmentProvider = require('../../infra/repository-seeds/appointments-service/src/nest/appointment/appointment.provider');
+
+  assert.deepEqual(missing, []);
+  assert.equal(packageJson.scripts.start, 'node server.js');
+  assert.equal(typeof packageJson.dependencies['@nestjs/core'], 'string');
+  assert.equal(typeof packageJson.dependencies.express, 'string');
+  assert.equal(typeof packageJson.dependencies.mongoose, 'string');
+  assert.equal(typeof packageJson.dependencies.pg, 'string');
+  assert.match(dockerfile, /CMD \["node", "server\.js"\]/);
+  assert.equal(typeof createApp, 'function');
+  assert.equal(typeof AppointmentProvider, 'function');
+});
+
+test('appointments-service seed runtime does not import monorepo or other domain repositories', () => {
+  const serviceSrc = path.join(rootDir, 'infra/repository-seeds/appointments-service/src');
+  const serviceEntrypoints = [
+    path.join(rootDir, 'infra/repository-seeds/appointments-service/app.js'),
+    path.join(rootDir, 'infra/repository-seeds/appointments-service/createAppointmentsServiceApp.js'),
+    path.join(rootDir, 'infra/repository-seeds/appointments-service/server.js'),
+  ];
+  const files = [
+    ...walkJsFiles(serviceSrc),
+    ...serviceEntrypoints,
+  ];
+  const violations = files.flatMap((file) => {
+    const content = fs.readFileSync(file, 'utf8');
+    return [
+      /\.\.\/\.\.\/src\//,
+      /\.\.\/\.\.\/packages\//,
+      /packages\/domains/,
+      /packages\/shared/,
+      /src\/nest\/(customer|service|professional)/,
+      /repository\.module/,
+      /(customer|service|professional)\.repository\.provider/,
+      /(customer|service|professional)\.model/,
     ]
       .filter((pattern) => pattern.test(content))
       .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);

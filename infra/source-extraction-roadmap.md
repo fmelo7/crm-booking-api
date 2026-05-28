@@ -4,7 +4,7 @@ Este roadmap transforma os seeds em repositorios com codigo real, sem dependenci
 
 ## Status
 
-Status atual: fase 4 concluida.
+Status atual: fase 5 concluida.
 
 | Fase | Status | Saida esperada |
 | --- | --- | --- |
@@ -12,7 +12,7 @@ Status atual: fase 4 concluida.
 | 2. Runtime comum minimo | Concluida | Cada seed backend possui `src/common`, `src/config`, `src/observability` e health local |
 | 3. Contratos como pacote independente | Concluida | Seeds consomem contratos via copia versionada local, sem `../../packages` |
 | 4. Api gateway real | Concluida | `api-gateway` roda com gateway/proxy/auth/metrics sem importar `src` do monorepo |
-| 5. Primeiro dominio real: appointments | Pendente | `appointments-service` roda controller/provider/repository do proprio dominio |
+| 5. Primeiro dominio real: appointments | Concluida | `appointments-service` roda controller/provider/repository do proprio dominio |
 | 6. Servicos de suporte reais | Pendente | `customers`, `services`, `professionals` rodam isolados |
 | 7. Frontend real | Pendente | `frontend` serve assets reais e chama somente gateway |
 | 8. Limpeza de imports e smoke externo | Pendente | `npm ci`, `npm test`, `npm run build` e `docker build .` passam dentro de cada seed |
@@ -125,6 +125,16 @@ Gate:
 
 - nenhum import de repositories/models/modules de customers/services/professionals;
 - cria/lista/reagenda/cancela/conclui appointments no repo isolado.
+
+Status: concluida.
+
+Evidencias:
+
+- `infra/repository-seeds/appointments-service` recebeu `app.js`, `createAppointmentsServiceApp.js`, `server.js` e `src/app.module.js` reais;
+- `src/nest/appointment` usa somente o `appointment.standalone.module.js`, controller, provider e repository provider locais;
+- `src/domain/appointment` contem o dominio real com repositories mongo/postgres apontando para runtime local;
+- `npm test` e `npm run build` passam no seed `appointments-service`;
+- testes bloqueiam imports para `../../src`, `../../packages` e repositories/modules de customers/services/professionals.
 
 ## Fase 6: servicos de suporte
 
