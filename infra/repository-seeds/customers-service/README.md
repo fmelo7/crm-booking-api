@@ -13,6 +13,13 @@ Repositorio independente do dominio de clientes do CRM Booking.
 
 Base inicial: `crm-booking-api/apps/customers-service`.
 
+## Runtime atual
+
+- `server.js` inicializa o NestJS app standalone em `CUSTOMERS_SERVICE_PORT` ou `PORT`.
+- `createCustomersServiceApp.js` aplica headers, CORS, auth interna, metrics, health e handlers de erro locais.
+- `src/nest/customer` contem controller, provider e repository provider do dominio de customers.
+- `src/domain/customer` contem validacoes e repositories mongo/postgres do proprio dominio.
+
 ## Comandos esperados
 
 ```bash
@@ -22,7 +29,7 @@ npm run build
 docker build .
 ```
 
-Esses comandos serao habilitados nos proximos gates de build, teste e Docker.
+Esses comandos validam o servico de customers sem depender do monorepo.
 
 ## Evidencias do gate 1
 

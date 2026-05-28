@@ -28,14 +28,15 @@ const walkJsFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
     return entry.isFile() && entry.name.endsWith('.js') ? [fullPath] : [];
   });
 
-test('source extraction roadmap is present and tracks phase 5', () => {
+test('source extraction roadmap is present and tracks phase 6', () => {
   const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
 
-  assert.match(roadmap, /Status atual: fase 5 concluida/);
+  assert.match(roadmap, /Status atual: fase 6 concluida/);
   assert.match(roadmap, /infra\/source-extraction-manifest\.json/);
   assert.match(roadmap, /Runtime comum minimo/);
   assert.match(roadmap, /Contratos como pacote independente/);
   assert.match(roadmap, /Primeiro dominio real: appointments/);
+  assert.match(roadmap, /Servicos de suporte reais/);
 });
 
 test('api-gateway seed contains real standalone gateway runtime', () => {
@@ -140,6 +141,110 @@ test('appointments-service seed runtime does not import monorepo or other domain
     ]
       .filter((pattern) => pattern.test(content))
       .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);
+  });
+
+  assert.deepEqual(violations, []);
+});
+
+test('support service seeds contain real standalone domain runtimes', () => {
+  const configs = [
+    {
+      repo: 'customers-service',
+      domain: 'customer',
+      createApp: 'createCustomersServiceApp.js',
+      providerClass: 'CustomerProvider',
+    },
+    {
+      repo: 'services-service',
+      domain: 'service',
+      createApp: 'createServicesServiceApp.js',
+      providerClass: 'ServiceProvider',
+    },
+    {
+      repo: 'professionals-service',
+      domain: 'professional',
+      createApp: 'createProfessionalsServiceApp.js',
+      providerClass: 'ProfessionalProvider',
+    },
+  ];
+
+  const violations = configs.flatMap(({ repo, domain, createApp, providerClass }) => {
+    const serviceDir = path.join(rootDir, 'infra/repository-seeds', repo);
+    const required = [
+      'app.js',
+      createApp,
+      'server.js',
+      'src/app.module.js',
+      `src/nest/${domain}/${domain}.controller.js`,
+      `src/nest/${domain}/${domain}.provider.js`,
+      `src/nest/${domain}/${domain}.repository.provider.js`,
+      `src/nest/${domain}/${domain}.standalone.module.js`,
+      `src/domain/${domain}/${domain}.repository.js`,
+      `src/domain/${domain}/${domain}.mongo.repository.js`,
+      `src/domain/${domain}/${domain}.postgres.repository.js`,
+      `src/domain/${domain}/${domain}.validation.js`,
+    ];
+    const packageJson = JSON.parse(fs.readFileSync(path.join(serviceDir, 'package.json'), 'utf8'));
+    const dockerfile = fs.readFileSync(path.join(serviceDir, 'Dockerfile'), 'utf8');
+    const createAppFactory = require(path.join(serviceDir, 'app.js'));
+    const Provider = require(path.join(serviceDir, `src/nest/${domain}/${domain}.provider.js`));
+    const missing = required
+      .filter((file) => !fs.existsSync(path.join(serviceDir, file)))
+      .map((file) => `${repo} missing ${file}`);
+    const packageErrors = [
+      packageJson.scripts.start === 'node server.js' ? null : `${repo} missing real start script`,
+      typeof packageJson.dependencies['@nestjs/core'] === 'string' ? null : `${repo} missing @nestjs/core`,
+      typeof packageJson.dependencies.express === 'string' ? null : `${repo} missing express`,
+      typeof packageJson.dependencies.mongoose === 'string' ? null : `${repo} missing mongoose`,
+      typeof packageJson.dependencies.pg === 'string' ? null : `${repo} missing pg`,
+      /CMD \["node", "server\.js"\]/.test(dockerfile) ? null : `${repo} Dockerfile does not run server.js`,
+      typeof createAppFactory === 'function' ? null : `${repo} app export is not a function`,
+      Provider.name === providerClass ? null : `${repo} provider class mismatch`,
+    ].filter(Boolean);
+
+    return [...missing, ...packageErrors];
+  });
+
+  assert.deepEqual(violations, []);
+});
+
+test('support service seeds do not import appointments or other domain internals', () => {
+  const configs = [
+    { repo: 'customers-service', domain: 'customer' },
+    { repo: 'services-service', domain: 'service' },
+    { repo: 'professionals-service', domain: 'professional' },
+  ];
+
+  const violations = configs.flatMap(({ repo, domain }) => {
+    const serviceDir = path.join(rootDir, 'infra/repository-seeds', repo);
+    const srcDir = path.join(serviceDir, 'src');
+    const files = [
+      ...walkJsFiles(srcDir),
+      path.join(serviceDir, 'app.js'),
+      path.join(serviceDir, `create${repo.split('-').map((part) => part[0].toUpperCase() + part.slice(1)).join('')}App.js`),
+      path.join(serviceDir, 'server.js'),
+    ];
+    const forbiddenDomains = domainNames
+      .filter((name) => name !== domain)
+      .join('|');
+
+    return files.flatMap((file) => {
+      const content = fs.readFileSync(file, 'utf8');
+      return [
+        /\.\.\/\.\.\/src\//,
+        /\.\.\/\.\.\/packages\//,
+        /packages\/domains/,
+        /packages\/shared/,
+        new RegExp(`src/nest/(${forbiddenDomains})`),
+        new RegExp(`src/domain/(${forbiddenDomains})`),
+        /repository\.module/,
+        /appointment\.repository\.provider/,
+        /appointment\.model/,
+        /domain\/appointment/,
+      ]
+        .filter((pattern) => pattern.test(content))
+        .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);
+    });
   });
 
   assert.deepEqual(violations, []);
