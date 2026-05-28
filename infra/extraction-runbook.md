@@ -8,8 +8,8 @@ Objetivo: criar uma fonte publicavel de contratos antes de mover codigo.
 
 - [x] Congelar contrato HTTP inicial de appointments em `packages/contracts/public/appointments.openapi.json`.
 - [x] Congelar eventos de appointments em `packages/contracts/public/appointment-events.schema.json`.
-- [ ] Criar repo `contracts` fora do monorepo atual.
-- [ ] Copiar `packages/contracts/public/*` para o novo repo.
+- [x] Criar repo `contracts` fora do monorepo atual.
+- [x] Copiar `packages/contracts/public/*` para o novo repo.
 - [ ] Adicionar CI do repo `contracts`.
 - [ ] Definir versao inicial `v1.0.0`.
 
@@ -40,7 +40,7 @@ Gate de saida:
 
 Objetivo: primeiro corte real de microservico.
 
-- [ ] Criar diretorio/repo `appointments-service` fora do monorepo atual.
+- [x] Criar diretorio/repo `appointments-service` fora do monorepo atual.
 - [ ] Inicializar projeto Node/Nest.
 - [ ] Migrar controller/provider/regras de appointments.
 - [ ] Copiar apenas contratos publicos necessarios.
@@ -63,7 +63,7 @@ Gate de saida:
 
 Objetivo: separar a borda HTTP externa.
 
-- [ ] Criar diretorio/repo `api-gateway` fora do monorepo atual.
+- [x] Criar diretorio/repo `api-gateway` fora do monorepo atual.
 - [ ] Migrar auth, rate limit, proxy, erro e observabilidade.
 - [ ] Remover regra de negocio de dominios.
 - [ ] Configurar URLs internas dos servicos.
@@ -79,7 +79,7 @@ Gate de saida:
 
 Objetivo: separar a UI da API.
 
-- [ ] Criar diretorio/repo `frontend` fora do monorepo atual.
+- [x] Criar diretorio/repo `frontend` fora do monorepo atual.
 - [ ] Migrar `apps/frontend/public` ou substituir por build dedicado.
 - [ ] Configurar `API_BASE_URL` ou proxy equivalente.
 - [ ] Adicionar CI/CD independente.
@@ -93,9 +93,9 @@ Gate de saida:
 
 Objetivo: repetir o corte com o molde ja validado.
 
-- [ ] Criar `customers-service`.
-- [ ] Criar `services-service`.
-- [ ] Criar `professionals-service`.
+- [x] Criar `customers-service`.
+- [x] Criar `services-service`.
+- [x] Criar `professionals-service`.
 - [ ] Criar banco/schema proprio por servico.
 - [ ] Publicar contratos HTTP/eventos por servico.
 - [ ] Ajustar gateway.
@@ -110,7 +110,7 @@ Gate de saida:
 
 Objetivo: centralizar operacao sem centralizar regra de negocio.
 
-- [ ] Criar repo `infra`.
+- [x] Criar repo `infra`.
 - [ ] Mover compose local/app-only e docs operacionais.
 - [ ] Adicionar event bus.
 - [ ] Adicionar OpenTelemetry.

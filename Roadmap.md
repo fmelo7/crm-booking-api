@@ -430,6 +430,8 @@ Ainda pendente:
 
 **16. Criterio de conclusao**
 
+Status: concluido na primeira versao como checklist verificavel.
+
 O plano esta concluido quando:
 
 - cada app esta em seu proprio repositorio;
@@ -442,3 +444,17 @@ O plano esta concluido quando:
 - cada repo tem CI/CD e Dockerfile proprio;
 - logs, metricas e traces permitem investigar uma chamada fim a fim;
 - o monorepo atual nao e mais necessario para buildar, testar ou publicar os servicos.
+
+Implementado:
+
+- `infra/completion-criteria.md` criado com gates obrigatorios;
+- matriz de acompanhamento por app criada;
+- evidencias esperadas documentadas para repos, CI/CD, contratos, dados, codigo, comunicacao, observabilidade e rollback;
+- regra explicita para aposentar o monorepo atual;
+- `infra/README.md` aponta para o criterio de conclusao.
+
+Ainda pendente:
+
+- preencher a matriz conforme cada repo independente for criado;
+- anexar evidencias reais de CI, Docker, deploy, contratos e observabilidade;
+- atualizar o status global de "em migracao" para "concluido" somente quando todos os gates criticos passarem.
