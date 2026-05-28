@@ -191,7 +191,9 @@ Exemplo de resposta:
   "dbConnected": true,
   "uptime": 12.34,
   "timestamp": "2026-05-21T14:00:00.000Z",
-  "requestId": "9f91f0d7-4a9a-4cb4-9e5c-ea5f3a57e6ac"
+  "service": "serv365-api",
+  "requestId": "9f91f0d7-4a9a-4cb4-9e5c-ea5f3a57e6ac",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
 }
 ```
 
@@ -201,7 +203,7 @@ Quando o banco configurado não está conectado, o endpoint responde `503` com `
 
 A API emite logs estruturados em JSON para inicialização, conexão com banco de dados, erros e requisições HTTP.
 
-Cada requisição recebe um `x-request-id`; se o cliente não enviar esse header, a API gera um UUID. O mesmo identificador aparece nos logs e na resposta do health check.
+Cada requisição recebe `x-request-id`, `x-trace-id` e `traceparent`; se o cliente não enviar esses headers, a API gera os identificadores. O gateway propaga esses valores para serviços internos.
 
 Exemplo:
 
@@ -213,6 +215,7 @@ Exemplo:
   "environment": "production",
   "message": "HTTP request completed",
   "requestId": "9f91f0d7-4a9a-4cb4-9e5c-ea5f3a57e6ac",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
   "http": {
     "method": "GET",
     "path": "/api/health",
@@ -221,6 +224,14 @@ Exemplo:
   }
 }
 ```
+
+Métricas Prometheus:
+
+```http
+GET /api/metrics
+```
+
+O endpoint expõe `http_requests_total` e `http_request_duration_seconds` com labels de serviço, método, rota e status.
 
 ## Endpoints
 

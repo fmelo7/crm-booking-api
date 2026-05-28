@@ -30,6 +30,7 @@ Observações:
 - Cada processo define `SERVICE_NAME` e expõe esse nome em logs e `/api/health`.
 - Toda requisição recebe `x-request-id` e `x-trace-id`; o gateway propaga esses headers para serviços internos.
 - O fluxo permitido entre frontend, gateway, microservicos e eventos esta em `service-communication.md`.
+- O padrao minimo de logs, traces, metricas, dashboards e alertas esta em `observability.md`.
 - Quando um cliente envia `traceparent`, o trace id W3C é reaproveitado como `x-trace-id`.
 
 ## CI/CD independente

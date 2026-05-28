@@ -36,6 +36,25 @@ test('appointments service has its own health check', async () => {
   assert.equal(response.body.status, 'ok');
 });
 
+test('appointments service exposes metrics without internal token', async () => {
+  const previousToken = process.env.INTERNAL_SERVICE_TOKEN;
+  process.env.INTERNAL_SERVICE_TOKEN = 'internal-test-token';
+
+  try {
+    const response = await request(expressApp)
+      .get('/api/metrics')
+      .expect(200);
+
+    assert.match(response.text, /http_requests_total/);
+  } finally {
+    if (previousToken === undefined) {
+      delete process.env.INTERNAL_SERVICE_TOKEN;
+    } else {
+      process.env.INTERNAL_SERVICE_TOKEN = previousToken;
+    }
+  }
+});
+
 test('appointments service exposes appointment routes', async () => {
   const response = await request(expressApp)
     .get('/api/appointments/availability')

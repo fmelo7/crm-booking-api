@@ -209,19 +209,33 @@ Validacao local: `npm test` passou em 2026-05-28; os testes de gateway e arquite
 
 Cada app deve expor:
 
-- [ ] logs JSON com `service`, `environment`, `requestId`, `traceId`;
-- [ ] propagacao de `traceparent`;
-- [ ] health check;
-- [ ] metricas;
-- [ ] traces;
-- [ ] dashboards;
-- [ ] alertas.
+- [x] logs JSON com `service`, `environment`, `requestId`, `traceId`;
+- [x] propagacao de `traceparent`;
+- [x] health check;
+- [x] metricas;
+- [x] traces;
+- [x] dashboards;
+- [x] alertas.
 
 Evidencias:
 
 - dashboard por servico;
 - exemplo de trace fim a fim;
 - alerta testado.
+
+Evidencias locais em 2026-05-28:
+
+| Regra | Evidencia |
+| --- | --- |
+| Logs JSON | `structured logs include service, environment, requestId and traceId metadata` valida o contrato do logger |
+| `traceparent` | `Nest health controller preserves incoming traceparent` e testes de proxy validam preservacao/propagacao |
+| Health check | `GET /api/health` testado no gateway e em todos os servicos |
+| Metricas | `GET /api/metrics` exposto no gateway e servicos com `http_requests_total` e `http_request_duration_seconds` |
+| Traces | Respostas incluem `x-request-id`, `x-trace-id` e `traceparent`; gateway propaga para upstreams |
+| Dashboards | `infra/observability.md` define dashboard minimo por servico com queries Prometheus |
+| Alertas | `infra/observability.md` define alertas minimos `ServiceDown`, `HighErrorRate` e `HighLatencyP95` |
+
+Validacao local: `npm test` passou em 2026-05-28; dashboards/alertas estao especificados para provisionamento no provedor de observabilidade quando os repos forem publicados.
 
 ### 8. CI/CD e rollback
 

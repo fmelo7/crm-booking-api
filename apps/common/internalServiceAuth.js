@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_PATHS = ['/api/health'];
+const DEFAULT_PUBLIC_PATHS = ['/api/health', '/api/metrics'];
 
 const parseCsv = (value) =>
   String(value || '')

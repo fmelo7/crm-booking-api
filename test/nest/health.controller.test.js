@@ -61,7 +61,39 @@ test('Nest health controller preserves incoming trace id', async () => {
     .expect(200);
 
   assert.equal(response.headers['x-trace-id'], 'trace-health-test');
+  assert.match(response.headers.traceparent, /^00-[a-f0-9]{32}-[a-f0-9]{16}-01$/);
   assert.equal(response.body.traceId, 'trace-health-test');
+});
+
+test('Nest health controller preserves incoming traceparent', async () => {
+  expressApp.set('dbConnected', true);
+
+  const traceparent = '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01';
+  const response = await request(expressApp)
+    .get('/api/health')
+    .set('traceparent', traceparent)
+    .expect(200);
+
+  assert.equal(response.headers.traceparent, traceparent);
+  assert.equal(response.headers['x-trace-id'], '4bf92f3577b34da6a3ce929d0e0e4736');
+  assert.equal(response.body.traceId, '4bf92f3577b34da6a3ce929d0e0e4736');
+});
+
+test('Nest app exposes prometheus metrics', async () => {
+  expressApp.set('dbConnected', true);
+
+  await request(expressApp)
+    .get('/api/health')
+    .expect(200);
+
+  const response = await request(expressApp)
+    .get('/api/metrics')
+    .expect(200);
+
+  assert.match(response.headers['content-type'], /text\/plain/);
+  assert.match(response.text, /# TYPE http_requests_total counter/);
+  assert.match(response.text, /http_requests_total\{.*service="test-api".*method="GET"/);
+  assert.match(response.text, /# TYPE http_request_duration_seconds histogram/);
 });
 
 test('Nest app serves the frontend from apps/frontend/public', async () => {

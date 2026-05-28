@@ -9,6 +9,7 @@ const {
   createRateLimiter,
 } = require('../../src/middlewares/security');
 const { requestLogger } = require('../../src/middlewares/logger');
+const { metricsHandler } = require('../../src/observability/metrics');
 const { createInternalServiceAuth } = require('../common/internalServiceAuth');
 const {
   configureTerminalHandlers,
@@ -23,6 +24,7 @@ const configureAppointmentsServiceBaseApp = (app) => {
   app.use(requestLogger);
   app.use(createInternalServiceAuth());
   app.set('dbConnected', false);
+  app.get('/api/metrics', metricsHandler);
   app.use('/api', createRateLimiter());
 
   return app;

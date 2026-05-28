@@ -43,6 +43,12 @@ serviceCases.forEach(({ name, createApp, ownRoute, ownExpectedStatus, absentRout
 
       assert.equal(healthResponse.body.status, 'ok');
 
+      const metricsResponse = await request(expressApp)
+        .get('/api/metrics')
+        .expect(200);
+
+      assert.match(metricsResponse.text, /http_requests_total/);
+
       const domainResponse = await request(expressApp)
         .get(ownRoute)
         .expect(ownExpectedStatus);

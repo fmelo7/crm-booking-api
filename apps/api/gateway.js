@@ -3,6 +3,7 @@ const { log } = require('../../src/middlewares/logger');
 const DEFAULT_PUBLIC_PATHS = [
   '/',
   '/api/health',
+  '/api/metrics',
   '/api-docs',
 ];
 
