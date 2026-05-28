@@ -4,7 +4,7 @@ Este roadmap transforma os seeds em repositorios com codigo real, sem dependenci
 
 ## Status
 
-Status atual: fase 6 concluida.
+Status atual: fase 7 concluida.
 
 | Fase | Status | Saida esperada |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ Status atual: fase 6 concluida.
 | 4. Api gateway real | Concluida | `api-gateway` roda com gateway/proxy/auth/metrics sem importar `src` do monorepo |
 | 5. Primeiro dominio real: appointments | Concluida | `appointments-service` roda controller/provider/repository do proprio dominio |
 | 6. Servicos de suporte reais | Concluida | `customers`, `services`, `professionals` rodam isolados |
-| 7. Frontend real | Pendente | `frontend` serve assets reais e chama somente gateway |
+| 7. Frontend real | Concluida | `frontend` serve assets reais e chama somente gateway |
 | 8. Limpeza de imports e smoke externo | Pendente | `npm ci`, `npm test`, `npm run build` e `docker build .` passam dentro de cada seed |
 
 ## Principios
@@ -171,6 +171,16 @@ Gate:
 
 - assets servem isolados;
 - fetches usam somente `/api/*`.
+
+Status: concluida.
+
+Evidencias:
+
+- `infra/repository-seeds/frontend/public` recebeu `index.html`, `app.js` e `styles.css` reais;
+- `nginx.conf` serve assets estaticos e encaminha apenas `/api/*` para `api-gateway`;
+- Dockerfile usa nginx e copia os assets locais para `/usr/share/nginx/html`;
+- `npm test` e `npm run build` passam no seed `frontend`;
+- testes bloqueiam chamadas HTTP fora do helper `api()` e chamadas `api()` fora de `/api/*`.
 
 ## Fase 8: validacao final
 

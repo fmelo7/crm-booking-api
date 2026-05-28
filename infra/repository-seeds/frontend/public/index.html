@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sev365 Booking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <i class="fas fa-calendar"></i>
+          <span>Sev365</span>
+        </div>
+        <nav class="nav-menu">
+          <button class="nav-item is-active" data-view="appointments" title="Agenda">
+            <i class="fas fa-calendar-check"></i>
+            <span class="nav-label">Agenda</span>
+          </button>
+          <button class="nav-item" data-view="customers" title="Clientes">
+            <i class="fas fa-users"></i>
+            <span class="nav-label">Clientes</span>
+          </button>
+          <button class="nav-item" data-view="services" title="Serviços">
+            <i class="fas fa-briefcase"></i>
+            <span class="nav-label">Serviços</span>
+          </button>
+          <button class="nav-item" data-view="professionals" title="Profissionais">
+            <i class="fas fa-user-tie"></i>
+            <span class="nav-label">Profissionais</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="status-indicator" id="statusIndicator"></div>
+          <p id="statusText">Conectando...</p>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="main-content">
+        <div id="message" class="message" hidden></div>
+
+        <!-- Appointments Section -->
+        <section id="appointments" class="view is-active">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Agenda</h1>
+              <p>Crie, reagende e cancele horários</p>
+            </div>
+            <button class="btn-icon" id="refreshAppointments" title="Atualizar">
+              <i class="fas fa-rotate-right"></i>
+            </button>
+          </div>
+
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Agendamentos</h3>
+                <div class="filters-row">
+                  <select id="appointmentRangeFilter" aria-label="Tipo de periodo">
+                    <option value="day">Dia</option>
+                    <option value="week">Semana</option>
+                  </select>
+                  <input id="appointmentDateFilter" type="date" aria-label="Filtrar por data">
+                  <select id="appointmentProfessionalFilter" aria-label="Filtrar por profissional"></select>
+                  <select id="appointmentCustomerFilter" aria-label="Filtrar por cliente"></select>
+                  <select id="appointmentStatusFilter" aria-label="Filtrar por status">
+                    <option value="">Todos os status</option>
+                    <option value="scheduled">Agendados</option>
+                    <option value="cancelled">Cancelados</option>
+                    <option value="completed">Concluidos</option>
+                  </select>
+                </div>
+              </div>
+              <div class="list-content">
+                <div id="appointmentsList" class="items-list"></div>
+              </div>
+            </div>
+
+            <div class="form-panel">
+              <form id="appointmentForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3 id="appointmentFormTitle">Novo agendamento</h3>
+                  <button type="button" class="btn-secondary form-header-action" id="newAppointment">
+                    <i class="fas fa-plus"></i>
+                    <span>Novo</span>
+                  </button>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Cliente</span>
+                    <select name="customerId" required></select>
+                  </label>
+                  <label>
+                    <span>Serviço</span>
+                    <select name="serviceId" required></select>
+                  </label>
+                  <label>
+                    <span>Profissional</span>
+                    <select name="professionalId" required></select>
+                  </label>
+                  <label>
+                    <span>Data</span>
+                    <input name="appointmentDate" type="date" required>
+                  </label>
+                  <input name="startAt" type="hidden">
+                  <div id="availabilityContainer" class="availability-container"></div>
+                  <label>
+                    <span>Observações</span>
+                    <textarea name="notes" rows="3"></textarea>
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary" id="resetAppointmentForm">Cancelar</button>
+                  <button type="submit" class="btn-primary" id="appointmentSubmit">Salvar agendamento</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Customers Section -->
+        <section id="customers" class="view">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Clientes</h1>
+              <p>Cadastro e manutenção de clientes</p>
+            </div>
+          </div>
+
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Clientes</h3>
+                <form class="entity-filter" data-filter-resource="customers">
+                  <input name="search" type="search" placeholder="Filtrar clientes" aria-label="Filtrar clientes">
+                  <button type="submit" class="btn-secondary">Filtrar</button>
+                  <button type="button" class="btn-secondary" data-clear-filter="customers">Limpar</button>
+                </form>
+              </div>
+              <div class="list-content">
+                <div id="customersList" class="items-list"></div>
+              </div>
+            </div>
+
+            <div class="form-panel">
+              <form id="customerForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3>Cliente</h3>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Nome</span>
+                    <input name="name" required>
+                  </label>
+                  <label>
+                    <span>Telefone</span>
+                    <input name="phone">
+                  </label>
+                  <label>
+                    <span>Email</span>
+                    <input name="email" type="email">
+                  </label>
+                  <label>
+                    <span>Notas</span>
+                    <textarea name="notes" rows="3"></textarea>
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary">Cancelar</button>
+                  <button type="submit" class="btn-primary">Salvar cliente</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="view">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Serviços</h1>
+              <p>Serviços oferecidos e valores</p>
+            </div>
+          </div>
+
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Serviços</h3>
+                <form class="entity-filter" data-filter-resource="services">
+                  <input name="search" type="search" placeholder="Filtrar serviços" aria-label="Filtrar serviços">
+                  <button type="submit" class="btn-secondary">Filtrar</button>
+                  <button type="button" class="btn-secondary" data-clear-filter="services">Limpar</button>
+                </form>
+              </div>
+              <div class="list-content">
+                <div id="servicesList" class="items-list"></div>
+              </div>
+            </div>
+
+            <div class="form-panel">
+              <form id="serviceForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3>Serviço</h3>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Nome</span>
+                    <input name="name" required>
+                  </label>
+                  <label>
+                    <span>Descrição</span>
+                    <textarea name="description" rows="3"></textarea>
+                  </label>
+                  <label>
+                    <span>Duração (minutos)</span>
+                    <input name="durationMinutes" type="number" min="1" value="60">
+                  </label>
+                  <label>
+                    <span>Preço (R$)</span>
+                    <input name="price" type="number" min="0" step="0.01" value="0">
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary">Cancelar</button>
+                  <button type="submit" class="btn-primary">Salvar serviço</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Professionals Section -->
+        <section id="professionals" class="view">
+          <div class="section-header">
+            <div class="header-content">
+              <h1>Profissionais</h1>
+              <p>Equipe disponível para atendimentos</p>
+            </div>
+          </div>
+
+          <div class="view-container">
+            <div class="list-panel">
+              <div class="list-header">
+                <h3>Profissionais</h3>
+                <form class="entity-filter" data-filter-resource="professionals">
+                  <input name="search" type="search" placeholder="Filtrar profissionais" aria-label="Filtrar profissionais">
+                  <button type="submit" class="btn-secondary">Filtrar</button>
+                  <button type="button" class="btn-secondary" data-clear-filter="professionals">Limpar</button>
+                </form>
+              </div>
+              <div class="list-content">
+                <div id="professionalsList" class="items-list"></div>
+              </div>
+            </div>
+
+            <div class="form-panel">
+              <form id="professionalForm">
+                <input type="hidden" name="id">
+                <div class="form-header">
+                  <h3>Profissional</h3>
+                </div>
+                <div class="form-body">
+                  <label>
+                    <span>Nome</span>
+                    <input name="name" required>
+                  </label>
+                  <label>
+                    <span>Categoria</span>
+                    <input name="category" required>
+                  </label>
+                  <label>
+                    <span>Telefone</span>
+                    <input name="phone">
+                  </label>
+                  <label>
+                    <span>Email</span>
+                    <input name="email" type="email">
+                  </label>
+                  <label class="checkbox-label">
+                    <input name="active" type="checkbox" checked>
+                    <span>Ativo</span>
+                  </label>
+                </div>
+                <div class="form-footer">
+                  <button type="button" class="btn-secondary">Cancelar</button>
+                  <button type="submit" class="btn-primary">Salvar profissional</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div id="loadingOverlay" class="loading-overlay" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <span>Carregando...</span>
+      </div>
+
+      <dialog id="confirmDialog" class="confirm-dialog">
+        <form method="dialog">
+          <div class="confirm-header">
+            <h3 id="confirmTitle">Confirmar ação</h3>
+          </div>
+          <p id="confirmText"></p>
+          <div class="confirm-actions">
+            <button type="button" class="btn-secondary" id="confirmCancel">Cancelar</button>
+            <button type="button" class="btn-danger" id="confirmAccept">Confirmar</button>
+          </div>
+        </form>
+      </dialog>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

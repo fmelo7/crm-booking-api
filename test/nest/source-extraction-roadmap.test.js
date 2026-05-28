@@ -28,15 +28,16 @@ const walkJsFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
     return entry.isFile() && entry.name.endsWith('.js') ? [fullPath] : [];
   });
 
-test('source extraction roadmap is present and tracks phase 6', () => {
+test('source extraction roadmap is present and tracks phase 7', () => {
   const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
 
-  assert.match(roadmap, /Status atual: fase 6 concluida/);
+  assert.match(roadmap, /Status atual: fase 7 concluida/);
   assert.match(roadmap, /infra\/source-extraction-manifest\.json/);
   assert.match(roadmap, /Runtime comum minimo/);
   assert.match(roadmap, /Contratos como pacote independente/);
   assert.match(roadmap, /Primeiro dominio real: appointments/);
   assert.match(roadmap, /Servicos de suporte reais/);
+  assert.match(roadmap, /Frontend real/);
 });
 
 test('api-gateway seed contains real standalone gateway runtime', () => {
@@ -248,6 +249,42 @@ test('support service seeds do not import appointments or other domain internals
   });
 
   assert.deepEqual(violations, []);
+});
+
+test('frontend seed contains real static assets and nginx gateway routing', () => {
+  const frontendDir = path.join(rootDir, 'infra/repository-seeds/frontend');
+  const required = [
+    'public/index.html',
+    'public/app.js',
+    'public/styles.css',
+    'nginx.conf',
+  ];
+  const missing = required
+    .filter((file) => !fs.existsSync(path.join(frontendDir, file)));
+  const dockerfile = fs.readFileSync(path.join(frontendDir, 'Dockerfile'), 'utf8');
+  const nginx = fs.readFileSync(path.join(frontendDir, 'nginx.conf'), 'utf8');
+  const html = fs.readFileSync(path.join(frontendDir, 'public/index.html'), 'utf8');
+
+  assert.deepEqual(missing, []);
+  assert.match(dockerfile, /^FROM nginx:/m);
+  assert.match(dockerfile, /COPY public\/ \/usr\/share\/nginx\/html\//);
+  assert.match(nginx, /location \/api\//);
+  assert.match(nginx, /proxy_pass http:\/\/api:3000/);
+  assert.match(html, /<link rel="stylesheet" href="\/styles\.css">/);
+  assert.match(html, /<script src="\/app\.js"><\/script>/);
+});
+
+test('frontend seed calls only gateway api paths', () => {
+  const app = fs.readFileSync(path.join(rootDir, 'infra/repository-seeds/frontend/public/app.js'), 'utf8');
+  const directFetchViolations = [...app.matchAll(/fetch\(([^,\n)]+)/g)]
+    .map((match) => match[1].trim())
+    .filter((arg) => arg !== 'path');
+  const apiCalls = [...app.matchAll(/\bapi\(\s*([`'"][^`'"]+)/g)]
+    .map((match) => match[1].slice(1));
+  const apiPathViolations = apiCalls.filter((arg) => !arg.startsWith('/api/'));
+
+  assert.deepEqual(directFetchViolations, []);
+  assert.deepEqual(apiPathViolations, []);
 });
 
 test('source extraction manifest covers every repository seed', () => {

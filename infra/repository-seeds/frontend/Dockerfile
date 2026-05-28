@@ -1,11 +1,6 @@
-FROM node:20-alpine
+FROM nginx:1.27-alpine
 
-WORKDIR /app
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY public/ /usr/share/nginx/html/
 
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-COPY . .
-RUN npm run build
-
-CMD ["node", "-e", "console.log(process.env.SERVICE_NAME || require('./package.json').name)"]
+EXPOSE 80

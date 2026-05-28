@@ -12,6 +12,12 @@ Repositorio independente do frontend do CRM Booking.
 
 Base inicial: `crm-booking-api/apps/frontend`.
 
+## Runtime atual
+
+- `public/index.html`, `public/app.js` e `public/styles.css` contem a UI real do produto.
+- `nginx.conf` serve os assets estaticos e encaminha somente `/api/*` para o `api-gateway`.
+- O Dockerfile usa nginx e copia os assets locais para `/usr/share/nginx/html`.
+
 ## Comandos esperados
 
 ```bash
@@ -21,7 +27,7 @@ npm run build
 docker build .
 ```
 
-Esses comandos serao habilitados nos proximos gates de build, teste e Docker.
+Esses comandos validam o frontend sem depender do monorepo.
 
 ## Evidencias do gate 1
 
