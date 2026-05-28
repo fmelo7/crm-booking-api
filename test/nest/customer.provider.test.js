@@ -27,7 +27,9 @@ const createRepositoryStub = () => ({
 test('Nest customer provider creates using injected repository', async () => {
   const customerRepository = createRepositoryStub();
   const appointmentRepository = { existsForCustomer: async () => false };
-  const provider = new CustomerProvider(customerRepository, appointmentRepository);
+  const provider = new CustomerProvider(customerRepository, {
+    existsForCustomer: (id) => appointmentRepository.existsForCustomer(id),
+  });
 
   const result = await provider.create({ name: 'Maria Silva' });
 
@@ -54,12 +56,7 @@ test('Nest customer provider does not read appointments store in standalone serv
   const previousServiceName = process.env.SERVICE_NAME;
   process.env.SERVICE_NAME = 'customers-service';
   const customerRepository = createRepositoryStub();
-  const appointmentRepository = {
-    existsForCustomer: async () => {
-      throw new Error('should not access appointments');
-    },
-  };
-  const provider = new CustomerProvider(customerRepository, appointmentRepository);
+  const provider = new CustomerProvider(customerRepository);
 
   try {
     await provider.remove('customer-id');

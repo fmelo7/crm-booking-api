@@ -1,4 +1,3 @@
-const AppointmentRepositoryProvider = require('../appointment/appointment.repository.provider');
 const ProfessionalRepositoryProvider = require('./professional.repository.provider');
 const { defineInjectable } = require('../common/injection');
 const {
@@ -14,12 +13,10 @@ const messages = {
   required: 'Nome e categoria são obrigatórios',
 };
 
-const shouldCheckAppointmentLinks = () => process.env.SERVICE_NAME !== 'professionals-service';
-
 class ProfessionalProvider {
-  constructor(professionalRepository, appointmentRepository) {
+  constructor(professionalRepository, references = {}) {
     this.professionalRepository = professionalRepository;
-    this.appointmentRepository = appointmentRepository;
+    this.references = references;
   }
 
   create(data) {
@@ -49,8 +46,8 @@ class ProfessionalProvider {
   }
 
   async remove(id) {
-    if (shouldCheckAppointmentLinks()) {
-      const appointment = await this.appointmentRepository.existsForProfessional(id);
+    if (this.references.existsForProfessional) {
+      const appointment = await this.references.existsForProfessional(id);
       assertNoLinkedAppointment(appointment, messages.linkedAppointment);
     }
 
@@ -59,6 +56,6 @@ class ProfessionalProvider {
   }
 }
 
-defineInjectable(ProfessionalProvider, [ProfessionalRepositoryProvider, AppointmentRepositoryProvider]);
+defineInjectable(ProfessionalProvider, [ProfessionalRepositoryProvider]);
 
 module.exports = ProfessionalProvider;

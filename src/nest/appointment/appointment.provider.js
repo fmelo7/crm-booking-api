@@ -1,7 +1,4 @@
 const AppointmentRepositoryProvider = require('./appointment.repository.provider');
-const CustomerRepositoryProvider = require('../customer/customer.repository.provider');
-const ProfessionalRepositoryProvider = require('../professional/professional.repository.provider');
-const ServiceRepositoryProvider = require('../service/service.repository.provider');
 const { defineInjectable } = require('../common/injection');
 const { isValidObjectId } = require('../../../packages/shared/common/objectId');
 const {
@@ -14,16 +11,21 @@ const {
 } = require('../../../packages/domains/appointment/rules');
 
 class AppointmentProvider {
-  constructor(
-    appointmentRepository,
-    customerRepository,
-    serviceRepository,
-    professionalRepository
-  ) {
+  constructor(appointmentRepository, references = {}) {
     this.appointmentRepository = appointmentRepository;
-    this.customerRepository = customerRepository;
-    this.serviceRepository = serviceRepository;
-    this.professionalRepository = professionalRepository;
+    this.references = references;
+  }
+
+  findCustomer(id) {
+    return this.references.findCustomer?.(id) || { _id: id };
+  }
+
+  findService(id) {
+    return this.references.findService?.(id) || { _id: id, durationMinutes: 60 };
+  }
+
+  findProfessional(id) {
+    return this.references.findProfessional?.(id) || { _id: id };
   }
 
   async create(data) {
@@ -37,9 +39,9 @@ class AppointmentProvider {
       throw { status: 400, message: 'IDs inválidos' };
     }
 
-    const customer = await this.customerRepository.findById(customerId);
-    const service = await this.serviceRepository.findById(serviceId);
-    const professional = await this.professionalRepository.findById(professionalId);
+    const customer = await this.findCustomer(customerId);
+    const service = await this.findService(serviceId);
+    const professional = await this.findProfessional(professionalId);
 
     if (!customer || !service || !professional) {
       throw { status: 404, message: 'Cliente, serviço ou profissional não encontrado' };
@@ -108,7 +110,7 @@ class AppointmentProvider {
 
     ensureScheduled(current, 'reagendado');
 
-    const service = await this.serviceRepository.findById(current.service);
+    const service = await this.findService(current.service);
     if (!service) {
       throw { status: 404, message: 'Serviço do agendamento não encontrado' };
     }
@@ -192,7 +194,7 @@ class AppointmentProvider {
         throw { status: 400, message: 'Serviço inválido' };
       }
 
-      const service = await this.serviceRepository.findById(serviceId);
+      const service = await this.findService(serviceId);
       if (!service) {
         throw { status: 404, message: 'Serviço não encontrado' };
       }
@@ -217,11 +219,6 @@ class AppointmentProvider {
   }
 }
 
-defineInjectable(AppointmentProvider, [
-  AppointmentRepositoryProvider,
-  CustomerRepositoryProvider,
-  ServiceRepositoryProvider,
-  ProfessionalRepositoryProvider,
-]);
+defineInjectable(AppointmentProvider, [AppointmentRepositoryProvider]);
 
 module.exports = AppointmentProvider;

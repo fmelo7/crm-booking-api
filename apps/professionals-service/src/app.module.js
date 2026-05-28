@@ -1,12 +1,12 @@
 require('reflect-metadata');
 
-const ProfessionalModule = require('../../../src/nest/professional/professional.module');
+const ProfessionalStandaloneModule = require('../../../src/nest/professional/professional.standalone.module');
 const HealthModule = require('../../../src/nest/health/health.module');
 const { defineModule } = require('../../../src/nest/common/module');
 
 const ProfessionalsServiceModule = defineModule({
   imports: [
-    ProfessionalModule,
+    ProfessionalStandaloneModule,
     HealthModule,
   ],
 });

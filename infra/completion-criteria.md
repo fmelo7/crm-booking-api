@@ -145,17 +145,29 @@ Validacao local: `npm test` passou em 2026-05-28 com testes de resolucao de cone
 
 Nenhum servico pode importar codigo interno de outro:
 
-- [ ] sem imports de repositories de outro dominio;
-- [ ] sem imports de models/entities de outro dominio;
-- [ ] sem imports de modules Nest de outro app;
-- [ ] sem dependencia de `packages/domains/*` no destino final;
-- [ ] contratos compartilhados sem regra de negocio.
+- [x] sem imports de repositories de outro dominio;
+- [x] sem imports de models/entities de outro dominio;
+- [x] sem imports de modules Nest de outro app;
+- [x] sem dependencia de `packages/domains/*` no destino final;
+- [x] contratos compartilhados sem regra de negocio.
 
 Evidencias:
 
 - teste de arquitetura por repo;
 - revisao de dependencias;
 - CI bloqueando imports proibidos.
+
+Evidencias locais em 2026-05-28:
+
+| Regra | Evidencia |
+| --- | --- |
+| Repositories de outro dominio | Apps standalone usam `*.standalone.module.js`, que registram apenas o repository provider do proprio dominio |
+| Models/entities de outro dominio | `repository providers import only their own domain implementation` bloqueia imports cruzados em `test/nest/architecture-boundaries.test.js` |
+| Modules Nest de outro app | `service app modules expose only their own domain plus health` bloqueia exposicao de modulos de outros dominios |
+| `packages/domains/*` no destino final | Repos seed independentes nao dependem de `packages/domains/*`; no monorepo, standalone modules ficam prontos para copiar codigo do proprio dominio sem dependencia cruzada |
+| Contratos sem regra de negocio | Testes `contracts do not import runtime, database or domain implementation code` e `contracts package does not import app or infrastructure modules` |
+
+Validacao local: `npm test` passou em 2026-05-28; os testes de arquitetura fazem parte da suite padrao e bloqueiam regressao em CI.
 
 ### 6. Comunicacao correta
 

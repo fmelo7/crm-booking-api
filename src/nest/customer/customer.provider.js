@@ -1,5 +1,4 @@
 const CustomerRepositoryProvider = require('./customer.repository.provider');
-const AppointmentRepositoryProvider = require('../appointment/appointment.repository.provider');
 const { defineInjectable } = require('../common/injection');
 const {
   assertFound,
@@ -14,12 +13,10 @@ const messages = {
   required: 'Nome do cliente é obrigatório',
 };
 
-const shouldCheckAppointmentLinks = () => process.env.SERVICE_NAME !== 'customers-service';
-
 class CustomerProvider {
-  constructor(customerRepository, appointmentRepository) {
+  constructor(customerRepository, references = {}) {
     this.customerRepository = customerRepository;
-    this.appointmentRepository = appointmentRepository;
+    this.references = references;
   }
 
   create(data) {
@@ -49,8 +46,8 @@ class CustomerProvider {
   }
 
   async remove(id) {
-    if (shouldCheckAppointmentLinks()) {
-      const appointment = await this.appointmentRepository.existsForCustomer(id);
+    if (this.references.existsForCustomer) {
+      const appointment = await this.references.existsForCustomer(id);
       assertNoLinkedAppointment(appointment, messages.linkedAppointment);
     }
 
@@ -59,6 +56,6 @@ class CustomerProvider {
   }
 }
 
-defineInjectable(CustomerProvider, [CustomerRepositoryProvider, AppointmentRepositoryProvider]);
+defineInjectable(CustomerProvider, [CustomerRepositoryProvider]);
 
 module.exports = CustomerProvider;

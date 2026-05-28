@@ -27,7 +27,9 @@ const createRepositoryStub = () => ({
 test('Nest professional provider creates using injected repository', async () => {
   const professionalRepository = createRepositoryStub();
   const appointmentRepository = { existsForProfessional: async () => false };
-  const provider = new ProfessionalProvider(professionalRepository, appointmentRepository);
+  const provider = new ProfessionalProvider(professionalRepository, {
+    existsForProfessional: (id) => appointmentRepository.existsForProfessional(id),
+  });
 
   const result = await provider.create({
     name: 'Ana Souza',
@@ -60,12 +62,7 @@ test('Nest professional provider does not read appointments store in standalone 
   const previousServiceName = process.env.SERVICE_NAME;
   process.env.SERVICE_NAME = 'professionals-service';
   const professionalRepository = createRepositoryStub();
-  const appointmentRepository = {
-    existsForProfessional: async () => {
-      throw new Error('should not access appointments');
-    },
-  };
-  const provider = new ProfessionalProvider(professionalRepository, appointmentRepository);
+  const provider = new ProfessionalProvider(professionalRepository);
 
   try {
     await provider.remove('professional-id');

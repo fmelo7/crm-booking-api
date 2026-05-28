@@ -52,12 +52,11 @@ const createProvider = ({ conflict = null, durationMinutes = 90 } = {}) => {
 
   return {
     appointmentRepository,
-    provider: new AppointmentProvider(
-      appointmentRepository,
-      customerRepository,
-      serviceRepository,
-      professionalRepository
-    ),
+    provider: new AppointmentProvider(appointmentRepository, {
+      findCustomer: (id) => customerRepository.findById(id),
+      findService: (id) => serviceRepository.findById(id),
+      findProfessional: (id) => professionalRepository.findById(id),
+    }),
   };
 };
 
