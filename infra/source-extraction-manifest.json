@@ -21,6 +21,7 @@
         { "from": "src/nest/common", "to": "src/nest/common" },
         { "from": "src/nest/health", "to": "src/nest/health" },
         { "from": "src/observability", "to": "src/observability" },
+        { "from": "packages/contracts", "to": "src/contracts" },
         { "from": "packages/shared/common", "to": "src/shared/common" }
       ]
     },
@@ -37,6 +38,7 @@
         { "from": "src/nest/common", "to": "src/nest/common" },
         { "from": "src/nest/health", "to": "src/nest/health" },
         { "from": "src/observability", "to": "src/observability" },
+        { "from": "packages/contracts", "to": "src/contracts" },
         { "from": "packages/domains/appointment", "to": "src/domain/appointment" },
         { "from": "packages/shared/common", "to": "src/shared/common" }
       ]
@@ -54,6 +56,7 @@
         { "from": "src/nest/common", "to": "src/nest/common" },
         { "from": "src/nest/health", "to": "src/nest/health" },
         { "from": "src/observability", "to": "src/observability" },
+        { "from": "packages/contracts", "to": "src/contracts" },
         { "from": "packages/domains/customer", "to": "src/domain/customer" },
         { "from": "packages/shared/common", "to": "src/shared/common" }
       ]
@@ -71,6 +74,7 @@
         { "from": "src/nest/common", "to": "src/nest/common" },
         { "from": "src/nest/health", "to": "src/nest/health" },
         { "from": "src/observability", "to": "src/observability" },
+        { "from": "packages/contracts", "to": "src/contracts" },
         { "from": "packages/domains/service", "to": "src/domain/service" },
         { "from": "packages/shared/common", "to": "src/shared/common" }
       ]
@@ -88,6 +92,7 @@
         { "from": "src/nest/common", "to": "src/nest/common" },
         { "from": "src/nest/health", "to": "src/nest/health" },
         { "from": "src/observability", "to": "src/observability" },
+        { "from": "packages/contracts", "to": "src/contracts" },
         { "from": "packages/domains/professional", "to": "src/domain/professional" },
         { "from": "packages/shared/common", "to": "src/shared/common" }
       ]

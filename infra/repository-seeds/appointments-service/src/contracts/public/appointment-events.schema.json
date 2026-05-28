@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.local/appointments/events.schema.json",
+  "title": "Appointment domain events",
+  "oneOf": [
+    { "$ref": "#/$defs/AppointmentCreated" },
+    { "$ref": "#/$defs/AppointmentRescheduled" },
+    { "$ref": "#/$defs/AppointmentCancelled" },
+    { "$ref": "#/$defs/AppointmentCompleted" }
+  ],
+  "$defs": {
+    "ObjectId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    },
+    "IsoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "AppointmentStatus": {
+      "type": "string",
+      "enum": ["scheduled", "cancelled", "completed"]
+    },
+    "EventMetadata": {
+      "type": "object",
+      "required": ["eventId", "eventName", "version", "occurredAt"],
+      "properties": {
+        "eventId": { "type": "string", "minLength": 1 },
+        "eventName": {
+          "type": "string",
+          "enum": [
+            "appointment.created",
+            "appointment.rescheduled",
+            "appointment.cancelled",
+            "appointment.completed"
+          ]
+        },
+        "version": { "const": 1 },
+        "occurredAt": { "$ref": "#/$defs/IsoDateTime" },
+        "correlationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "AppointmentEventData": {
+      "type": "object",
+      "required": [
+        "appointmentId",
+        "customerId",
+        "serviceId",
+        "professionalId",
+        "startAt",
+        "endAt",
+        "status"
+      ],
+      "properties": {
+        "appointmentId": { "$ref": "#/$defs/ObjectId" },
+        "customerId": { "$ref": "#/$defs/ObjectId" },
+        "serviceId": { "$ref": "#/$defs/ObjectId" },
+        "professionalId": { "$ref": "#/$defs/ObjectId" },
+        "startAt": { "$ref": "#/$defs/IsoDateTime" },
+        "endAt": { "$ref": "#/$defs/IsoDateTime" },
+        "status": { "$ref": "#/$defs/AppointmentStatus" }
+      }
+    },
+    "AppointmentCreated": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "appointment.created" },
+            "data": { "$ref": "#/$defs/AppointmentEventData" }
+          }
+        }
+      ]
+    },
+    "AppointmentRescheduled": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "appointment.rescheduled" },
+            "data": {
+              "allOf": [
+                { "$ref": "#/$defs/AppointmentEventData" },
+                {
+                  "type": "object",
+                  "required": ["previousStartAt", "previousEndAt"],
+                  "properties": {
+                    "previousStartAt": { "$ref": "#/$defs/IsoDateTime" },
+                    "previousEndAt": { "$ref": "#/$defs/IsoDateTime" }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "AppointmentCancelled": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "appointment.cancelled" },
+            "data": {
+              "allOf": [
+                { "$ref": "#/$defs/AppointmentEventData" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "reason": { "type": "string" }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "AppointmentCompleted": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "appointment.completed" },
+            "data": { "$ref": "#/$defs/AppointmentEventData" }
+          }
+        }
+      ]
+    }
+  }
+}

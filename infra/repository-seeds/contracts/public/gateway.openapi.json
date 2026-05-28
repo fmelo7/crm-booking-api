@@ -1,0 +1,497 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CRM Booking Gateway API",
+    "version": "1.0.0",
+    "description": "External HTTP contract exposed to frontend clients."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local API gateway"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Gateway health check",
+        "responses": {
+          "200": {
+            "description": "Gateway health status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthStatus" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/appointments": {
+      "get": {
+        "summary": "List appointments through the gateway",
+        "parameters": [
+          { "$ref": "#/components/parameters/date" },
+          { "$ref": "#/components/parameters/from" },
+          { "$ref": "#/components/parameters/to" },
+          { "$ref": "#/components/parameters/professionalId" },
+          { "$ref": "#/components/parameters/customerId" },
+          { "$ref": "#/components/parameters/status" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/limit" }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/AppointmentsPage" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "502": { "$ref": "#/components/responses/UpstreamUnavailable" }
+        }
+      },
+      "post": {
+        "summary": "Create appointment through the gateway",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateAppointmentRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Appointment" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "409": { "$ref": "#/components/responses/ScheduleConflict" },
+          "502": { "$ref": "#/components/responses/UpstreamUnavailable" }
+        }
+      }
+    },
+    "/api/appointments/{id}": {
+      "get": {
+        "summary": "Get appointment through the gateway",
+        "parameters": [{ "$ref": "#/components/parameters/id" }],
+        "responses": {
+          "200": { "$ref": "#/components/responses/Appointment" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "502": { "$ref": "#/components/responses/UpstreamUnavailable" }
+        }
+      }
+    },
+    "/api/customers": {
+      "get": {
+        "summary": "List customers through the gateway",
+        "responses": {
+          "200": { "$ref": "#/components/responses/CustomersPage" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "summary": "Create customer through the gateway",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateCustomerRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Customer" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/services": {
+      "get": {
+        "summary": "List services through the gateway",
+        "responses": {
+          "200": { "$ref": "#/components/responses/ServicesPage" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "summary": "Create service through the gateway",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateServiceRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Service" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/professionals": {
+      "get": {
+        "summary": "List professionals through the gateway",
+        "responses": {
+          "200": { "$ref": "#/components/responses/ProfessionalsPage" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "summary": "Create professional through the gateway",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateProfessionalRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Professional" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "date": {
+        "name": "date",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/DateOnly" }
+      },
+      "from": {
+        "name": "from",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/IsoDateTime" }
+      },
+      "to": {
+        "name": "to",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/IsoDateTime" }
+      },
+      "professionalId": {
+        "name": "professionalId",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "customerId": {
+        "name": "customerId",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "status": {
+        "name": "status",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/AppointmentStatus" }
+      },
+      "page": {
+        "name": "page",
+        "in": "query",
+        "schema": { "type": "integer", "minimum": 1 }
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+      }
+    },
+    "responses": {
+      "Appointment": {
+        "description": "Appointment",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Appointment" }
+          }
+        }
+      },
+      "AppointmentsPage": {
+        "description": "Appointments page",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["data"],
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Appointment" }
+                },
+                "pagination": { "$ref": "#/components/schemas/Pagination" }
+              }
+            }
+          }
+        }
+      },
+      "Customer": {
+        "description": "Customer",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Customer" }
+          }
+        }
+      },
+      "CustomersPage": {
+        "description": "Customers page",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/CustomersPage" }
+          }
+        }
+      },
+      "Service": {
+        "description": "Service",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Service" }
+          }
+        }
+      },
+      "ServicesPage": {
+        "description": "Services page",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ServicesPage" }
+          }
+        }
+      },
+      "Professional": {
+        "description": "Professional",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Professional" }
+          }
+        }
+      },
+      "ProfessionalsPage": {
+        "description": "Professionals page",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ProfessionalsPage" }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid authentication token",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "ScheduleConflict": {
+        "description": "Schedule conflict",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "UpstreamUnavailable": {
+        "description": "Gateway upstream unavailable",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ObjectId": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "IsoDateTime": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "DateOnly": {
+        "type": "string",
+        "format": "date"
+      },
+      "AppointmentStatus": {
+        "type": "string",
+        "enum": ["scheduled", "cancelled", "completed"]
+      },
+      "Appointment": {
+        "type": "object",
+        "required": ["id", "customerId", "serviceId", "professionalId", "startAt", "endAt", "status"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "customerId": { "$ref": "#/components/schemas/ObjectId" },
+          "serviceId": { "$ref": "#/components/schemas/ObjectId" },
+          "professionalId": { "$ref": "#/components/schemas/ObjectId" },
+          "startAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "endAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "status": { "$ref": "#/components/schemas/AppointmentStatus" },
+          "notes": { "type": "string" }
+        }
+      },
+      "CreateAppointmentRequest": {
+        "type": "object",
+        "required": ["customerId", "serviceId", "professionalId", "startAt"],
+        "properties": {
+          "customerId": { "$ref": "#/components/schemas/ObjectId" },
+          "serviceId": { "$ref": "#/components/schemas/ObjectId" },
+          "professionalId": { "$ref": "#/components/schemas/ObjectId" },
+          "startAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "notes": { "type": "string" }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "name": { "type": "string", "minLength": 3 },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" },
+          "notes": { "type": "string" }
+        }
+      },
+      "CreateCustomerRequest": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 3 },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string", "minLength": 8 },
+          "notes": { "type": "string" }
+        }
+      },
+      "CustomersPage": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Customer" }
+          },
+          "pagination": { "$ref": "#/components/schemas/Pagination" }
+        }
+      },
+      "Service": {
+        "type": "object",
+        "required": ["id", "name", "durationMinutes", "price"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "name": { "type": "string", "minLength": 3 },
+          "description": { "type": "string" },
+          "durationMinutes": { "type": "integer", "minimum": 1, "maximum": 480 },
+          "price": { "type": "number", "minimum": 0 }
+        }
+      },
+      "CreateServiceRequest": {
+        "type": "object",
+        "required": ["name", "durationMinutes", "price"],
+        "properties": {
+          "name": { "type": "string", "minLength": 3 },
+          "description": { "type": "string" },
+          "durationMinutes": { "type": "integer", "minimum": 1, "maximum": 480 },
+          "price": { "type": "number", "minimum": 0 }
+        }
+      },
+      "ServicesPage": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Service" }
+          },
+          "pagination": { "$ref": "#/components/schemas/Pagination" }
+        }
+      },
+      "Professional": {
+        "type": "object",
+        "required": ["id", "name", "category"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "name": { "type": "string", "minLength": 3 },
+          "category": { "type": "string", "minLength": 2 },
+          "phone": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "active": { "type": "boolean" }
+        }
+      },
+      "CreateProfessionalRequest": {
+        "type": "object",
+        "required": ["name", "category"],
+        "properties": {
+          "name": { "type": "string", "minLength": 3 },
+          "category": { "type": "string", "minLength": 2 },
+          "phone": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "active": { "type": "boolean" }
+        }
+      },
+      "ProfessionalsPage": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Professional" }
+          },
+          "pagination": { "$ref": "#/components/schemas/Pagination" }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer", "minimum": 1 },
+          "limit": { "type": "integer", "minimum": 1 },
+          "total": { "type": "integer", "minimum": 0 },
+          "pages": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "HealthStatus": {
+        "type": "object",
+        "required": ["status", "service"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "degraded"] },
+          "service": { "type": "string" },
+          "dbConnected": { "type": "boolean" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["status", "code", "message"],
+            "properties": {
+              "status": { "type": "integer" },
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

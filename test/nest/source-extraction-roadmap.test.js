@@ -28,12 +28,13 @@ const walkJsFiles = (dir) => fs.readdirSync(dir, { withFileTypes: true })
     return entry.isFile() && entry.name.endsWith('.js') ? [fullPath] : [];
   });
 
-test('source extraction roadmap is present and tracks phase 2', () => {
+test('source extraction roadmap is present and tracks phase 3', () => {
   const roadmap = fs.readFileSync(path.join(rootDir, 'infra/source-extraction-roadmap.md'), 'utf8');
 
-  assert.match(roadmap, /Status atual: fase 2 concluida/);
+  assert.match(roadmap, /Status atual: fase 3 concluida/);
   assert.match(roadmap, /infra\/source-extraction-manifest\.json/);
   assert.match(roadmap, /Runtime comum minimo/);
+  assert.match(roadmap, /Contratos como pacote independente/);
   assert.match(roadmap, /Primeiro dominio real: appointments/);
 });
 
@@ -109,6 +110,22 @@ test('backend service manifests include runtime, health, observability and share
   assert.deepEqual(violations, []);
 });
 
+test('backend and gateway manifests include local versioned contracts', () => {
+  const repos = [
+    'api-gateway',
+    ...serviceRepos,
+  ];
+  const violations = repos.flatMap((repo) => {
+    const copied = manifest.repos[repo].copy.map((entry) => `${entry.from}:${entry.to}`);
+
+    return copied.includes('packages/contracts:src/contracts')
+      ? []
+      : [`${repo} is missing packages/contracts -> src/contracts`];
+  });
+
+  assert.deepEqual(violations, []);
+});
+
 test('backend seeds contain local runtime copied in phase 2', () => {
   const backendRepos = [
     'api-gateway',
@@ -156,6 +173,63 @@ test('phase 2 runtime copied into seeds does not import monorepo src or packages
         .filter((pattern) => pattern.test(content))
         .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);
     });
+  });
+
+  assert.deepEqual(violations, []);
+});
+
+test('contracts seed contains real package entrypoint, schemas and public specs', () => {
+  const contractsDir = path.join(rootDir, 'infra/repository-seeds/contracts');
+  const required = [
+    'index.js',
+    'appointment.constants.js',
+    'appointment.errors.js',
+    'appointment.events.js',
+    'appointment.schemas.js',
+    'public/gateway.openapi.json',
+    'public/appointments.openapi.json',
+    'public/customers.openapi.json',
+    'public/services.openapi.json',
+    'public/professionals.openapi.json',
+    'public/appointment-events.schema.json',
+    'public/customer-events.schema.json',
+    'public/service-events.schema.json',
+    'public/professional-events.schema.json',
+  ];
+  const missing = required
+    .filter((file) => !fs.existsSync(path.join(contractsDir, file)));
+  const packageJson = JSON.parse(fs.readFileSync(path.join(contractsDir, 'package.json'), 'utf8'));
+  const contracts = require('../../infra/repository-seeds/contracts');
+
+  assert.deepEqual(missing, []);
+  assert.equal(packageJson.main, 'index.js');
+  assert.equal(typeof packageJson.dependencies.zod, 'string');
+  assert.equal(typeof contracts.appointmentEventSchema.parse, 'function');
+});
+
+test('backend seeds consume contracts from local src/contracts without monorepo package imports', () => {
+  const repos = [
+    'api-gateway',
+    ...serviceRepos,
+  ];
+  const violations = repos.flatMap((repo) => {
+    const contractsDir = path.join(rootDir, 'infra/repository-seeds', repo, 'src/contracts');
+    const files = walkJsFiles(contractsDir);
+    const missing = [
+      'index.js',
+      'appointment.schemas.js',
+      'public/gateway.openapi.json',
+    ]
+      .filter((file) => !fs.existsSync(path.join(contractsDir, file)))
+      .map((file) => `${repo} missing src/contracts/${file}`);
+    const forbiddenImports = files.flatMap((file) => {
+      const content = fs.readFileSync(file, 'utf8');
+      return [/\.\.\/\.\.\/packages\/contracts/, /require\(['"].*packages\/contracts/]
+        .filter((pattern) => pattern.test(content))
+        .map((pattern) => `${path.relative(rootDir, file)} matches ${pattern}`);
+    });
+
+    return [...missing, ...forbiddenImports];
   });
 
   assert.deepEqual(violations, []);

@@ -4,13 +4,13 @@ Este roadmap transforma os seeds em repositorios com codigo real, sem dependenci
 
 ## Status
 
-Status atual: fase 2 concluida.
+Status atual: fase 3 concluida.
 
 | Fase | Status | Saida esperada |
 | --- | --- | --- |
 | 1. Manifesto de extracao | Concluida | `infra/source-extraction-manifest.json` validado em teste |
 | 2. Runtime comum minimo | Concluida | Cada seed backend possui `src/common`, `src/config`, `src/observability` e health local |
-| 3. Contratos como pacote independente | Pendente | Seeds consomem contratos via copia versionada ou package externo, sem `../../packages` |
+| 3. Contratos como pacote independente | Concluida | Seeds consomem contratos via copia versionada local, sem `../../packages` |
 | 4. Api gateway real | Pendente | `api-gateway` roda com gateway/proxy/auth/metrics sem importar `src` do monorepo |
 | 5. Primeiro dominio real: appointments | Pendente | `appointments-service` roda controller/provider/repository do proprio dominio |
 | 6. Servicos de suporte reais | Pendente | `customers`, `services`, `professionals` rodam isolados |
@@ -80,6 +80,15 @@ Depois, cada app deve consumir contratos por uma destas opcoes:
 Gate:
 
 - nenhum seed backend importa `../../packages/contracts`.
+
+Status: concluida.
+
+Evidencias:
+
+- `infra/repository-seeds/contracts` recebeu os JS e `public/*.json` reais de `packages/contracts`;
+- seeds backend receberam copia versionada em `src/contracts`;
+- `zod` foi declarado nos seeds que carregam schemas de contrato;
+- `test/nest/source-extraction-roadmap.test.js` valida o pacote de contratos real e bloqueia imports `../../packages/contracts`.
 
 ## Fase 4: api-gateway
 

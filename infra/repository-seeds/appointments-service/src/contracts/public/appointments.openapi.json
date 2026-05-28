@@ -1,0 +1,358 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Appointments API",
+    "version": "1.0.0",
+    "description": "Public HTTP contract for the appointments service."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local appointments service"
+    }
+  ],
+  "paths": {
+    "/api/appointments": {
+      "get": {
+        "summary": "List appointments",
+        "parameters": [
+          { "$ref": "#/components/parameters/date" },
+          { "$ref": "#/components/parameters/from" },
+          { "$ref": "#/components/parameters/to" },
+          { "$ref": "#/components/parameters/professionalId" },
+          { "$ref": "#/components/parameters/customerId" },
+          { "$ref": "#/components/parameters/status" },
+          { "$ref": "#/components/parameters/page" },
+          { "$ref": "#/components/parameters/limit" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appointments page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Appointment" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      },
+      "post": {
+        "summary": "Create appointment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateAppointmentRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created appointment",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/ScheduleConflict" }
+        }
+      }
+    },
+    "/api/appointments/availability": {
+      "get": {
+        "summary": "List available appointment slots",
+        "parameters": [
+          { "$ref": "#/components/parameters/professionalId" },
+          { "$ref": "#/components/parameters/date" },
+          { "$ref": "#/components/parameters/serviceId" },
+          {
+            "name": "durationMinutes",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 480 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available slots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["startAt", "endAt"],
+                    "properties": {
+                      "startAt": { "$ref": "#/components/schemas/IsoDateTime" },
+                      "endAt": { "$ref": "#/components/schemas/IsoDateTime" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/api/appointments/{id}": {
+      "get": {
+        "summary": "Get appointment by id",
+        "parameters": [{ "$ref": "#/components/parameters/id" }],
+        "responses": {
+          "200": {
+            "description": "Appointment",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/appointments/{id}/reschedule": {
+      "put": {
+        "summary": "Reschedule appointment",
+        "parameters": [{ "$ref": "#/components/parameters/id" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescheduleAppointmentRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rescheduled appointment",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/ScheduleConflict" }
+        }
+      }
+    },
+    "/api/appointments/{id}/complete": {
+      "patch": {
+        "summary": "Complete appointment",
+        "parameters": [{ "$ref": "#/components/parameters/id" }],
+        "responses": {
+          "200": {
+            "description": "Completed appointment",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/appointments/{id}/cancel": {
+      "delete": {
+        "summary": "Cancel appointment",
+        "parameters": [{ "$ref": "#/components/parameters/id" }],
+        "responses": {
+          "200": {
+            "description": "Cancelled appointment",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Appointment" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "date": {
+        "name": "date",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/DateOnly" }
+      },
+      "from": {
+        "name": "from",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/IsoDateTime" }
+      },
+      "to": {
+        "name": "to",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/IsoDateTime" }
+      },
+      "professionalId": {
+        "name": "professionalId",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "customerId": {
+        "name": "customerId",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "serviceId": {
+        "name": "serviceId",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "status": {
+        "name": "status",
+        "in": "query",
+        "schema": { "$ref": "#/components/schemas/AppointmentStatus" }
+      },
+      "page": {
+        "name": "page",
+        "in": "query",
+        "schema": { "type": "integer", "minimum": 1 }
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Appointment not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "ScheduleConflict": {
+        "description": "Appointment schedule conflict",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ObjectId": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "IsoDateTime": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "DateOnly": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "AppointmentStatus": {
+        "type": "string",
+        "enum": ["scheduled", "cancelled", "completed"]
+      },
+      "CreateAppointmentRequest": {
+        "type": "object",
+        "required": ["serviceId", "customerId", "professionalId", "startAt"],
+        "properties": {
+          "serviceId": { "$ref": "#/components/schemas/ObjectId" },
+          "customerId": { "$ref": "#/components/schemas/ObjectId" },
+          "professionalId": { "$ref": "#/components/schemas/ObjectId" },
+          "startAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "notes": { "type": "string" }
+        }
+      },
+      "RescheduleAppointmentRequest": {
+        "type": "object",
+        "required": ["startAt"],
+        "properties": {
+          "startAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "notes": { "type": "string" }
+        }
+      },
+      "Appointment": {
+        "type": "object",
+        "required": ["id", "customerId", "serviceId", "professionalId", "startAt", "endAt", "status"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "customerId": { "$ref": "#/components/schemas/ObjectId" },
+          "serviceId": { "$ref": "#/components/schemas/ObjectId" },
+          "professionalId": { "$ref": "#/components/schemas/ObjectId" },
+          "startAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "endAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "status": { "$ref": "#/components/schemas/AppointmentStatus" },
+          "notes": { "type": "string" },
+          "createdAt": { "$ref": "#/components/schemas/IsoDateTime" },
+          "updatedAt": { "$ref": "#/components/schemas/IsoDateTime" }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer", "minimum": 1 },
+          "limit": { "type": "integer", "minimum": 1 },
+          "total": { "type": "integer", "minimum": 0 },
+          "totalPages": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["status", "code", "message"],
+            "properties": {
+              "status": { "type": "integer" },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "VALIDATION_ERROR",
+                  "APPOINTMENT_NOT_FOUND",
+                  "APPOINTMENT_RELATED_ENTITY_NOT_FOUND",
+                  "APPOINTMENT_SCHEDULE_CONFLICT",
+                  "APPOINTMENT_INVALID_STATUS_TRANSITION",
+                  "APPOINTMENT_PAST_DATE"
+                ]
+              },
+              "message": { "type": "string" },
+              "details": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}
