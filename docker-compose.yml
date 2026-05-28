@@ -50,6 +50,8 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       SERVICE_NAME: appointments-service
       APPOINTMENTS_SERVICE_PORT: ${APPOINTMENTS_SERVICE_PORT:-3001}
+      APPOINTMENTS_MONGODB_URI: ${APPOINTMENTS_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-appointments}
+      APPOINTMENTS_POSTGRES_URI: ${APPOINTMENTS_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_appointments}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
@@ -70,6 +72,8 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       SERVICE_NAME: customers-service
       CUSTOMERS_SERVICE_PORT: ${CUSTOMERS_SERVICE_PORT:-3002}
+      CUSTOMERS_MONGODB_URI: ${CUSTOMERS_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-customers}
+      CUSTOMERS_POSTGRES_URI: ${CUSTOMERS_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_customers}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
@@ -90,6 +94,8 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       SERVICE_NAME: services-service
       SERVICES_SERVICE_PORT: ${SERVICES_SERVICE_PORT:-3003}
+      SERVICES_MONGODB_URI: ${SERVICES_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-services}
+      SERVICES_POSTGRES_URI: ${SERVICES_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_services}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
@@ -110,6 +116,8 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       SERVICE_NAME: professionals-service
       PROFESSIONALS_SERVICE_PORT: ${PROFESSIONALS_SERVICE_PORT:-3004}
+      PROFESSIONALS_MONGODB_URI: ${PROFESSIONALS_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-professionals}
+      PROFESSIONALS_POSTGRES_URI: ${PROFESSIONALS_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_professionals}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}

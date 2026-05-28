@@ -14,6 +14,8 @@ const messages = {
   required: 'Nome do cliente é obrigatório',
 };
 
+const shouldCheckAppointmentLinks = () => process.env.SERVICE_NAME !== 'customers-service';
+
 class CustomerProvider {
   constructor(customerRepository, appointmentRepository) {
     this.customerRepository = customerRepository;
@@ -47,8 +49,10 @@ class CustomerProvider {
   }
 
   async remove(id) {
-    const appointment = await this.appointmentRepository.existsForCustomer(id);
-    assertNoLinkedAppointment(appointment, messages.linkedAppointment);
+    if (shouldCheckAppointmentLinks()) {
+      const appointment = await this.appointmentRepository.existsForCustomer(id);
+      assertNoLinkedAppointment(appointment, messages.linkedAppointment);
+    }
 
     const item = await this.customerRepository.deleteById(id);
     return assertFound(item, messages.notFound);

@@ -49,3 +49,26 @@ test('Nest customer provider blocks deletion when appointment repository finds l
   );
   assert.deepEqual(customerRepository.deletedIds, []);
 });
+
+test('Nest customer provider does not read appointments store in standalone service', async () => {
+  const previousServiceName = process.env.SERVICE_NAME;
+  process.env.SERVICE_NAME = 'customers-service';
+  const customerRepository = createRepositoryStub();
+  const appointmentRepository = {
+    existsForCustomer: async () => {
+      throw new Error('should not access appointments');
+    },
+  };
+  const provider = new CustomerProvider(customerRepository, appointmentRepository);
+
+  try {
+    await provider.remove('customer-id');
+    assert.deepEqual(customerRepository.deletedIds, ['customer-id']);
+  } finally {
+    if (previousServiceName === undefined) {
+      delete process.env.SERVICE_NAME;
+    } else {
+      process.env.SERVICE_NAME = previousServiceName;
+    }
+  }
+});

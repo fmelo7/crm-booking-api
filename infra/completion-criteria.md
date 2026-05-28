@@ -118,10 +118,10 @@ Observacao: a tag `v1.0.0` e o workflow de validacao existem localmente. Release
 
 Cada servico deve ter banco/schema proprio:
 
-- [ ] appointments;
-- [ ] customers;
-- [ ] services;
-- [ ] professionals.
+- [x] appointments;
+- [x] customers;
+- [x] services;
+- [x] professionals.
 
 Evidencias:
 
@@ -129,6 +129,17 @@ Evidencias:
 - migrations proprias;
 - health/readiness por dependencia;
 - nenhum acesso direto ao banco de outro servico.
+
+Evidencias locais em 2026-05-28:
+
+| Servico | String propria | Migration propria | Readiness por dependencia | Observacao |
+| --- | --- | --- | --- | --- |
+| appointments | `APPOINTMENTS_MONGODB_URI`, `APPOINTMENTS_POSTGRES_URI` ou `APPOINTMENTS_DATABASE_URL` | `getPostgresMigrations('appointments-service')` | `GET /api/health` retorna `dependencies.database` | Usa banco/schema proprio; tabelas auxiliares locais evitam FK para banco externo |
+| customers | `CUSTOMERS_MONGODB_URI`, `CUSTOMERS_POSTGRES_URI` ou `CUSTOMERS_DATABASE_URL` | `getPostgresMigrations('customers-service')` | `GET /api/health` retorna `dependencies.database` | Migration cria apenas tabela de customers |
+| services | `SERVICES_MONGODB_URI`, `SERVICES_POSTGRES_URI` ou `SERVICES_DATABASE_URL` | `getPostgresMigrations('services-service')` | `GET /api/health` retorna `dependencies.database` | Migration cria apenas tabela de services |
+| professionals | `PROFESSIONALS_MONGODB_URI`, `PROFESSIONALS_POSTGRES_URI` ou `PROFESSIONALS_DATABASE_URL` | `getPostgresMigrations('professionals-service')` | `GET /api/health` retorna `dependencies.database` | Migration cria apenas tabela de professionals |
+
+Validacao local: `npm test` passou em 2026-05-28 com testes de resolucao de conexao isolada, provider por URLs especificas de servico e escopo de migrations Postgres.
 
 ### 5. Limites de codigo
 
@@ -210,10 +221,10 @@ Evidencias:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | frontend | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
 | api-gateway | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | N/A | Pendente | Pendente | Pendente |
-| appointments-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
-| customers-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
-| services-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
-| professionals-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Pendente | Contrato v1 local | Parcial | Pendente |
+| appointments-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
+| customers-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
+| services-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
+| professionals-service | Local criado, remoto pendente | Workflow local, logs remotos pendentes | Local passou | Local passou | Contrato v1 local | Parcial | Pendente |
 | contracts | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | v1.0.0 local | N/A | Pendente |
 | infra | Local criado, remoto pendente | Workflow local, logs remotos pendentes | N/A | N/A | N/A | Pendente | Pendente |
 

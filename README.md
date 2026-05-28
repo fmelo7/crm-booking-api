@@ -54,8 +54,16 @@ Variáveis:
 | `PROFESSIONALS_SERVICE_PORT` | Não | Porta HTTP do serviço de professionals. Padrão: `3004`. |
 | `DATABASE_PROVIDER` | Não | Banco usado pela aplicação: `mongodb` ou `postgres`. Padrão: `mongodb`. |
 | `MONGODB_URI` | Não | URI do MongoDB. Padrão: `mongodb://127.0.0.1:27017/crm-booking-api`. |
+| `APPOINTMENTS_MONGODB_URI` | Não | URI MongoDB própria do `appointments-service`. |
+| `CUSTOMERS_MONGODB_URI` | Não | URI MongoDB própria do `customers-service`. |
+| `SERVICES_MONGODB_URI` | Não | URI MongoDB própria do `services-service`. |
+| `PROFESSIONALS_MONGODB_URI` | Não | URI MongoDB própria do `professionals-service`. |
 | `POSTGRES_URI` | Não | URI do PostgreSQL. Usada quando `DATABASE_PROVIDER=postgres`. |
 | `DATABASE_URL` | Não | URI alternativa do PostgreSQL, comum no Railway. Usada se `POSTGRES_URI` não estiver definida. |
+| `APPOINTMENTS_POSTGRES_URI` / `APPOINTMENTS_DATABASE_URL` | Não | URI PostgreSQL própria do `appointments-service`. |
+| `CUSTOMERS_POSTGRES_URI` / `CUSTOMERS_DATABASE_URL` | Não | URI PostgreSQL própria do `customers-service`. |
+| `SERVICES_POSTGRES_URI` / `SERVICES_DATABASE_URL` | Não | URI PostgreSQL própria do `services-service`. |
+| `PROFESSIONALS_POSTGRES_URI` / `PROFESSIONALS_DATABASE_URL` | Não | URI PostgreSQL própria do `professionals-service`. |
 | `SWAGGER_SERVER_URL` | Não | URL exibida como servidor base no Swagger. |
 | `FRONTEND_PUBLIC_DIR` | Não | Diretório estático servido pela API. Padrão: `apps/frontend/public`. |
 | `CORS_ORIGINS` | Não | Lista de origens permitidas, separadas por vírgula. Exemplo: `https://app.com,http://localhost:5173`. |

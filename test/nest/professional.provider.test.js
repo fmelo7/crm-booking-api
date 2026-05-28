@@ -55,3 +55,26 @@ test('Nest professional provider blocks deletion when appointment repository fin
   );
   assert.deepEqual(professionalRepository.deletedIds, []);
 });
+
+test('Nest professional provider does not read appointments store in standalone service', async () => {
+  const previousServiceName = process.env.SERVICE_NAME;
+  process.env.SERVICE_NAME = 'professionals-service';
+  const professionalRepository = createRepositoryStub();
+  const appointmentRepository = {
+    existsForProfessional: async () => {
+      throw new Error('should not access appointments');
+    },
+  };
+  const provider = new ProfessionalProvider(professionalRepository, appointmentRepository);
+
+  try {
+    await provider.remove('professional-id');
+    assert.deepEqual(professionalRepository.deletedIds, ['professional-id']);
+  } finally {
+    if (previousServiceName === undefined) {
+      delete process.env.SERVICE_NAME;
+    } else {
+      process.env.SERVICE_NAME = previousServiceName;
+    }
+  }
+});

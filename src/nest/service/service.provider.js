@@ -14,6 +14,8 @@ const messages = {
   required: 'Nome do serviço é obrigatório',
 };
 
+const shouldCheckAppointmentLinks = () => process.env.SERVICE_NAME !== 'services-service';
+
 class ServiceProvider {
   constructor(serviceRepository, appointmentRepository) {
     this.serviceRepository = serviceRepository;
@@ -47,8 +49,10 @@ class ServiceProvider {
   }
 
   async remove(id) {
-    const appointment = await this.appointmentRepository.existsForService(id);
-    assertNoLinkedAppointment(appointment, messages.linkedAppointment);
+    if (shouldCheckAppointmentLinks()) {
+      const appointment = await this.appointmentRepository.existsForService(id);
+      assertNoLinkedAppointment(appointment, messages.linkedAppointment);
+    }
 
     const item = await this.serviceRepository.deleteById(id);
     return assertFound(item, messages.notFound);

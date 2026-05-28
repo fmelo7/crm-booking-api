@@ -1,17 +1,34 @@
 const { getDatabaseProvider } = require('../packages/shared/common/databaseProvider');
 const { getPostgresUri } = require('./config/postgres');
+const { readServiceDatabaseEnv } = require('./config/serviceDatabase');
 const { getMaskedEnv, isEnvDebugEnabled, maskValue } = require('./config/envDebug');
 const { getServiceName } = require('./middlewares/logger');
 
 const buildHealthResponse = (req, dbConnected) => {
   const databaseProvider = getDatabaseProvider();
+  const serviceDatabase = readServiceDatabaseEnv();
 
   return {
     status: dbConnected ? 'ok' : 'degraded',
     dbConnected,
+    dependencies: {
+      database: {
+        status: dbConnected ? 'ok' : 'degraded',
+        provider: databaseProvider,
+        domain: serviceDatabase.domain,
+        ownConnection: databaseProvider === 'postgres'
+          ? serviceDatabase.hasOwnPostgresUri
+          : serviceDatabase.hasOwnMongoUri,
+      },
+    },
     debug: isEnvDebugEnabled() ? {
       database: {
         provider: databaseProvider,
+        serviceName: serviceDatabase.serviceName,
+        domain: serviceDatabase.domain,
+        ownConnection: databaseProvider === 'postgres'
+          ? serviceDatabase.hasOwnPostgresUri
+          : serviceDatabase.hasOwnMongoUri,
         hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
         hasPostgresUri: Boolean(process.env.POSTGRES_URI),
         hasMongoUri: Boolean(process.env.MONGODB_URI),
