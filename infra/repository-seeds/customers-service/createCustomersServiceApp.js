@@ -11,6 +11,7 @@ const {
 const { requestLogger } = require('./src/middlewares/logger');
 const { metricsHandler } = require('./src/observability/metrics');
 const { createInternalServiceAuth } = require('./src/common/internalServiceAuth');
+const { registerSwaggerDocs } = require('./src/docs/swagger');
 const { notFound, errorHandler } = require('./src/middlewares/error');
 
 const configureTerminalHandlers = (app) => {
@@ -27,6 +28,7 @@ const configureCustomersServiceBaseApp = (app) => {
   app.use(cors);
   app.use(express.json({ limit: '1mb' }));
   app.use(requestLogger);
+  registerSwaggerDocs(app);
   app.use(createInternalServiceAuth());
   app.set('dbConnected', false);
   app.get('/api/metrics', metricsHandler);

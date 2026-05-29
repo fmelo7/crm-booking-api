@@ -32,11 +32,17 @@ test('appointments service serves health and metrics without monorepo imports', 
   try {
     const health = await fetch(`http://127.0.0.1:${port}/api/health`);
     const metrics = await fetch(`http://127.0.0.1:${port}/api/metrics`);
+    const swagger = await fetch(`http://127.0.0.1:${port}/api-docs/`);
+    const openApi = await fetch(`http://127.0.0.1:${port}/api-docs/openapi.json`);
 
     assert.equal(health.status, 200);
     assert.equal((await health.json()).service, 'appointments-service');
     assert.equal(metrics.status, 200);
     assert.match(await metrics.text(), /http_requests_total/);
+    assert.equal(swagger.status, 200);
+    assert.match(await swagger.text(), /SwaggerUIBundle/);
+    assert.equal(openApi.status, 200);
+    assert.equal((await openApi.json()).info.title, 'Appointments API');
   } finally {
     await new Promise((resolve, reject) => {
       server.close((err) => (err ? reject(err) : resolve()));

@@ -17,6 +17,7 @@ Base inicial: `crm-booking-api/apps/customers-service`.
 
 - `server.js` inicializa o NestJS app standalone em `CUSTOMERS_SERVICE_PORT` ou `PORT`.
 - `createCustomersServiceApp.js` aplica headers, CORS, auth interna, metrics, health e handlers de erro locais.
+- `/api-docs` expõe Swagger UI usando `src/contracts/public/customers.openapi.json`.
 - `src/nest/customer` contem controller, provider e repository provider do dominio de customers.
 - `src/domain/customer` contem validacoes e repositories mongo/postgres do proprio dominio.
 
