@@ -16,7 +16,7 @@ Base inicial: `crm-booking-api/apps/services-service`.
 ## Runtime atual
 
 - `server.js` inicializa o NestJS app standalone em `SERVICES_SERVICE_PORT` ou `PORT`.
-- `createServicesServiceApp.js` aplica headers, CORS, auth interna, metrics, health e handlers de erro locais.
+- `createServicesServiceApp.js` cria e configura o Nest app com headers, CORS, auth interna, metrics, health e filtros de erro.
 - `/api-docs` expõe Swagger UI usando `src/contracts/public/services.openapi.json`.
 - `src/nest/service` contem controller, provider e repository provider do dominio de services.
 - `src/domain/service` contem validacoes e repositories mongo/postgres do proprio dominio.

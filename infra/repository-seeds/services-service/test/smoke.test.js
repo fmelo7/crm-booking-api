@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const http = require('node:http');
 const test = require('node:test');
 const createServicesServiceApp = require('../createServicesServiceApp');
+const HealthState = require('../src/nest/health/health.state');
 const ServiceProvider = require('../src/nest/service/service.provider');
 
 test('repository scaffold is buildable in isolation', () => {
@@ -19,21 +19,27 @@ test('repository scaffold is buildable in isolation', () => {
 test('services service serves health and metrics without monorepo imports', async () => {
   const previousServiceName = process.env.SERVICE_NAME;
   const previousNodeEnv = process.env.NODE_ENV;
+  const previousInternalServiceToken = process.env.INTERNAL_SERVICE_TOKEN;
   process.env.SERVICE_NAME = 'services-service';
   process.env.NODE_ENV = 'test';
+  process.env.INTERNAL_SERVICE_TOKEN = 'test-internal-token';
 
-  const { nestApp, expressApp } = await createServicesServiceApp();
-  expressApp.set('dbConnected', true);
-  const server = http.createServer(expressApp);
+  const { nestApp } = await createServicesServiceApp();
+  nestApp.get(HealthState).setDatabaseConnected(true);
 
-  await new Promise((resolve) => server.listen(0, resolve));
-  const { port } = server.address();
+  await nestApp.listen(0);
+  const { port } = nestApp.getHttpServer().address();
 
   try {
     const health = await fetch(`http://127.0.0.1:${port}/api/health`);
     const metrics = await fetch(`http://127.0.0.1:${port}/api/metrics`);
     const swagger = await fetch(`http://127.0.0.1:${port}/api-docs/`);
     const openApi = await fetch(`http://127.0.0.1:${port}/api-docs/openapi.json`);
+    const swaggerCss = await fetch(`http://127.0.0.1:${port}/api-docs/swagger-ui.css`);
+    const privateRouteWithoutToken = await fetch(`http://127.0.0.1:${port}/api/services`);
+    const unknownRoute = await fetch(`http://127.0.0.1:${port}/api/unknown`, {
+      headers: { 'x-internal-token': 'test-internal-token' },
+    });
 
     assert.equal(health.status, 200);
     assert.equal((await health.json()).service, 'services-service');
@@ -43,10 +49,13 @@ test('services service serves health and metrics without monorepo imports', asyn
     assert.match(await swagger.text(), /SwaggerUIBundle/);
     assert.equal(openApi.status, 200);
     assert.equal((await openApi.json()).info.title, 'Services Internal API');
+    assert.equal(swaggerCss.status, 200);
+    assert.match(await swaggerCss.text(), /swagger-ui/);
+    assert.equal(privateRouteWithoutToken.status, 401);
+    assert.equal((await privateRouteWithoutToken.json()).error.code, 'INTERNAL_UNAUTHORIZED');
+    assert.equal(unknownRoute.status, 404);
+    assert.equal((await unknownRoute.json()).error.code, 'NOT_FOUND');
   } finally {
-    await new Promise((resolve, reject) => {
-      server.close((err) => (err ? reject(err) : resolve()));
-    });
     await nestApp.close();
 
     if (previousServiceName === undefined) delete process.env.SERVICE_NAME;
@@ -54,6 +63,9 @@ test('services service serves health and metrics without monorepo imports', asyn
 
     if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = previousNodeEnv;
+
+    if (previousInternalServiceToken === undefined) delete process.env.INTERNAL_SERVICE_TOKEN;
+    else process.env.INTERNAL_SERVICE_TOKEN = previousInternalServiceToken;
   }
 });
 
