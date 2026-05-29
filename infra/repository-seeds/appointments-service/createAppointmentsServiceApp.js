@@ -38,4 +38,3 @@ const createAppointmentsServiceApp = async () => {
 };
 
 module.exports = createAppointmentsServiceApp;
-module.exports.configureAppointmentsServiceBaseApp = configureAppointmentsServiceBaseApp;

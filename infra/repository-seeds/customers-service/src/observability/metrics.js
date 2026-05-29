@@ -84,13 +84,7 @@ const renderMetrics = () => [
   '',
 ].join('\n');
 
-const resetMetrics = () => {
-  httpRequests.clear();
-  httpDurations.clear();
-};
-
 module.exports = {
   recordHttpRequest,
   renderMetrics,
-  resetMetrics,
 };

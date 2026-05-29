@@ -38,4 +38,3 @@ const createServicesServiceApp = async () => {
 };
 
 module.exports = createServicesServiceApp;
-module.exports.configureServicesServiceBaseApp = configureServicesServiceBaseApp;

@@ -223,19 +223,27 @@ Notas:
 
 ## Fase 8: limpeza final
 
+Status: concluida para os quatro services.
+
 Tarefas:
 
-- Remover helpers Express que nao forem mais usados.
-- Remover exports temporarios das factories.
-- Remover docs antigas se ficarem redundantes.
-- Verificar Dockerfiles e docker-compose.
-- Rodar suite de seeds completa.
+- [x] Remover helpers Express que nao forem mais usados.
+- [x] Remover exports temporarios das factories.
+- [x] Remover docs antigas se ficarem redundantes.
+- [x] Verificar Dockerfiles e docker-compose.
+- [x] Rodar suite de seeds completa.
 
 Criterios de aceite:
 
-- `rg "getHttpAdapter\\(\\)\\.getInstance" infra/repository-seeds/*-service` nao retorna uso de configuracao de produto.
-- `rg "app\\.get\\('/api/metrics'|registerSwaggerDocs|expressApp\\.set" infra/repository-seeds/*-service` nao retorna uso nos services migrados.
-- Testes e builds dos quatro services passam.
+- [x] `rg "getHttpAdapter\\(\\)\\.getInstance" infra/repository-seeds/*-service` nao retorna uso de configuracao de produto.
+- [x] `rg "app\\.get\\('/api/metrics'|registerSwaggerDocs|expressApp\\.set" infra/repository-seeds/*-service` nao retorna uso nos services migrados.
+- [x] Testes e builds dos quatro services passam.
+
+Notas:
+
+- Foram removidos os exports temporarios `configure*ServiceBaseApp`.
+- Foram removidos os arquivos antigos `src/domain/**/*.swagger.js`, substituidos pelos contratos `src/contracts/public/*.openapi.json` servidos pelo `DocsModule`.
+- `resetMetrics` foi removido dos services por nao haver consumidor nos seeds.
 
 ## Comandos de verificacao
 

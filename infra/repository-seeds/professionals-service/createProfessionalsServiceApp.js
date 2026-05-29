@@ -38,4 +38,3 @@ const createProfessionalsServiceApp = async () => {
 };
 
 module.exports = createProfessionalsServiceApp;
-module.exports.configureProfessionalsServiceBaseApp = configureProfessionalsServiceBaseApp;
