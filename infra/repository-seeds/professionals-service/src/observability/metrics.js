@@ -84,18 +84,12 @@ const renderMetrics = () => [
   '',
 ].join('\n');
 
-const metricsHandler = (req, res) => {
-  res.type('text/plain; version=0.0.4; charset=utf-8');
-  res.send(renderMetrics());
-};
-
 const resetMetrics = () => {
   httpRequests.clear();
   httpDurations.clear();
 };
 
 module.exports = {
-  metricsHandler,
   recordHttpRequest,
   renderMetrics,
   resetMetrics,

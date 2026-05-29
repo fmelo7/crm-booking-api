@@ -193,11 +193,13 @@ Notas:
 
 ## Fase 7: replicacao para os outros services
 
+Status: concluida para `customers-service`, `professionals-service` e `appointments-service`.
+
 Depois do piloto aprovado:
 
-- Aplicar o mesmo padrao em `customers-service`.
-- Aplicar o mesmo padrao em `professionals-service`.
-- Aplicar o mesmo padrao em `appointments-service`.
+- [x] Aplicar o mesmo padrao em `customers-service`.
+- [x] Aplicar o mesmo padrao em `professionals-service`.
+- [x] Aplicar o mesmo padrao em `appointments-service`.
 
 Ordem sugerida:
 
@@ -209,9 +211,15 @@ Motivo: appointments tende a ter mais regras e dependencias de dominio, entao de
 
 Criterios de aceite por service:
 
-- `npm test --prefix infra/repository-seeds/<service>`
-- `npm run build --prefix infra/repository-seeds/<service>`
-- Swagger, health, metrics e CRUD smoke continuam passando.
+- [x] `npm test --prefix infra/repository-seeds/<service>`
+- [x] `npm run build --prefix infra/repository-seeds/<service>`
+- [x] Swagger, health, metrics e CRUD smoke continuam passando.
+
+Notas:
+
+- Os tres services agora usam `DocsModule`, `MetricsModule` e `HealthState`.
+- Os factories retornam apenas `{ nestApp }` e os testes usam `nestApp.getHttpServer()`.
+- `/api-docs` foi incluido nos public paths da auth interna em cada service.
 
 ## Fase 8: limpeza final
 

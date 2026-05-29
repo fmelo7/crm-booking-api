@@ -9,48 +9,31 @@ const {
   createRateLimiter,
 } = require('./src/middlewares/security');
 const { requestLogger } = require('./src/middlewares/logger');
-const { metricsHandler } = require('./src/observability/metrics');
 const { createInternalServiceAuth } = require('./src/common/internalServiceAuth');
-const { registerSwaggerDocs } = require('./src/docs/swagger');
-const { notFound, errorHandler } = require('./src/middlewares/error');
 const HttpExceptionFilter = require('./src/nest/common/http-exception.filter');
 
-const configureTerminalHandlers = (app) => {
-  app.use(notFound);
-  app.use(errorHandler);
+const configureAppointmentsServiceBaseApp = (nestApp) => {
+  nestApp.use(securityHeaders);
+  nestApp.use(cors);
+  nestApp.use(express.json({ limit: '1mb' }));
+  nestApp.use(requestLogger);
+  nestApp.use(createInternalServiceAuth());
+  nestApp.use('/api', createRateLimiter());
 
-  return app;
-};
-
-const configureAppointmentsServiceBaseApp = (app) => {
-  app.disable('x-powered-by');
-  app.use(securityHeaders);
-  app.use(cors);
-  app.use(express.json({ limit: '1mb' }));
-  app.use(requestLogger);
-  registerSwaggerDocs(app);
-  app.use(createInternalServiceAuth());
-  app.set('dbConnected', false);
-  app.get('/api/metrics', metricsHandler);
-  app.use('/api', createRateLimiter());
-
-  return app;
+  return nestApp;
 };
 
 const createAppointmentsServiceApp = async () => {
   const nestApp = await NestFactory.create(AppointmentsServiceModule, {
     logger: process.env.NODE_ENV === 'test' ? false : undefined,
   });
-  const expressApp = nestApp.getHttpAdapter().getInstance();
 
-  configureAppointmentsServiceBaseApp(expressApp);
+  configureAppointmentsServiceBaseApp(nestApp);
   nestApp.useGlobalFilters(new HttpExceptionFilter());
   await nestApp.init();
-  configureTerminalHandlers(expressApp);
 
   return {
     nestApp,
-    expressApp,
   };
 };
 

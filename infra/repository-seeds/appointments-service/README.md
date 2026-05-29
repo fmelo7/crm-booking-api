@@ -16,7 +16,7 @@ Base inicial: `crm-booking-api/apps/appointments-service` e contratos publicos e
 ## Runtime atual
 
 - `server.js` inicializa o NestJS app standalone em `APPOINTMENTS_SERVICE_PORT` ou `PORT`.
-- `createAppointmentsServiceApp.js` aplica headers, CORS, auth interna, metrics, health e handlers de erro locais.
+- `createAppointmentsServiceApp.js` cria e configura o Nest app com headers, CORS, auth interna, metrics, health e filtros de erro.
 - `/api-docs` expõe Swagger UI usando `src/contracts/public/appointments.openapi.json`.
 - `src/nest/appointment` contem controller, provider e repository provider do dominio de appointments.
 - `src/domain/appointment` contem as regras, validacoes e repositories mongo/postgres do proprio dominio.

@@ -16,7 +16,7 @@ Base inicial: `crm-booking-api/apps/professionals-service`.
 ## Runtime atual
 
 - `server.js` inicializa o NestJS app standalone em `PROFESSIONALS_SERVICE_PORT` ou `PORT`.
-- `createProfessionalsServiceApp.js` aplica headers, CORS, auth interna, metrics, health e handlers de erro locais.
+- `createProfessionalsServiceApp.js` cria e configura o Nest app com headers, CORS, auth interna, metrics, health e filtros de erro.
 - `/api-docs` expõe Swagger UI usando `src/contracts/public/professionals.openapi.json`.
 - `src/nest/professional` contem controller, provider e repository provider do dominio de professionals.
 - `src/domain/professional` contem validacoes e repositories mongo/postgres do proprio dominio.

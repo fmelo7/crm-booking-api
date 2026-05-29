@@ -5,6 +5,7 @@ const parseAllowedOrigins = () =>
     .filter(Boolean);
 
 const securityHeaders = (req, res, next) => {
+  res.removeHeader('X-Powered-By');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'no-referrer');

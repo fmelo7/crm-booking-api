@@ -5,6 +5,7 @@ const createCustomersServiceApp = require('./createCustomersServiceApp');
 const { connectDatabase, maskDatabaseUri } = require('./src/config/database');
 const { readServiceDatabaseEnv } = require('./src/config/serviceDatabase');
 const { getMaskedEnv, isEnvDebugEnabled } = require('./src/config/envDebug');
+const HealthState = require('./src/nest/health/health.state');
 const { log } = require('./src/middlewares/logger');
 
 const SERVICE_NAME = 'customers-service';
@@ -59,17 +60,18 @@ const connectDatabaseWithRetry = async () => {
 };
 
 const bootstrap = async () => {
-  const { nestApp, expressApp } = await createCustomersServiceApp();
+  const { nestApp } = await createCustomersServiceApp();
+  const healthState = nestApp.get(HealthState);
 
   try {
     const uri = await connectDatabaseWithRetry();
-    expressApp.set('dbConnected', true);
+    healthState.setDatabaseConnected(true);
     log('info', 'Customers service database connected', {
       databaseProvider: DATABASE_PROVIDER,
       databaseUri: maskDatabaseUri(uri),
     });
   } catch (err) {
-    expressApp.set('dbConnected', false);
+    healthState.setDatabaseConnected(false);
     log('error', 'Customers service database connection failed', {
       databaseProvider: DATABASE_PROVIDER,
       error: {
