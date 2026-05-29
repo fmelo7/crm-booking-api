@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.local/services/events.schema.json",
+  "title": "Service catalog domain events",
+  "oneOf": [
+    { "$ref": "#/$defs/ServiceCreated" },
+    { "$ref": "#/$defs/ServiceUpdated" },
+    { "$ref": "#/$defs/ServiceDeleted" }
+  ],
+  "$defs": {
+    "ObjectId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    },
+    "IsoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "EventMetadata": {
+      "type": "object",
+      "required": ["eventId", "eventName", "version", "occurredAt"],
+      "properties": {
+        "eventId": { "type": "string", "minLength": 1 },
+        "eventName": {
+          "type": "string",
+          "enum": ["service.created", "service.updated", "service.deleted"]
+        },
+        "version": { "const": 1 },
+        "occurredAt": { "$ref": "#/$defs/IsoDateTime" },
+        "correlationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ServiceData": {
+      "type": "object",
+      "required": ["serviceId", "name", "durationMinutes", "price"],
+      "properties": {
+        "serviceId": { "$ref": "#/$defs/ObjectId" },
+        "name": { "type": "string", "minLength": 3 },
+        "description": { "type": "string" },
+        "durationMinutes": { "type": "integer", "minimum": 1, "maximum": 480 },
+        "price": { "type": "number", "minimum": 0 }
+      }
+    },
+    "ServiceCreated": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "service.created" },
+            "data": { "$ref": "#/$defs/ServiceData" }
+          }
+        }
+      ]
+    },
+    "ServiceUpdated": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "service.updated" },
+            "data": { "$ref": "#/$defs/ServiceData" }
+          }
+        }
+      ]
+    },
+    "ServiceDeleted": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "service.deleted" },
+            "data": {
+              "type": "object",
+              "required": ["serviceId"],
+              "properties": {
+                "serviceId": { "$ref": "#/$defs/ObjectId" }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

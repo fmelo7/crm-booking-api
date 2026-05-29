@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.local/professionals/events.schema.json",
+  "title": "Professional domain events",
+  "oneOf": [
+    { "$ref": "#/$defs/ProfessionalCreated" },
+    { "$ref": "#/$defs/ProfessionalUpdated" },
+    { "$ref": "#/$defs/ProfessionalDeleted" }
+  ],
+  "$defs": {
+    "ObjectId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    },
+    "IsoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "EventMetadata": {
+      "type": "object",
+      "required": ["eventId", "eventName", "version", "occurredAt"],
+      "properties": {
+        "eventId": { "type": "string", "minLength": 1 },
+        "eventName": {
+          "type": "string",
+          "enum": [
+            "professional.created",
+            "professional.updated",
+            "professional.deleted"
+          ]
+        },
+        "version": { "const": 1 },
+        "occurredAt": { "$ref": "#/$defs/IsoDateTime" },
+        "correlationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ProfessionalData": {
+      "type": "object",
+      "required": ["professionalId", "name", "category"],
+      "properties": {
+        "professionalId": { "$ref": "#/$defs/ObjectId" },
+        "name": { "type": "string", "minLength": 3 },
+        "category": { "type": "string", "minLength": 2 },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "active": { "type": "boolean" }
+      }
+    },
+    "ProfessionalCreated": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "professional.created" },
+            "data": { "$ref": "#/$defs/ProfessionalData" }
+          }
+        }
+      ]
+    },
+    "ProfessionalUpdated": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "professional.updated" },
+            "data": { "$ref": "#/$defs/ProfessionalData" }
+          }
+        }
+      ]
+    },
+    "ProfessionalDeleted": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "professional.deleted" },
+            "data": {
+              "type": "object",
+              "required": ["professionalId"],
+              "properties": {
+                "professionalId": { "$ref": "#/$defs/ObjectId" }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

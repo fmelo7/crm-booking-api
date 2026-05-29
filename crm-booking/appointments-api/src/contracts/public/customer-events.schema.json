@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.local/customers/events.schema.json",
+  "title": "Customer domain events",
+  "oneOf": [
+    { "$ref": "#/$defs/CustomerCreated" },
+    { "$ref": "#/$defs/CustomerUpdated" },
+    { "$ref": "#/$defs/CustomerDeleted" }
+  ],
+  "$defs": {
+    "ObjectId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    },
+    "IsoDateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "EventMetadata": {
+      "type": "object",
+      "required": ["eventId", "eventName", "version", "occurredAt"],
+      "properties": {
+        "eventId": { "type": "string", "minLength": 1 },
+        "eventName": {
+          "type": "string",
+          "enum": ["customer.created", "customer.updated", "customer.deleted"]
+        },
+        "version": { "const": 1 },
+        "occurredAt": { "$ref": "#/$defs/IsoDateTime" },
+        "correlationId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "CustomerData": {
+      "type": "object",
+      "required": ["customerId", "name"],
+      "properties": {
+        "customerId": { "$ref": "#/$defs/ObjectId" },
+        "name": { "type": "string", "minLength": 3 },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" }
+      }
+    },
+    "CustomerCreated": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "customer.created" },
+            "data": { "$ref": "#/$defs/CustomerData" }
+          }
+        }
+      ]
+    },
+    "CustomerUpdated": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "customer.updated" },
+            "data": { "$ref": "#/$defs/CustomerData" }
+          }
+        }
+      ]
+    },
+    "CustomerDeleted": {
+      "allOf": [
+        { "$ref": "#/$defs/EventMetadata" },
+        {
+          "type": "object",
+          "required": ["eventName", "data"],
+          "properties": {
+            "eventName": { "const": "customer.deleted" },
+            "data": {
+              "type": "object",
+              "required": ["customerId"],
+              "properties": {
+                "customerId": { "$ref": "#/$defs/ObjectId" }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

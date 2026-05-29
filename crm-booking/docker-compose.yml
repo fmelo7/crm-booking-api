@@ -1,0 +1,130 @@
+x-app-env: &app-env
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      api-gateway:
+        condition: service_started
+
+  api-gateway:
+    <<: *app-env
+    build:
+      context: ./api-gateway
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      SERVICE_NAME: api-gateway
+      PORT: ${API_GATEWAY_PORT:-3000}
+      APPOINTMENTS_API_URL: http://appointments-api:3001
+      CUSTOMERS_API_URL: http://customers-api:3002
+      SERVICES_API_URL: http://services-api:3003
+      PROFESSIONALS_API_URL: http://professionals-api:3004
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
+      GATEWAY_AUTH_MODE: ${GATEWAY_AUTH_MODE:-disabled}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
+    ports:
+      - "${API_GATEWAY_PORT:-3000}:3000"
+    depends_on:
+      appointments-api:
+        condition: service_started
+      customers-api:
+        condition: service_started
+      services-api:
+        condition: service_started
+      professionals-api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  appointments-api:
+    <<: *app-env
+    build:
+      context: ./appointments-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      SERVICE_NAME: appointments-api
+      APPOINTMENTS_API_PORT: ${APPOINTMENTS_API_PORT:-3001}
+      APPOINTMENTS_MONGODB_URI: ${APPOINTMENTS_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-appointments}
+      APPOINTMENTS_POSTGRES_URI: ${APPOINTMENTS_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_appointments}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
+    ports:
+      - "${APPOINTMENTS_API_PORT:-3001}:3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  customers-api:
+    <<: *app-env
+    build:
+      context: ./customers-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      SERVICE_NAME: customers-api
+      CUSTOMERS_API_PORT: ${CUSTOMERS_API_PORT:-3002}
+      CUSTOMERS_MONGODB_URI: ${CUSTOMERS_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-customers}
+      CUSTOMERS_POSTGRES_URI: ${CUSTOMERS_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_customers}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
+    ports:
+      - "${CUSTOMERS_API_PORT:-3002}:3002"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  services-api:
+    <<: *app-env
+    build:
+      context: ./services-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      SERVICE_NAME: services-api
+      SERVICES_API_PORT: ${SERVICES_API_PORT:-3003}
+      SERVICES_MONGODB_URI: ${SERVICES_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-services}
+      SERVICES_POSTGRES_URI: ${SERVICES_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_services}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
+    ports:
+      - "${SERVICES_API_PORT:-3003}:3003"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3003/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  professionals-api:
+    <<: *app-env
+    build:
+      context: ./professionals-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      SERVICE_NAME: professionals-api
+      PROFESSIONALS_API_PORT: ${PROFESSIONALS_API_PORT:-3004}
+      PROFESSIONALS_MONGODB_URI: ${PROFESSIONALS_MONGODB_URI:-mongodb://host.docker.internal:27017/crm-booking-professionals}
+      PROFESSIONALS_POSTGRES_URI: ${PROFESSIONALS_POSTGRES_URI:-postgres://postgres:postgres@host.docker.internal:5432/crm_booking_professionals}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-local-internal-token}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-300}
+    ports:
+      - "${PROFESSIONALS_API_PORT:-3004}:3004"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3004/api/health').then(r=>process.exit(r.status < 500 ? 0 : 1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
